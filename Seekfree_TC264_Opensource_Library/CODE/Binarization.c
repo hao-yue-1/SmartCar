@@ -65,9 +65,9 @@ void ImageBinary()
         for (int j = 0; j < MT9V03X_W; ++j)
         {
             if (mt9v03x_image[i][j] <= Image_Threshold)//进行二值化之前只是得到阈值
-                BinaryImage[MT9V03X_H - 1 - i][j] = 0;//0是黑色
+                BinaryImage[MT9V03X_H - 1 - i][j] = IMAGE_BLACK;//0是黑色
             else
-                BinaryImage[MT9V03X_H - 1 - i][j] = 255;//1是白色
+                BinaryImage[MT9V03X_H - 1 - i][j] = IMAGE_WHITE;//1是白色
         }
     }
 }

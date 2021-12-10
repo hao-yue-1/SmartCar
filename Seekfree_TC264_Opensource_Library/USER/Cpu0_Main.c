@@ -60,9 +60,9 @@ int core0_main(void)
 	        ImageBinary();
 	        p = BinaryImage[0];
             uart_putchar(UART_0,0x00);uart_putchar(UART_0,0xff);uart_putchar(UART_0,0x01);uart_putchar(UART_0,0x01);//∑¢ÀÕ√¸¡Ó
-            for(i=0; i<MT9V03X_W*MT9V03X_H; i++)
+            for(i=MT9V03X_W*MT9V03X_H; i>0; i--)
             {
-                if(p[i]==255)
+                if(p[i]==IMAGE_WHITE)
                     uart_putchar(UART_0,0xff);
                 else
                     uart_putchar(UART_0,0x00);

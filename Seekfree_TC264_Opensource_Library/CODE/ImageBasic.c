@@ -23,7 +23,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
         //左边扫线
         for(cloum=Mid;(cloum-BORDER_BIAS)>0;cloum--)
         {
-            if(BinaryImage[row][cloum]==0&&BinaryImage[row][cloum-BORDER_BIAS]==0)  //判断左边界点（BORDER_BIAS防偶然因素）
+            if(BinaryImage[row][cloum]==IMAGE_BLACK && BinaryImage[row][cloum-BORDER_BIAS]==IMAGE_BLACK)  //判断左边界点（BORDER_BIAS防偶然因素）
             {
                 LeftLine[row]=cloum;    //记录左边界点
                 break;
@@ -32,7 +32,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
         //右边扫线
         for(cloum=Mid;(cloum+BORDER_BIAS)<MT9V03X_W;cloum++)
         {
-            if(BinaryImage[row][cloum]==0&&BinaryImage[row][cloum+BORDER_BIAS]==0)  //判断右边界点（BORDER_BIAS防偶然因素）
+            if(BinaryImage[row][cloum]==IMAGE_BLACK && BinaryImage[row][cloum+BORDER_BIAS]==IMAGE_BLACK)  //判断右边界点（BORDER_BIAS防偶然因素）
             {
                 RightLine[row]=cloum;   //记录右边界点
                 break;
@@ -45,7 +45,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
         if(RightLine[row]==0)    //右边界丢线
             LostNum_RightLine++; //左丢线数+1
         //防止扫线到赛道外
-        if(BinaryImage[row][CentreLine[row]]==0&&BinaryImage[row+BORDER_BIAS][CentreLine[row]]==0)    //row行的中线是黑，扫到了赛道外
+        if(BinaryImage[row][CentreLine[row]]==IMAGE_BLACK && BinaryImage[row+BORDER_BIAS][CentreLine[row]]==IMAGE_BLACK)    //row行的中线是黑，扫到了赛道外
         {
             Lost_CentreLine=row;    //记录中线点丢失的行坐标
             if(row>20)              //对前20行不做处理
