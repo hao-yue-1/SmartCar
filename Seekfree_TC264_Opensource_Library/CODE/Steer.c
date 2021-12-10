@@ -21,5 +21,5 @@ void SteerCtrl(uint16 pwm)
     if(pwm>STEER_LEFT)          pwm=STEER_LEFT;
     else if(pwm<STEER_RIGHT)    pwm=STEER_RIGHT;
     //对PWM信号进行赋值
-    pwm_duty(MOTOR_PIN,pwm);  //调用逐飞封装的PWM占空比设置函数
+    pwm_duty(STEER_PIN,pwm);  //调用逐飞封装的PWM占空比设置函数
 }

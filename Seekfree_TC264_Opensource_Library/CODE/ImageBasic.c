@@ -45,7 +45,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
         if(RightLine[row]==0)    //右边界丢线
             LostNum_RightLine++; //左丢线数+1
         //防止扫线到赛道外
-        if(BinaryImage[row,CentreLine[row]]==0&&BinaryImage[row+BORDER_BIAS,CentreLine[row]]==0)    //row行的中线是黑，扫到了赛道外
+        if(BinaryImage[row][CentreLine[row]]==0&&BinaryImage[row+BORDER_BIAS][CentreLine[row]]==0)    //row行的中线是黑，扫到了赛道外
         {
             Lost_CentreLine=row;    //记录中线点丢失的行坐标
             if(row>20)              //对前20行不做处理
