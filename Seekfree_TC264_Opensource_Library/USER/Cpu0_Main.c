@@ -36,14 +36,20 @@ int *LeftLine,*CentreLine,*RightLine;   //左中右三线
 
 int core0_main(void)
 {
-    int i;
-    uint8 *p;
 	get_clk();//获取时钟频率  务必保留
 	//用户在此处调用各种初始化函数等
 
+	//***************************交互的初始化**************************
 	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);//初始化串口0与电脑上位机通讯
-	mt9v03x_init();//初始化摄像头
+	ips114_init();  //初始化IPS屏幕
+    ips114_showstr(0, 0, "SEEKFREE MT9V03x");
+    ips114_showstr(0, 1, "Initializing...");
+    //如果屏幕没有任何显示，请检查屏幕接线
+    //*****************************************************************
 
+    //**************************传感器模块初始化**************************
+	mt9v03x_init();//初始化摄像头
+	//********************************************************************
 
     //等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
@@ -57,16 +63,10 @@ int core0_main(void)
 	    if(mt9v03x_finish_flag)
 	    {
 
-	        ImageBinary();
-	        p = BinaryImage[0];
-            uart_putchar(UART_0,0x00);uart_putchar(UART_0,0xff);uart_putchar(UART_0,0x01);uart_putchar(UART_0,0x01);//发送命令
-            for(i=MT9V03X_W*MT9V03X_H; i>0; i--)
-            {
-                if(p[i]==IMAGE_WHITE)
-                    uart_putchar(UART_0,0xff);
-                else
-                    uart_putchar(UART_0,0x00);
-            }
+	        ImageBinary();//图像二值化
+	        //SPI发送图像到1.14IPS
+	        ips114_displayimage032(BinaryImage[0], MT9V03X_W, MT9V03X_H);
+
 
             mt9v03x_finish_flag = 0;//在图像使用完毕后  务必清除标志位，否则不会开始采集下一幅图像
 	    }
