@@ -41,10 +41,7 @@ int core0_main(void)
 
 	//***************************交互的初始化**************************
 	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);//初始化串口0与电脑上位机通讯
-	ips114_init();  //初始化IPS屏幕
-    ips114_showstr(0, 0, "SEEKFREE MT9V03x");
-    ips114_showstr(0, 1, "Initializing...");
-    //如果屏幕没有任何显示，请检查屏幕接线
+	lcd_init();     //初始化TFT屏幕
     //*****************************************************************
 
     //**************************传感器模块初始化**************************
@@ -64,9 +61,8 @@ int core0_main(void)
 	    {
 
 	        ImageBinary();//图像二值化
-	        //SPI发送图像到1.14IPS
-	        ips114_displayimage032(BinaryImage[0], MT9V03X_W, MT9V03X_H);
-
+	        //SPI发送图像到1.8TFT
+	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);
 
             mt9v03x_finish_flag = 0;//在图像使用完毕后  务必清除标志位，否则不会开始采集下一幅图像
 	    }
