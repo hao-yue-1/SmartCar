@@ -6,24 +6,32 @@
 C_SRCS += \
 ../CODE/Binarization.c \
 ../CODE/ImageBasic.c \
+../CODE/ImageTack.c \
+../CODE/Motor.c \
 ../CODE/PID.c \
 ../CODE/Steer.c 
 
 OBJS += \
 ./CODE/Binarization.o \
 ./CODE/ImageBasic.o \
+./CODE/ImageTack.o \
+./CODE/Motor.o \
 ./CODE/PID.o \
 ./CODE/Steer.o 
 
 COMPILED_SRCS += \
 ./CODE/Binarization.src \
 ./CODE/ImageBasic.src \
+./CODE/ImageTack.src \
+./CODE/Motor.src \
 ./CODE/PID.src \
 ./CODE/Steer.src 
 
 C_DEPS += \
 ./CODE/Binarization.d \
 ./CODE/ImageBasic.d \
+./CODE/ImageTack.d \
+./CODE/Motor.d \
 ./CODE/PID.d \
 ./CODE/Steer.d 
 

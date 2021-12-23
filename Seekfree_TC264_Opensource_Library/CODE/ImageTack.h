@@ -8,7 +8,7 @@
 #ifndef CODE_IMAGETACK_H_
 #define CODE_IMAGETACK_H_
 
-int Regression_Slope(int startline,int endline,int *CentreLine);//求中线数组点拟合出来的回归方程
+float Regression_Slope(int startline,int endline,int *CentreLine);//求中线数组点拟合出来的回归方程
 
 
 
