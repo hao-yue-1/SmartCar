@@ -4,3 +4,5 @@
 
 PID.o :	../CODE/PID.c
 ../CODE/PID.c :
+PID.o :	../CODE/PID.h
+../CODE/PID.h :
