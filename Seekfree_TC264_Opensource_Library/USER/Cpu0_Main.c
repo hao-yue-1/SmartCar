@@ -28,6 +28,8 @@
 //头文件引用
 #include "headfile.h"       //逐飞的封装库
 #include "Binarization.h"   //二值化处理
+#include "Steer.h"          //舵机控制
+#include "Motor.h"          //电机控制
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -45,7 +47,15 @@ int core0_main(void)
     //*****************************************************************
 
     //**************************传感器模块初始化**************************
-	mt9v03x_init();//初始化摄像头
+	mt9v03x_init(); //初始化摄像头
+	//********************************************************************
+
+	//**************************驱动模块初始化**************************
+	gtm_pwm_init(STEER_PIN, 50, STEER_MID);    //初始化舵机
+	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);   //初始化电机
+	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);
+	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);
+	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);
 	//********************************************************************
 
     //等待所有核心初始化完毕
@@ -53,19 +63,21 @@ int core0_main(void)
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
 	enableInterrupts();
 
+//	SteerCtrl(850);
+
 	while (TRUE)
 	{
-		//用户在此处编写任务代码
+	    //图像处理模块
+//	    if(mt9v03x_finish_flag)
+//	    {
+//	        ImageBinary();//图像二值化
+//	        //SPI发送图像到1.8TFT
+//	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);
+//
+//            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
+//	    }
+	    //电机控制模块
 
-	    if(mt9v03x_finish_flag)
-	    {
-
-	        ImageBinary();//图像二值化
-	        //SPI发送图像到1.8TFT
-	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);
-
-            mt9v03x_finish_flag = 0;//在图像使用完毕后  务必清除标志位，否则不会开始采集下一幅图像
-	    }
 	}
 }
 
