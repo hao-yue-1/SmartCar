@@ -42,20 +42,22 @@ int core0_main(void)
 	//用户在此处调用各种初始化函数等
 
 	//***************************交互的初始化**************************
-	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);//初始化串口0与电脑上位机通讯
+	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);      //初始化串口0与电脑上位机通讯
 	lcd_init();     //初始化TFT屏幕
     //*****************************************************************
 
     //**************************传感器模块初始化**************************
-	mt9v03x_init(); //初始化摄像头
+//	mt9v03x_init(); //初始化摄像头
 	//********************************************************************
 
 	//**************************驱动模块初始化**************************
-	gtm_pwm_init(STEER_PIN, 50, STEER_MID);    //初始化舵机
-	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);   //初始化电机
+	gtm_pwm_init(STEER_PIN, 50, STEER_MID);                         //初始化舵机
+	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);                        //初始化左电机
 	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);
-	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);
+	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);                       //初始化右电机
 	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);
+	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
+	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
 	//********************************************************************
 
     //等待所有核心初始化完毕
@@ -64,7 +66,7 @@ int core0_main(void)
 	enableInterrupts();
 
 //	SteerCtrl(850);
-
+	MotorCtrl(1000,1000);
 	while (TRUE)
 	{
 	    //图像处理模块
