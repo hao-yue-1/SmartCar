@@ -36,7 +36,7 @@ float Regression_Slope(int startline,int endline,int *CentreLine)
     for(i=startline;i<endline;i++)
     {
         SumUp+=(CentreLine[i]-avrX)*(i-avrY);//分子
-        SumDown+=(i-avrX)*(i-avrX);//分母
+        SumDown+=(CentreLine[i]-avrX)*(CentreLine[i]-avrX);//分母
     }
     if(SumDown==0)//斜率不存在的时候所以偏差是0
         Bias=0;
