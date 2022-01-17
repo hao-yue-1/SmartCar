@@ -1,0 +1,336 @@
+!SESSION 2021-12-24 17:26:04.245 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY org.eclipse.cdt.core 1 0 2021-12-24 17:26:57.944
+!MESSAGE Indexed 'Seekfree_TC264_Opensource_Library' (202 sources, 728 headers) in 15.1 sec: 124,230 declarations; 198,429 references; 4 unresolved inclusions; 4,274 syntax errors; 5,166 unresolved names (1.6%)
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:27:03.043
+!MESSAGE Project was boosted in 2339 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:27:03.153
+!MESSAGE Include paths were discovered in 110 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:29:04.951
+!MESSAGE Project was boosted in 2219 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:29:05.041
+!MESSAGE Include paths were discovered in 90 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:48:26.321
+!MESSAGE Project was boosted in 2256 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:48:26.396
+!MESSAGE Include paths were discovered in 74 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:49:07.475
+!MESSAGE Project was boosted in 2198 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:49:07.561
+!MESSAGE Include paths were discovered in 84 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:49:56.563
+!MESSAGE Project was boosted in 2199 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:49:56.635
+!MESSAGE Include paths were discovered in 71 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:54:13.484
+!MESSAGE Project was boosted in 2240 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:54:13.559
+!MESSAGE Include paths were discovered in 74 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:54:49.945
+!MESSAGE Project was boosted in 2210 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:54:50.015
+!MESSAGE Include paths were discovered in 68 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:55:02.613
+!MESSAGE Project was boosted in 2229 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 17:55:02.682
+!MESSAGE Include paths were discovered in 68 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 18:01:29.929
+!MESSAGE Project was boosted in 2310 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 18:01:29.998
+!MESSAGE Include paths were discovered in 68 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 18:01:58.159
+!MESSAGE Project was boosted in 2170 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 18:01:58.226
+!MESSAGE Include paths were discovered in 65 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 18:02:14.865
+!MESSAGE Project was boosted in 2151 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-24 18:02:14.931
+!MESSAGE Include paths were discovered in 65 milliseconds.
+!SESSION 2021-12-26 10:47:53.313 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 10:52:46.965
+!MESSAGE Project was boosted in 4546 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 10:52:47.130
+!MESSAGE Include paths were discovered in 161 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 11:11:43.894
+!MESSAGE Project was boosted in 3630 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 11:11:43.999
+!MESSAGE Include paths were discovered in 104 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 11:12:44.669
+!MESSAGE Project was boosted in 2957 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 11:12:44.759
+!MESSAGE Include paths were discovered in 88 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 11:13:14.845
+!MESSAGE Project was boosted in 3046 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 11:13:14.949
+!MESSAGE Include paths were discovered in 103 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 11:13:50.186
+!MESSAGE Project was boosted in 3357 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 11:13:50.277
+!MESSAGE Include paths were discovered in 90 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 11:17:13.314
+!MESSAGE Project was boosted in 3202 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 11:17:13.388
+!MESSAGE Include paths were discovered in 73 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 12:26:32.876
+!MESSAGE Project was boosted in 2276 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 12:26:32.965
+!MESSAGE Include paths were discovered in 87 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 12:27:27.221
+!MESSAGE Project was boosted in 2308 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 12:27:27.295
+!MESSAGE Include paths were discovered in 72 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 12:29:10.524
+!MESSAGE Project was boosted in 2249 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 12:29:10.591
+!MESSAGE Include paths were discovered in 66 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 12:32:03.710
+!MESSAGE Project was boosted in 2323 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 12:32:03.778
+!MESSAGE Include paths were discovered in 66 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 12:32:28.412
+!MESSAGE Project was boosted in 2218 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 12:32:28.479
+!MESSAGE Include paths were discovered in 65 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 12:38:39.386
+!MESSAGE Project was boosted in 2293 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2021-12-26 12:38:39.454
+!MESSAGE Include paths were discovered in 66 milliseconds.
+!SESSION 2022-01-01 23:59:37.278 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem.quicklinks 4 0 2022-01-01 23:59:55.863
+!MESSAGE itools.infineon.com
+!STACK 0
+java.net.UnknownHostException: itools.infineon.com
+	at java.base/java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:220)
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:403)
+	at java.base/java.net.Socket.connect(Socket.java:591)
+	at java.base/sun.security.ssl.SSLSocketImpl.connect(SSLSocketImpl.java:285)
+	at java.base/sun.security.ssl.BaseSSLSocketImpl.connect(BaseSSLSocketImpl.java:173)
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:182)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:474)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:569)
+	at java.base/sun.net.www.protocol.https.HttpsClient.<init>(HttpsClient.java:265)
+	at java.base/sun.net.www.protocol.https.HttpsClient.New(HttpsClient.java:372)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(AbstractDelegateHttpsURLConnection.java:191)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1181)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1075)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:177)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1581)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1509)
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:245)
+	at java.base/java.net.URL.openStream(URL.java:1117)
+	at com.infineon.aurix.buildsystem.quicklinks.connector.URLLinksContainerConnector.getLinksContainerJsonInputStream(URLLinksContainerConnector.java:21)
+	at com.infineon.aurix.buildsystem.quicklinks.connector.CachedURLLinksContainerConnector.access$0(CachedURLLinksContainerConnector.java:1)
+	at com.infineon.aurix.buildsystem.quicklinks.connector.CachedURLLinksContainerConnector$1.openStream(CachedURLLinksContainerConnector.java:31)
+	at com.google.common.io.ByteSource.read(ByteSource.java:285)
+	at com.infineon.aurix.buildsystem.quicklinks.connector.CachedURLLinksContainerConnector.getLinksContainerJsonInputStream(CachedURLLinksContainerConnector.java:36)
+	at com.infineon.aurix.buildsystem.quicklinks.LinksManager.lambda$1(LinksManager.java:66)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:361)
+	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:503)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:488)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.findFirst(ReferencePipeline.java:543)
+	at com.infineon.aurix.buildsystem.quicklinks.LinksManager.parseConfig(LinksManager.java:79)
+	at com.infineon.aurix.buildsystem.quicklinks.LinksManager.translateMetadata(LinksManager.java:94)
+	at com.infineon.aurix.buildsystem.quicklinks.view.QuickLinksView.lambda$8(QuickLinksView.java:183)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:195)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:484)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:150)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:173)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:497)
+	at com.infineon.aurix.buildsystem.quicklinks.view.QuickLinksView.fetchActiveCategories(QuickLinksView.java:185)
+	at com.infineon.aurix.buildsystem.quicklinks.view.QuickLinksView.createPartControl(QuickLinksView.java:65)
+	at org.eclipse.ui.internal.e4.compatibility.CompatibilityPart.createPartControl(CompatibilityPart.java:154)
+	at org.eclipse.ui.internal.e4.compatibility.CompatibilityView.createPartControl(CompatibilityView.java:155)
+	at org.eclipse.ui.internal.e4.compatibility.CompatibilityPart.create(CompatibilityPart.java:361)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.eclipse.e4.core.internal.di.MethodRequestor.execute(MethodRequestor.java:58)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.processAnnotated(InjectorImpl.java:999)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.processAnnotated(InjectorImpl.java:964)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.internalInject(InjectorImpl.java:140)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.internalMake(InjectorImpl.java:405)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.make(InjectorImpl.java:332)
+	at org.eclipse.e4.core.contexts.ContextInjectionFactory.make(ContextInjectionFactory.java:202)
+	at org.eclipse.e4.ui.internal.workbench.ReflectionContributionFactory.createFromBundle(ReflectionContributionFactory.java:91)
+	at org.eclipse.e4.ui.internal.workbench.ReflectionContributionFactory.doCreate(ReflectionContributionFactory.java:60)
+	at org.eclipse.e4.ui.internal.workbench.ReflectionContributionFactory.create(ReflectionContributionFactory.java:42)
+	at org.eclipse.e4.ui.workbench.renderers.swt.ContributedPartRenderer.createWidget(ContributedPartRenderer.java:132)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.createWidget(PartRenderingEngine.java:1000)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.safeCreateGui(PartRenderingEngine.java:660)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine$1.run(PartRenderingEngine.java:545)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.createGui(PartRenderingEngine.java:529)
+	at org.eclipse.e4.ui.workbench.renderers.swt.ElementReferenceRenderer.createWidget(ElementReferenceRenderer.java:73)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.createWidget(PartRenderingEngine.java:1000)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.safeCreateGui(PartRenderingEngine.java:660)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.safeCreateGui(PartRenderingEngine.java:766)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.access$0(PartRenderingEngine.java:737)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine$2.run(PartRenderingEngine.java:731)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.createGui(PartRenderingEngine.java:715)
+	at org.eclipse.e4.ui.internal.workbench.PartServiceImpl.createElement(PartServiceImpl.java:1309)
+	at org.eclipse.e4.ui.internal.workbench.PartServiceImpl.showPart(PartServiceImpl.java:1270)
+	at org.eclipse.ui.internal.WorkbenchPartReference.getPart(WorkbenchPartReference.java:396)
+	at com.infineon.aurix.buildsystem.activeproject.core.DecorationManager$PartListener.partOpened(DecorationManager.java:80)
+	at com.infineon.aurix.buildsystem.activeproject.core.DecorationManager$DecoratorWindowListener.windowOpened(DecorationManager.java:128)
+	at com.infineon.aurix.buildsystem.activeproject.core.DecorationManager$1.run(DecorationManager.java:164)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:40)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:185)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:4005)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3633)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine$5.run(PartRenderingEngine.java:1158)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:338)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.run(PartRenderingEngine.java:1047)
+	at org.eclipse.e4.ui.internal.workbench.E4Workbench.createAndRunUI(E4Workbench.java:155)
+	at org.eclipse.ui.internal.Workbench.lambda$3(Workbench.java:658)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:338)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:557)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:154)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:150)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:203)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:137)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:107)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:401)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:255)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:657)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:594)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1447)
+!SESSION 2022-01-17 20:54:50.897 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-17 20:55:59.687
+!MESSAGE Project index is not complete, and cannot be used for boosting.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-17 20:55:59.697
+!MESSAGE Project was boosted in 5 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-17 20:55:59.997
+!MESSAGE Include paths were discovered in 301 milliseconds.
+!SESSION 2022-01-17 21:40:00.755 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-17 23:20:15.589
+!MESSAGE Project was boosted in 2918 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-17 23:20:15.732
+!MESSAGE Include paths were discovered in 139 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-17 23:21:03.708
+!MESSAGE Project was boosted in 2285 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-17 23:21:03.801
+!MESSAGE Include paths were discovered in 91 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-17 23:21:12.441
+!MESSAGE Project index is not complete, and cannot be used for boosting.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-17 23:21:12.441
+!MESSAGE Project was boosted in 0 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-17 23:21:12.523
+!MESSAGE Include paths were discovered in 80 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-18 00:25:11.867
+!MESSAGE Project was boosted in 2354 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-18 00:25:11.950
+!MESSAGE Include paths were discovered in 82 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-18 00:25:53.704
+!MESSAGE Project was boosted in 2317 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-18 00:25:53.774
+!MESSAGE Include paths were discovered in 69 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-18 00:26:16.116
+!MESSAGE Project was boosted in 2304 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-18 00:26:16.188
+!MESSAGE Include paths were discovered in 71 milliseconds.

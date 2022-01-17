@@ -8,7 +8,7 @@ int LostNum_LeftLine=0,LostNum_RightLine=0; //记录左右边界丢线数
 /*
  ** 函数功能: 扫线提取左中右三线的坐标(坐标在数组中的位置代表其行坐标,坐标在数组中的位置代表其列坐标)
  ** 参    数: int *LeftLine：     左线数组
- **           int *CentreLine：中线数组
+ **           int *CentreLine： 中线数组
  **           int *RightLine：   右线数组
  ** 返 回 值: 无
  ** 作    者: LJF

@@ -1,0 +1,13 @@
+00:26:18 **** Incremental Build of configuration Debug for project Seekfree_TC264_Opensource_Library ****
+make --output-sync -j8 all 
+Building file: ../CODE/ImageSpecial.c
+make: *** [CODE/subdir.mk:47: CODE/ImageSpecial.src] Error 1
+Invoking: TASKING C/C++ Compiler
+cctc -D__CPU__=tc26xb "-fD:/Infineon/InfinenoProject/SmartCar/Seekfree_TC264_Opensource_Library/Debug/TASKING_C_C___Compiler-Include_paths.opt" --iso=99 --c++14 --language=+volatile --exceptions --anachronisms --fp-model=3 -O0 --tradeoff=4 --compact-max-size=200 -g -Wc-w544 -Wc-w557 -Ctc26xb -o "CODE/ImageSpecial.src"  "../CODE/ImageSpecial.c"  -cs --dep-file="CODE/ImageSpecial.d" --misrac-version=2012 -N0 -Z0 -Y0 2>&1;
+TASKING VX-toolset for AURIX Development Studio (non-commercial): control program v1.1r7 Build 21033142
+ctc E208: ["../CODE/ImageSpecial.c" 39/8] syntax error - token "<identifier>" inserted before ")"
+1 errors, 0 warnings
+"make --output-sync -j8 all" terminated with exit code 2. Build might be incomplete.
+
+00:26:21 Build Failed. 2 errors, 0 warnings. (took 2s.760ms)
+

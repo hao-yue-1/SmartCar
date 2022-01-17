@@ -65,8 +65,6 @@ int core0_main(void)
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
 	enableInterrupts();
 
-//	SteerCtrl(850);
-	MotorCtrl(1000,1000);
 	while (TRUE)
 	{
 	    //图像处理模块
@@ -79,7 +77,8 @@ int core0_main(void)
 //            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
 //	    }
 	    //电机控制模块
-
+//	    SteerCtrl(850);
+//	    MotorCtrl(1000,1000);
 	}
 }
 
