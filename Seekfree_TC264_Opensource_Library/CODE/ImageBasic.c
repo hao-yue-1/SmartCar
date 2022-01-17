@@ -43,7 +43,10 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
         if(LeftLine[row]==0)     //左边界丢线
             LostNum_LeftLine++;  //左丢线数+1
         if(RightLine[row]==0)    //右边界丢线
-            LostNum_RightLine++; //左丢线数+1
+        {
+            RightLine[row]=MT9V03X_W;//把右边丢线的点直接拉到最右边的值方便找拐点的时候排序
+            LostNum_RightLine++; //右丢线数+1
+        }
         //防止扫线到赛道外
         if(BinaryImage[row][CentreLine[row]]==IMAGE_BLACK && BinaryImage[row+BORDER_BIAS][CentreLine[row]]==IMAGE_BLACK)    //row行的中线是黑，扫到了赛道外
         {
@@ -63,3 +66,37 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
     }
 }
 
+/*
+ ** 函数功能: 根据左右边界线来得到下拐点（十字、三岔、环岛的判断会用上）
+ ** 参    数: int starline:     起始行
+ **           int endline:      结束行
+ **           int *LeftLine：     左线数组
+ **           int *RightLine：   右线数组
+ **           Point *InflectionL: 左边拐点
+ **           Point *InflectionR: 右边拐点
+ ** 返 回 值: 无
+ ** 说    明: 用指针带入进来函数，最后得到的点可以两点确定直线进行补线
+ ** 作    者: LJF
+ */
+void GetInflection(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR)
+{
+    int i,tempL=0,tempR=MT9V03X_W;
+
+    for(i=startline;i<endline;i++)
+    {
+        //遍历左线，求出列数最大的点就是左边的拐点，左线丢线为0
+        if(LeftLine[i]>tempL)
+        {
+            InflectionL->X=LeftLine[i];//存入拐点的（x,y）坐标
+            InflectionL->Y=i;
+            tempL=LeftLine[i];//暂存，其实也可以不用暂存，直接InflectionL->X即可，但是怕其他要改，这步先放在这里后续优化即可
+        }
+        //遍历右线，求出列数最小的点就是右边的拐点，右边线丢线为MT9V03X_W
+        if(RightLine[i]<tempR)
+        {
+            InflectionR->X=RightLine[i];//存入拐点的（x,y）坐标
+            InflectionR->Y=i;
+            tempR=LeftLine[i];
+        }
+    }
+}

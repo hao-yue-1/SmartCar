@@ -13,8 +13,14 @@
 
 //宏定义
 #define BORDER_BIAS 3
-
+//结构体
+typedef struct Point
+{
+    int X;
+    int Y;
+}Point; //点坐标的结构体
 
 void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine);  //扫线提取左中右三线
+void GetInflection(int startline,int endline,int *LeftLine,int *RightLine,Point *Inflection,Point *InflectionR);//根据左右边界线来得到下拐点（十字、三岔、环岛）
 
 #endif /* CODE_IMAGEBASIC_H_ */
