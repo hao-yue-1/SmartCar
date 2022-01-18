@@ -78,7 +78,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
  ** 说    明: 用指针带入进来函数，最后得到的点可以两点确定直线进行补线
  ** 作    者: LJF
  */
-void GetInflection(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR)
+void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR)
 {
     int i,tempL=0,tempR=MT9V03X_W;
 
@@ -97,6 +97,31 @@ void GetInflection(int startline,int endline,int *LeftLine,int *RightLine,Point 
             InflectionR->X=RightLine[i];//存入拐点的（x,y）坐标
             InflectionR->Y=i;
             tempR=LeftLine[i];
+        }
+    }
+}
+
+/*********************************************************************************
+ ** 函数功能: 根据左右下拐点搜寻出三岔上拐点
+ ** 参    数: Point InflectionL: 左边拐点
+ **           Point InflectionR: 右边拐点
+ **           Point *UpInflectionC: 中间上拐点
+ ** 返 回 值: 无
+ ** 说    明: 这个函数最后面会修改，写入在找拐点里面，或者还要加一个元素类型的参数，根据类型来找不同的拐点，这里只针对三岔
+ ** 作    者: LJF
+ **********************************************************************************/
+void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC)
+{
+    int starline,i;
+    UpInflectionC->X=(DownInflectionL.X+DownInflectionR.X)/2;//V型上拐点的列坐标为左右拐点均值，需要修改，不一定是正入三岔
+    starline=(DownInflectionL.Y+DownInflectionR.Y)/2;//起始行为左右拐点行的均值
+    //从下往上找到那个跳变的点即为上拐点
+    for(i=starline;i<MT9V03X_H;i++)
+    {
+        //图像数组是[高][宽]
+        if(BinaryImage[i][UpInflectionC->X]==IMAGE_WHITE&&BinaryImage[i+1][UpInflectionC->X]==IMAGE_BLACK)
+        {
+            UpInflectionC->Y=i;//Y坐标是行数
         }
     }
 }

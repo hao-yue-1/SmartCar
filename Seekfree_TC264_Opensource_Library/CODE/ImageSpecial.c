@@ -36,7 +36,7 @@ void StartLineFlag(Point InflectionL,Point InflectionR)
     int Black_num=0;        //记录行黑线的数量，作为判断该行是否为斑马线的依据
     int Black_times=0;      //记录满足斑马线的行数，并作为判断该路段是否为斑马线的依据
 
-    if()    //拐点（车库）在左边
+    if(0)    //拐点（车库）在左边
     {
         for(row=InflectionL.X,cloum=InflectionL.Y;row<MT9V03X_H;row++)        //从左拐点开始固定列，从下往上扫
         {
