@@ -8,8 +8,12 @@
 #ifndef CODE_IMAGETACK_H_
 #define CODE_IMAGETACK_H_
 
-float Regression_Slope(int startline,int endline,int *CentreLine);//求中线数组点拟合出来的回归方程
+#include "Binarization.h"       //二值化之后的图像数组
+#include "SEEKFREE_MT9V03X.h"   //为了要uint8这种定义,二值化算法中的某些数学计算,摄像头图像的全局变量
+#include "ImageBasic.h"         //获取图像基本处理之后的数据
 
+float Regression_Slope(int startline,int endline,int *CentreLine);//求中线数组点拟合出来的回归方程
+void FillingLine(Point StarPoint,Point EndPoint);//根据两点进行补线
 
 
 #endif /* CODE_IMAGETACK_H_ */

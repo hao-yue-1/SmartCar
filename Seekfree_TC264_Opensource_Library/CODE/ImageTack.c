@@ -47,4 +47,20 @@ float Regression_Slope(int startline,int endline,int *CentreLine)
     return Bias;
 }
 
-
+/********************************************************************************************
+ ** 函数功能: 根据两点进行补线(直线)
+ ** 参    数: Point StarPoint:    起点
+ **           Point EndPoint:     终点
+ ** 返 回 值: 无
+ ** 作    者: LJF
+ *********************************************************************************************/
+void FillingLine(Point StarPoint,Point EndPoint)
+{
+    int K,B,i;
+    K=(EndPoint.Y-StarPoint.Y)/(EndPoint.X-StarPoint.X);//k=(y2-y1)/(x2-x1)
+    B=StarPoint.Y-K*StarPoint.X;//b=y-kx
+    for(i=StarPoint.Y;i<EndPoint.Y;i++)
+    {
+        BinaryImage[i][K*i+B]=IMAGE_BLACK;//BinaryImage[H][W]
+    }
+}
