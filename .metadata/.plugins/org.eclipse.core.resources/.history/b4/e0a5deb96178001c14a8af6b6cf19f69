@@ -1,6 +1,6 @@
 /*
  * ImageSpecial.c
-  *  赛道上各种特殊元素的判断
+  *  赛道上各种特殊元素的识别
  *  Created on: 2022年1月17日
  *      Author: yue
  */
@@ -17,7 +17,7 @@
  **           2.由于没有实物图做参考，只能先假设一个理想状态：整条起跑线恰好布满整个图像
  ********************************************************************************************
  */
-void StartLineFlag(Point InflectionL,Point InflectionR)
+uint8 StartLineFlag(Point InflectionL,Point InflectionR)
 {
     /*
      ** 有起跑线的地方就有车库，由于赛道原因，车库有可能出现在车的左边或右边，这里也先对这两种情况进行判断并分别处理；
@@ -36,7 +36,7 @@ void StartLineFlag(Point InflectionL,Point InflectionR)
     int Black_num=0;        //记录行黑线的数量，作为判断该行是否为斑马线的依据
     int Black_times=0;      //记录满足斑马线的行数，并作为判断该路段是否为斑马线的依据
 
-    if()    //拐点（车库）在左边
+    if(0)    //拐点（车库）在左边
     {
         for(row=InflectionL.X,cloum=InflectionL.Y;row<MT9V03X_H;row++)        //从左拐点开始固定列，从下往上扫
         {
@@ -69,9 +69,49 @@ void StartLineFlag(Point InflectionL,Point InflectionR)
                 /*
                  * *这里得出该路段是斑马线的结果
                  * */
+                return 0;
                 break;
             }
         }
     }
 
+    if(0)    //拐点（车库）在右边
+    {
+        for(row=InflectionL.X,cloum=InflectionL.Y;row<MT9V03X_H;row++)        //从右拐点开始固定列，从下往上扫
+        {
+            if(BinaryImage[row][cloum]==IMAGE_BLACK)    //找到了一个黑点
+            {
+                for(;cloum>0;cloum--)                                 //固定行，从右往左扫
+                {
+                    if(BinaryImage[row][cloum]==IMAGE_BLACK)    //扫到黑点
+                    {
+                        Black_width++;   //黑线宽度+1
+                    }
+                    else                                        //扫到白点
+                    {
+                        if(Black_width>=BLACK_WIDTH)    //判断黑线宽度是否满足阈值
+                        {
+                            Black_num++; //行黑线数量+1
+                        }
+                        Black_width=0;   //一次判断后重置黑线宽度
+                    }
+                    if(Black_num>=BLACK_NUM)    //若满足斑马线的阈值（这一行）
+                    {
+                        Black_times++;  //满足斑马线的行数+1
+                        break;
+                    }
+                }
+                Black_num=0;    //这一行的扫线结束，重置行黑线数
+            }
+            if(Black_times>=BLACK_TIMES)    //判断是否满足斑马线路段的阈值
+            {
+                /*
+                 * *这里得出该路段是斑马线的结果
+                 * */
+                return 0;
+                break;
+            }
+        }
+    }
+    return 1;
 }

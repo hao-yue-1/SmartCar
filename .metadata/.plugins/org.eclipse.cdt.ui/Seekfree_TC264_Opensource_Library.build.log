@@ -1,4 +1,4 @@
-19:12:55 **** Incremental Build of configuration Debug for project Seekfree_TC264_Opensource_Library ****
+21:20:35 **** Incremental Build of configuration Debug for project Seekfree_TC264_Opensource_Library ****
 make --output-sync -j8 all 
 Invoking: Print Size
 TASKING VX-toolset for AURIX Development Studio (non-commercial): ELF size v1.1r7 Build 21033142
@@ -9,5 +9,5 @@ RAM: 0x6603 (26115) = data + bss
 Finished building: Seekfree_TC264_Opensource_Library.siz
  
 
-19:12:56 Build Finished. 0 errors, 0 warnings. (took 1s.271ms)
+21:20:38 Build Finished. 0 errors, 0 warnings. (took 2s.568ms)
 
