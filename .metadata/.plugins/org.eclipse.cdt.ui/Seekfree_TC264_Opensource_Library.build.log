@@ -1,21 +1,16 @@
-18:03:50 **** Incremental Build of configuration Debug for project Seekfree_TC264_Opensource_Library ****
+18:53:00 **** Incremental Build of configuration Debug for project Seekfree_TC264_Opensource_Library ****
 make --output-sync -j8 all 
-Building file: ../CODE/ImageSpecial.c
+Building file: ../CODE/ImageBasic.c
 Invoking: TASKING C/C++ Compiler
-cctc -D__CPU__=tc26xb "-fE:/nodeanddata/studio/FSL/Complete/S17/SmartCar/Seekfree_TC264_Opensource_Library/Debug/TASKING_C_C___Compiler-Include_paths.opt" --iso=99 --c++14 --language=+volatile --exceptions --anachronisms --fp-model=3 -O0 --tradeoff=4 --compact-max-size=200 -g -Wc-w544 -Wc-w557 -Ctc26xb -o "CODE/ImageSpecial.src"  "../CODE/ImageSpecial.c"  -cs --dep-file="CODE/ImageSpecial.d" --misrac-version=2012 -N0 -Z0 -Y0 2>&1;
+cctc -D__CPU__=tc26xb "-fE:/nodeanddata/studio/FSL/Complete/S17/SmartCar/Seekfree_TC264_Opensource_Library/Debug/TASKING_C_C___Compiler-Include_paths.opt" --iso=99 --c++14 --language=+volatile --exceptions --anachronisms --fp-model=3 -O0 --tradeoff=4 --compact-max-size=200 -g -Wc-w544 -Wc-w557 -Ctc26xb -o "CODE/ImageBasic.src"  "../CODE/ImageBasic.c"  -cs --dep-file="CODE/ImageBasic.d" --misrac-version=2012 -N0 -Z0 -Y0 2>&1;
 TASKING VX-toolset for AURIX Development Studio (non-commercial): control program v1.1r7 Build 21033142
-ctc W545: ["../CODE/ImageSpecial.c" 114/1] missing 'return'
-ctc W545: ["../CODE/ImageSpecial.c" 146/1] missing 'return'
-ctc W537: ["../CODE/ImageSpecial.c" 142/9] unused variable "row"
-ctc W537: ["../CODE/ImageSpecial.c" 142/13] unused variable "cloum"
-0 errors, 4 warnings
-Finished building: ../CODE/ImageSpecial.c
+Finished building: ../CODE/ImageBasic.c
  
-Building file: CODE/ImageSpecial.src
+Building file: CODE/ImageBasic.src
 TASKING VX-toolset for AURIX Development Studio (non-commercial): assembler v1.1r7 Build 21033142
 Invoking: TASKING Assembler
-astc -o  "CODE/ImageSpecial.o" "CODE/ImageSpecial.src" --list-format=L1 --optimize=gs
-Finished building: CODE/ImageSpecial.src
+astc -o  "CODE/ImageBasic.o" "CODE/ImageBasic.src" --list-format=L1 --optimize=gs
+Finished building: CODE/ImageBasic.src
  
 Building target: Seekfree_TC264_Opensource_Library.elf
 Invoking: TASKING Linker
@@ -24,14 +19,14 @@ TASKING VX-toolset for AURIX Development Studio (non-commercial): control progra
 Finished building target: Seekfree_TC264_Opensource_Library.elf
  
 Invoking: Print Size
+TASKING VX-toolset for AURIX Development Studio (non-commercial): ELF size v1.1r7 Build 21033142
 elfsize  "Seekfree_TC264_Opensource_Library.elf"
 Total sizes:
 ROM: 0xb9e3 (47587) = code: 0x9864 (39012) + romdata: 0x217f (8575)
 RAM: 0x6603 (26115) = data + bss
 Finished building: Seekfree_TC264_Opensource_Library.siz
  
-TASKING VX-toolset for AURIX Development Studio (non-commercial): ELF size v1.1r7 Build 21033142
-rm CODE/ImageSpecial.src
+rm CODE/ImageBasic.src
 
-18:03:54 Build Finished. 0 errors, 4 warnings. (took 3s.561ms)
+18:53:04 Build Finished. 0 errors, 0 warnings. (took 3s.611ms)
 

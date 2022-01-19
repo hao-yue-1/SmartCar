@@ -80,23 +80,21 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
  */
 void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR)
 {
-    int i,tempL=0,tempR=MT9V03X_W;
+    int i;
 
     for(i=startline;i<endline;i++)
     {
-        //遍历左线，求出列数最大的点就是左边的拐点，左线丢线为0
-        if(LeftLine[i]>tempL)
+        //遍历左线，求出先变小大后变小的点，多加三个点的判断是为了误判，左边丢线为0
+        if(LeftLine[i]>LeftLine[i-1] && LeftLine[i]>LeftLine[i-3] && LeftLine[i]>LeftLine[i+1] && LeftLine[i]>LeftLine[i+3])
         {
             InflectionL->X=LeftLine[i];//存入拐点的（x,y）坐标
             InflectionL->Y=i;
-            tempL=LeftLine[i];//暂存，其实也可以不用暂存，直接InflectionL->X即可，但是怕其他要改，这步先放在这里后续优化即可
         }
         //遍历右线，求出列数最小的点就是右边的拐点，右边线丢线为MT9V03X_W
-        if(RightLine[i]<tempR)
+        if(RightLine[i]<LeftLine[i-1] && RightLine[i]<LeftLine[i-3] && RightLine[i]<LeftLine[i+1] && RightLine[i]<LeftLine[i+3])
         {
             InflectionR->X=RightLine[i];//存入拐点的（x,y）坐标
             InflectionR->Y=i;
-            tempR=LeftLine[i];
         }
     }
 }
