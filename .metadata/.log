@@ -4134,3 +4134,67 @@ Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infin
 
 !ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 18:52:58.116
 !MESSAGE Include paths were discovered in 79 milliseconds.
+!SESSION 2022-01-19 20:09:56.676 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY org.eclipse.core.resources 2 10035 2022-01-19 20:10:02.913
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY org.eclipse.cdt.core 1 0 2022-01-19 20:11:50.452
+!MESSAGE Indexed 'Seekfree_TC264_Opensource_Library' (203 sources, 319 headers) in 5.09 sec: 64,577 declarations; 159,092 references; 0 unresolved inclusions; 18 syntax errors; 0 unresolved names (0%)
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 20:11:53.755
+!MESSAGE Project was boosted in 1430 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 20:11:53.888
+!MESSAGE Include paths were discovered in 129 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 20:12:47.625
+!MESSAGE Project was boosted in 1401 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 20:12:47.701
+!MESSAGE Include paths were discovered in 75 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 20:13:48.237
+!MESSAGE Project was boosted in 1378 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 20:13:48.317
+!MESSAGE Include paths were discovered in 78 milliseconds.
+
+!ENTRY org.eclipse.cdt.ui 4 0 2022-01-19 20:20:23.683
+!MESSAGE Error in CDT UI during reconcile
+!STACK 1
+C Model Exception: C Model Status [Element ImageSpecial.c does not exist.]
+	at org.eclipse.cdt.internal.core.model.CElement.newNotPresentException(CElement.java:485)
+	at org.eclipse.cdt.internal.core.model.TranslationUnit.makeConsistent(TranslationUnit.java:583)
+	at org.eclipse.cdt.internal.core.model.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:65)
+	at org.eclipse.cdt.internal.core.model.CModelOperation.execute(CModelOperation.java:346)
+	at org.eclipse.cdt.internal.core.model.CModelOperation.run(CModelOperation.java:613)
+	at org.eclipse.cdt.internal.core.model.CModelOperation.runOperation(CModelOperation.java:641)
+	at org.eclipse.cdt.internal.core.model.WorkingCopy.reconcile(WorkingCopy.java:365)
+	at org.eclipse.cdt.internal.ui.text.CReconcilingStrategy.reconcile(CReconcilingStrategy.java:79)
+	at org.eclipse.cdt.internal.ui.text.CReconcilingStrategy.reconcile(CReconcilingStrategy.java:64)
+	at org.eclipse.cdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:89)
+	at org.eclipse.cdt.internal.ui.text.CCompositeReconcilingStrategy.reconcile(CCompositeReconcilingStrategy.java:90)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:76)
+	at org.eclipse.cdt.internal.ui.text.CReconciler.process(CReconciler.java:346)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
+!SUBENTRY 1 org.eclipse.cdt.core 4 969 2022-01-19 20:20:23.683
+!MESSAGE Element ImageSpecial.c does not exist.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 20:48:30.360
+!MESSAGE Project was boosted in 1330 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 20:48:30.433
+!MESSAGE Include paths were discovered in 71 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 20:49:57.856
+!MESSAGE Project was boosted in 1330 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 20:49:57.940
+!MESSAGE Include paths were discovered in 83 milliseconds.
