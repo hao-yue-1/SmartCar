@@ -4068,3 +4068,44 @@ C Model Exception: C Model Status [Element ImageSpecial.c does not exist.]
 	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:210)
 !SUBENTRY 1 org.eclipse.cdt.core 4 969 2022-01-18 23:19:12.291
 !MESSAGE Element ImageSpecial.c does not exist.
+!SESSION 2022-01-18 23:45:25.250 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-18 23:46:13.382
+!MESSAGE Project index is not complete, and cannot be used for boosting.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-18 23:46:13.383
+!MESSAGE Project was boosted in 4 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-18 23:46:13.820
+!MESSAGE Include paths were discovered in 432 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-18 23:47:15.733
+!MESSAGE Project was boosted in 1702 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-18 23:47:15.833
+!MESSAGE Include paths were discovered in 96 milliseconds.
+!SESSION 2022-01-19 13:29:30.670 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 18:02:33.733
+!MESSAGE Project was boosted in 2031 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 18:02:33.912
+!MESSAGE Include paths were discovered in 175 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 18:03:47.721
+!MESSAGE Project was boosted in 1350 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 18:03:47.800
+!MESSAGE Include paths were discovered in 77 milliseconds.

@@ -145,3 +145,35 @@ uint8 RoundaboutFlag(int LeftLine,int RightLine)
 
 }
 
+/********************************************************************************************
+ ** 函数功能: 识别三岔
+ ** 参    数: int startline:用户决定的起始行
+ **           int endline:用户决定的结束行（表示对前几段的识别，根据速度不同进行调整）
+ **           int *LeftLine：左线
+ **           int *RightLine:右线
+ **           Point *InflectionL:左边拐点
+ **           Point *InflectionR:右边拐点
+ **           Point *InflectionC:中间拐点
+ ** 返 回 值: 0：没有识别到环岛
+ **           1：识别到三岔
+ ** 作    者: LJF
+ ** 注    意：1 . 目前仅仅是正入三岔的时候的函数，因为三岔前面都会有个弯道所以会出现车身斜的情况，此时的左右拐点并不一定都存在
+ **           2.这个是进三岔的函数，出三岔时候应该重写一个，并在进入三岔后再开启出三岔的判断
+ *********************************************************************************************/
+uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR,Point *InflectionC)
+{
+    GetDownInflection(startline, endline, LeftLine, RightLine, InflectionL, InflectionR);//获取左右拐点
+    if(InflectionL->X!=0&&InflectionR->X!=0)//当左右拐点存在
+    {
+        GetForkUpInflection(*InflectionL, *InflectionR, InflectionC);//去搜索上拐点
+        if(InflectionC->X!=0)
+        {
+            //关于三岔的上拐点还会有其他的条件判断，比如不超过多少行什么的，这个要具体才能判断了
+            //三岔成立的条件太简单了会存在误判，比如从十字出来的时候就可能会遇到同样的具有三个点
+            //这里我想采用元素互斥的原则,给一个非十字的标志
+            return 1;//三个拐点存在三岔成立
+            /*还需要写根据左右选择标识符来选择往左还是右边从而进行补线*/
+        }
+    }
+    return 0;
+}

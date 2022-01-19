@@ -17,5 +17,6 @@
 #define BLACK_TIMES  3   //斑马线数量阈值     //用于判断该路段是否为斑马线
 
 uint8 StartLineFlag(Point InflectionL,Point InflectionR);    //起跑线识别
+uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR,Point *InflectionC);//三岔识别
 
 #endif /* CODE_IMAGESPECIAL_H_ */
