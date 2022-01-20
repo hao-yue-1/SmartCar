@@ -4198,3 +4198,43 @@ C Model Exception: C Model Status [Element ImageSpecial.c does not exist.]
 
 !ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-19 20:49:57.940
 !MESSAGE Include paths were discovered in 83 milliseconds.
+!SESSION 2022-01-20 20:49:48.886 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-20 21:48:25.488
+!MESSAGE Project was boosted in 1981 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-20 21:48:25.642
+!MESSAGE Include paths were discovered in 150 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-20 22:06:38.720
+!MESSAGE Project index is not complete, and cannot be used for boosting.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-20 22:06:38.721
+!MESSAGE Project was boosted in 1 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-20 22:06:38.832
+!MESSAGE Include paths were discovered in 110 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-20 23:09:50.964
+!MESSAGE Project was boosted in 1441 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-20 23:09:51.057
+!MESSAGE Include paths were discovered in 91 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-20 23:10:34.970
+!MESSAGE Project was boosted in 1423 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-20 23:10:35.045
+!MESSAGE Include paths were discovered in 74 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-20 23:11:50.347
+!MESSAGE Project was boosted in 1407 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-20 23:11:50.421
+!MESSAGE Include paths were discovered in 73 milliseconds.

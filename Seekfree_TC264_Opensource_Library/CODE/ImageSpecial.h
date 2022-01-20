@@ -13,18 +13,19 @@
 #include "ImageBasic.h"         //获取图像基本处理之后的数据
 
 //起跑线识别
-#define S_BLACK_WIDTH  3   //斑马线黑线宽度阈值 //用于判断该线是否为斑马线黑线
-#define S_BLACK_NUM    8   //斑马线黑线数量阈值 //用于判断该行是否为斑马线
-#define S_BLACK_TIMES  3   //斑马线数量阈值     //用于判断该路段是否为斑马线
+#define S_BLACK_WIDTH  3    //斑马线黑线宽度阈值 //用于判断该线是否为斑马线黑线
+#define S_BLACK_NUM    8    //斑马线黑线数量阈值 //用于判断该行是否为斑马线
+#define S_BLACK_TIMES  3    //斑马线数量阈值     //用于判断该路段是否为斑马线
 //环岛识别
-#define R_POINT_MOVE   3   //拐点左/右移像素点数量
-#define R_WHITE_NUM    5   //环岛白色宽度阈值
-#define R_BLACK_NUM    5   //环岛黑色宽度阈值
-#define R_TIMES      5   //符合环岛要素的列数阈值
-
+#define C_LOST1 5           //不丢线一边的丢线数阈值
+#define C_LOST2 20          //丢线一边的丢线数阈值
+//环岛判断flag
+extern uint8 Flag_CircleBegin;   //发现环岛
+extern uint8 Flag_CircleIn;      //环岛入口
 
 uint8 StartLineFlag(Point InflectionL,Point InflectionR);    //起跑线识别
-uint8 RoundaboutFlag(int LeftLine,int RightLine,Point InflectionL,Point InflectionR);   //环岛识别
+uint8 CircleIsland_Begin(int LeftLine,int RightLine,Point InflectionL,Point InflectionR);
+uint8 CircleIsland_Begin(int LeftLine,int RightLine,Point InflectionL,Point InflectionR);
 uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR,Point *InflectionC);//三岔识别
 
 #endif /* CODE_IMAGESPECIAL_H_ */

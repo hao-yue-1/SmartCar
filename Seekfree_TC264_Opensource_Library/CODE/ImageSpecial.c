@@ -8,6 +8,10 @@
 
 #include "ImageSpecial.h"
 
+//环岛判断flag
+uint8 Flag_CircleBegin=0;   //发现环岛
+uint8 Flag_CircleIn=0;      //环岛入口
+
 /*
  *******************************************************************************************
  ** 函数功能: 识别起跑线
@@ -30,10 +34,6 @@ uint8 StartLineFlag(Point InflectionL,Point InflectionR)
      ** 以确定这是一条黑线。继续扫这一列，若发现了足够多的这样的黑线（大于设定的阈值BLACK_NUM），则认为这一行符合斑马线。按照该理论回
      ** 到起点继续行的扫描，若像这样的行数足够多（大于设定的阈值BLACK_TIMES），则认为这一幅图片中存在斑马线，即该路段是起跑线
      **/
-
-    //在这里加入一个判断：检测到左方或右方有拐点时，再进行是否有起跑线的判断
-    //并且扫线的位置根据拐点决定。从左下拐点开始：下-上，左-右扫线；从右下拐点开始：下-上，右-左扫线
-
 
     int row,cloum;          //行,列
     int Black_width=0;      //固定行，横向扫线是记录每段黑点的个数（即一条黑线的宽度）
@@ -114,9 +114,10 @@ uint8 StartLineFlag(Point InflectionL,Point InflectionR)
 
     return 0;
 }
+
 /*
  *******************************************************************************************
- ** 函数功能: 识别环岛
+ ** 函数功能: 识别环岛但没有到达环岛入口
  ** 参    数: LeftLine：左线数组
  **           RightLine：右线数组
  **           InflectionL：左拐点
@@ -124,70 +125,88 @@ uint8 StartLineFlag(Point InflectionL,Point InflectionR)
  ** 返 回 值: 0：没有识别到环岛
  **           1：识别到环岛且在车身左侧
  **           2：识别到环岛且在车身右侧
- **           3：识别到环岛入口且在车身左侧
- **           4：识别到环岛入口且在车身右侧
  ** 作    者: WBN
- ** 注    意：1 . 默认在进行环岛识别的路段都是直线，即车头已经摆正
- **           2.这个应该是进环岛的函数，出环岛那段应该重写一个，并在进入环岛后再开启出环岛的判断
+ ** 注    意：环岛的识别分为两部分，一是识别到环岛但并为到达入口，二是识别到了环岛入口
  ********************************************************************************************
  */
-uint8 RoundaboutFlag(int LeftLine,int RightLine,Point InflectionL,Point InflectionR)
+uint8 CircleIsland_Begin(int LeftLine,int RightLine,Point InflectionL,Point InflectionR)
 {
-    /**
-     ** 整个赛道会有3个环岛，一个在起跑线左侧，一个在起跑线右侧，由于是循环赛道所以会存在环岛在车左边和在车右边两种情况；
-     ** 以左环岛为例，若车还没有进入环岛入口，则图像会有两种情况：一种是图像中有拐点（即完全在环岛外，这种情况可能会出现直角拐弯的误判，先
-     ** 不做处理）；另一种是图像中没有拐点（既已经行进到环岛一半但还未到达环岛入口）。若车已经到达环岛入口，则只会有一种情况
-     ** */
-
     /*
-     ** 方法一：环岛的识别分为发现环岛以及到达环岛入口两个阶段，该函数会在发现环岛后卡主，直到到达环岛入口再返回识别到环岛；若没发环岛
-     **         就直接退出（这样有一个问题就是在发现环岛入口到发现环岛入口这段时间内，车会以原有的角度与速度行驶）
-     ** 方法二：环岛的识别任分发现环岛和到达环岛入口两个部分，函数在发现环岛和到达环岛入口作为两个不同的返回值（加上左右共四种情况即四
-     **         个返回值），这样将车子的处理问题抛出，该方法可能更稳定也符合一开始的想法
-     ** */
+     ** 这个可能的情况比较多，比较难处理，后面再写
+     ** 当识别到前面有环岛时，主要是对环岛进行一个屏蔽的补线，避免车子误判为拐弯而拐进环岛的出口
+     * */
 
-    /*
-     ** 1.识别到环岛：寻找这两种情况的共通点：一边出现丢线，另一边完整，且丢线的一边必定会再次出现线而非全丢
-     ** 1.1 另一种思路：像扫左右边线一样，扫上下边线。。。都是圆好像区别不大？不过下边线可以扫出一条完整的带弧度的线，而左右扫线则可能因为
-     **                 摄像头拍摄不全的缘故扫不到最边缘的线
-     ** 2.识别到入口：一边出现丢线，另一边完整，且丢线的一边必定只是丢了一个缺口而不会有其他情况
-     ** */
-
-    int row,cloum;                      //行,列
-    int white_num=0,black_num=0;        //记录扫线过程的白点数量
-    int times=0;                    //记录符合环岛特征的列数
-    //发现环岛：存在拐点
-    if(InflectionL.X!=0&&InflectionL.Y!=0)   //拐点在左边（发现环岛在车身左侧）
+    if(InflectionL.X!=0&&InflectionL.Y!=0)    //拐点（环岛）在左边
     {
-        for(row=InflectionL.X,cloum=InflectionL.Y-POINT_MOVE;cloum>0;cloum--)        //外层：从拐点往左扫线
+
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 识别环岛入口
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ **           InflectionL：左拐点
+ **           InflectionR：右拐点
+ ** 返 回 值: 0：没有识别到环岛
+ **           1：识别到环岛入口且在车身左侧
+ **           2：识别到环岛入口且在车身右侧
+ ** 作    者: WBN
+ ** 注    意：该函数的调用应该在识别到环岛之后开始，并在进入环岛后关闭
+ ********************************************************************************************
+ */
+uint8 CircleIsland_In(int LeftLine,int RightLine,Point InflectionL,Point InflectionR)
+{
+    /*
+     **     这里先只取一种情况：车子刚好在环岛圆环的中心位置，即出口已经不在图像中，图像中有的只是环岛的入口
+     **     对于该种情况的判断方式：图像的中有一条直行和一条拐弯的路，那么就会出现一边是有完整的线，另一边出现丢线（转弯路口是两边丢线）
+     **     第二种判断方式：一边丢线一边不丢线，这里先写了两种判断方式大概的代码
+     * */
+
+    int row,cloum;              //行,列
+    int upline[MT9V03X_W]={0};  //下边界线
+
+    if(InflectionL.X!=0&&InflectionL.Y!=0)    //拐点（环岛入口）在左边
+    {
+        for(cloum=InflectionL.Y;cloum>0;cloum--)    //从拐点列坐标开始，右往左扫
         {
-            for(;row<MT9V03X_H;row++)                                                //内层：循环是从下往上
+            for(row=InflectionL.X;row<MT9V03X_H;row++)   //从拐点行坐标开始，下往上扫
             {
                 if(BinaryImage[row][cloum]==IMAGE_WHITE)    //扫到白点
                 {
-                    white_num++;    //白点数量+1
-                }
-                else                                        //扫到黑点
-                {
-                    black_num++;    //黑点数量+1
-                }
-                if(white_num>=R_WHITE_NUM&&black_num>=R_BLACK_NUM)
-                {
-                    times++;
+                    upline[cloum-InflectionL.Y]=row;    //记录上边界线：以数据的位置为X轴，数据的值为Y轴画图
                     break;
                 }
             }
-            if(times>=R_TIMES)
-            {
-                return 1;
-            }
-            white_num=0;
-            black_num=0;
+        }
+        int left=0,mid=0,right=0;   //将边界线分为左中右三段，分别求出这三段的均值
+        for(cloum=InflectionL.Y;cloum>2*InflectionL.Y/3;cloum--)    //右
+        {
+            right+=upline[cloum];
+        }
+        for(;cloum>InflectionL.Y/3;cloum--)                         //中
+        {
+            mid+=upline[cloum];
+        }
+        for(;cloum>0;cloum--)                                       //左
+        {
+            left+=upline[cloum];
+        }
+        if(left<mid&&right<mid)
+        {
+            return 1;
         }
     }
 
-    //到达环岛入口：无拐点
-
+    if(InflectionR.X!=0&&InflectionR.Y!=0)    //拐点（环岛入口）在右边
+    {
+        if(LostNum_LeftLine<C_LOST1&&LostNum_RightLine>C_LOST2) //左丢线数小于阈值，右丢线数大于阈值
+        {
+            return 2;
+        }
+    }
     return 0;
 }
 

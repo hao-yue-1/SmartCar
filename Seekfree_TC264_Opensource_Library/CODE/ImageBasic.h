@@ -13,6 +13,9 @@
 
 //宏定义
 #define BORDER_BIAS 3
+//全局变量
+extern int Lost_CentreLine;                    //中线丢失的行坐标(扫线到赛道外)
+extern int LostNum_LeftLine,LostNum_RightLine; //记录左右边界丢线数
 //结构体
 typedef struct Point
 {
