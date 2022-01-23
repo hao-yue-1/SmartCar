@@ -15,8 +15,8 @@ uint8 Flag_CircleIn=0;      //环岛入口
 /*
  *******************************************************************************************
  ** 函数功能: 识别起跑线
- ** 参    数: InflectionL：左拐点
- **           InflectionR：右拐点
+ ** 参    数: *LeftLine：  左线数组
+ **           *RightLine：右线数组
  ** 返 回 值: 0：没有识别到起跑线
  **           1：识别到起跑线且车库在车左侧
  **           2：识别到起跑线且车库在车右侧
@@ -25,7 +25,7 @@ uint8 Flag_CircleIn=0;      //环岛入口
  **           2.由于没有实物图做参考，只能先假设一个理想状态：整条起跑线恰好布满整个图像
  ********************************************************************************************
  */
-uint8 StartLineFlag(Point InflectionL,Point InflectionR)
+uint8 StartLineFlag(int *LeftLine,int *RightLine)
 {
     /*
      ** 有起跑线的地方就有车库，由于赛道原因，车库有可能出现在车的左边或右边，这里也先对这两种情况进行判断并分别处理；
@@ -39,6 +39,14 @@ uint8 StartLineFlag(Point InflectionL,Point InflectionR)
     int Black_width=0;      //固定行，横向扫线是记录每段黑点的个数（即一条黑线的宽度）
     int Black_num=0;        //记录行黑线的数量，作为判断该行是否为斑马线的依据
     int Black_times=0;      //记录满足斑马线的行数，并作为判断该路段是否为斑马线的依据
+
+    Point InflectionL, InflectionR; //下拐点
+    InflectionL.X=0;
+    InflectionL.Y=0;
+    InflectionR.X=0;
+    InflectionR.Y=0;
+    GetDownInflection(0,MT9V03X_H,LeftLine,RightLine,&InflectionL,&InflectionR);    //获取下拐点
+
 
     if(InflectionL.X!=0&&InflectionL.Y!=0)    //拐点（车库）在左边
     {
@@ -154,7 +162,8 @@ uint8 CircleIsland_Begin(int LeftLine,int RightLine,Point InflectionL,Point Infl
  **           1：识别到环岛入口且在车身左侧
  **           2：识别到环岛入口且在车身右侧
  ** 作    者: WBN
- ** 注    意：该函数的调用应该在识别到环岛之后开始，并在进入环岛后关闭
+ ** 注    意：该函数的调用应该在识别到环岛之后开始（Flag_CircleBegin==1），
+ **           并在进入环岛后关闭（若返回值为非0，令Flag_CircleBegin=0）
  ********************************************************************************************
  */
 uint8 CircleIsland_In(int LeftLine,int RightLine,Point InflectionL,Point InflectionR)
@@ -167,7 +176,7 @@ uint8 CircleIsland_In(int LeftLine,int RightLine,Point InflectionL,Point Inflect
 
     int row,cloum;              //行,列
     int upline[MT9V03X_W]={0};  //下边界线
-
+    //方法一
     if(InflectionL.X!=0&&InflectionL.Y!=0)    //拐点（环岛入口）在左边
     {
         for(cloum=InflectionL.Y;cloum>0;cloum--)    //从拐点列坐标开始，右往左扫
@@ -194,12 +203,12 @@ uint8 CircleIsland_In(int LeftLine,int RightLine,Point InflectionL,Point Inflect
         {
             left+=upline[cloum];
         }
-        if(left<mid&&right<mid)
+        if(left<mid&&right<mid)     //中间高于左右两边，形成一段弧线
         {
             return 1;
         }
     }
-
+    //方法二
     if(InflectionR.X!=0&&InflectionR.Y!=0)    //拐点（环岛入口）在右边
     {
         if(LostNum_LeftLine<C_LOST1&&LostNum_RightLine>C_LOST2) //左丢线数小于阈值，右丢线数大于阈值
