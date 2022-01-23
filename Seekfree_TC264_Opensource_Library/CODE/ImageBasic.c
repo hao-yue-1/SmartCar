@@ -123,3 +123,60 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
         }
     }
 }
+
+/*
+ ** 函数功能: 根据左右边界线和下拐点来得到上拐点
+ ** 参    数: *LeftLine：  左线数组
+ **           *RightLine：右线数组
+ **           *DownInflectionL: 左下拐点
+ **           *DownInflectionR: 右下拐点
+ **           *UpInflectionL：    左上拐点
+ **           *UpInflectionR：    右上拐点
+ ** 返 回 值: 无
+ ** 说    明: 在一些特殊元素识别或补线中需要用到上拐点，但不是所有元素都要用到的，所以将上拐点分开单独作为一个函数来实现，方便在不同的
+ **           元素识别中进行调用
+ ** 作    者: WBN
+ */
+void GetUpInflection(int *LeftLine,int *RightLine,Point *DownInflectionL,Point *DownInflectionR,Point *UpInflectionL,Point *UpInflectionR)
+{
+    /*
+     ** 上拐点的获取：左边的上拐点在右边界线，右边的上拐点在左边界线；
+     ** 当下拐点出现时，对应的上拐点是一定存在的，只是是否有在摄像头获取的图像中出现的问题；且由于赛道宽度一定，即在最后的图像中，上拐点会
+     ** 出现在对应下拐点往上X行的位置，我们只需要做一个是否数组越界的判断
+     * */
+
+    //左边的上拐点在右边界线
+    if(DownInflectionL->Y+INFLECTION_WIDTH<=MT9V03X_H)
+    {
+        UpInflectionL->X=RightLine[DownInflectionL->Y+INFLECTION_WIDTH];
+        UpInflectionL->Y=DownInflectionL->Y+INFLECTION_WIDTH;
+    }
+    //右边的上拐点在左边界线
+    if(DownInflectionR->Y+INFLECTION_WIDTH<=MT9V03X_H)
+    {
+        UpInflectionR->X=LeftLine[DownInflectionR->Y+INFLECTION_WIDTH];
+        UpInflectionR->Y=DownInflectionR->Y+INFLECTION_WIDTH;
+    }
+
+
+//    int row;    //行
+//    //遍历左线，从左拐点开始扫
+//    for(row=DownInflectionL->Y;row<MT9V03X_H;row++)  //行扫：从下往上扫
+//    {
+//        if()    //左边的上拐点在右线上
+//        {
+//            UpInflectionL->X=RightLine[row];
+//            UpInflectionL->Y=row;
+//        }
+//    }
+//    //遍历右线，从右拐点开始扫
+//    for(row=DownInflectionR->Y;row<MT9V03X_H;row++)  //行扫：从下往上扫
+//    {
+//
+//        if()    //右边的上拐点在左线上
+//        {
+//            UpInflectionR->X=LeftLine[row];
+//            UpInflectionR->Y=row;
+//        }
+//    }
+}

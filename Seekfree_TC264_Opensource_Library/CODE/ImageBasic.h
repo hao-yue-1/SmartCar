@@ -12,7 +12,8 @@
 #include "SEEKFREE_MT9V03X.h"   //为了要uint8这种定义,二值化算法中的某些数学计算,摄像头图像的全局变量
 
 //宏定义
-#define BORDER_BIAS 3
+#define BORDER_BIAS 3   //扫线误差
+#define INFLECTION_WIDTH  10    //拐点赛道宽度
 //全局变量
 extern int Lost_CentreLine;                    //中线丢失的行坐标(扫线到赛道外)
 extern int LostNum_LeftLine,LostNum_RightLine; //记录左右边界丢线数
