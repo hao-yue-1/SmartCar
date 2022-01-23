@@ -4238,3 +4238,117 @@ Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infin
 
 !ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-20 23:11:50.421
 !MESSAGE Include paths were discovered in 73 milliseconds.
+!SESSION 2022-01-21 15:25:40.973 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY org.eclipse.cdt.core 1 0 2022-01-21 15:26:14.128
+!MESSAGE Indexed 'Seekfree_TC264_Opensource_Library' (405 sources, 1,325 headers) in 22.8 sec: 175,123 declarations; 332,655 references; 4 unresolved inclusions; 5,313 syntax errors; 9,735 unresolved names (1.9%)
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-21 15:26:39.899
+!MESSAGE Project was boosted in 4136 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-21 15:26:40.037
+!MESSAGE Include paths were discovered in 135 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-21 15:27:06.290
+!MESSAGE Project was boosted in 2367 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-21 15:27:06.369
+!MESSAGE Include paths were discovered in 76 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-21 17:02:48.937
+!MESSAGE Project was boosted in 2401 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-21 17:02:49.017
+!MESSAGE Include paths were discovered in 77 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-22 01:11:37.393
+!MESSAGE Project was boosted in 2834 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-22 01:11:37.467
+!MESSAGE Include paths were discovered in 72 milliseconds.
+!SESSION 2022-01-22 13:01:51.915 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-22 13:21:43.064
+!MESSAGE Project was boosted in 3140 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-22 13:21:43.241
+!MESSAGE Include paths were discovered in 172 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-22 13:21:52.216
+!MESSAGE Project was boosted in 2098 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-22 13:21:52.287
+!MESSAGE Include paths were discovered in 69 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-22 13:22:02.780
+!MESSAGE Project was boosted in 2096 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-22 13:22:02.844
+!MESSAGE Include paths were discovered in 62 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-22 13:32:27.108
+!MESSAGE Project was boosted in 2064 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-22 13:32:27.165
+!MESSAGE Include paths were discovered in 57 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-22 14:11:59.799
+!MESSAGE Project was boosted in 2082 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-22 14:11:59.852
+!MESSAGE Include paths were discovered in 52 milliseconds.
+!SESSION 2022-01-23 13:13:02.267 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-23 15:10:48.758
+!MESSAGE Project was boosted in 3067 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-23 15:10:48.968
+!MESSAGE Include paths were discovered in 204 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-23 15:11:54.904
+!MESSAGE Project was boosted in 2291 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-23 15:11:54.983
+!MESSAGE Include paths were discovered in 77 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-23 15:15:13.594
+!MESSAGE Project was boosted in 2283 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-23 15:15:13.669
+!MESSAGE Include paths were discovered in 73 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-23 15:18:00.731
+!MESSAGE Project was boosted in 2272 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-23 15:18:00.806
+!MESSAGE Include paths were discovered in 73 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-23 15:44:44.984
+!MESSAGE Project was boosted in 2251 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-23 15:44:45.044
+!MESSAGE Include paths were discovered in 59 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-23 15:45:50.364
+!MESSAGE Project was boosted in 2253 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-23 15:45:50.419
+!MESSAGE Include paths were discovered in 53 milliseconds.
