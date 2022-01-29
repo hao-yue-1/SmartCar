@@ -30,6 +30,7 @@
 #include "Binarization.h"   //二值化处理
 #include "Steer.h"          //舵机控制
 #include "Motor.h"          //电机控制
+#include "ImageBasic.h"     //图像的基础处理
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -40,24 +41,28 @@ int core0_main(void)
 {
 	get_clk();//获取时钟频率  务必保留
 	//用户在此处调用各种初始化函数等
+	//***************************变量定义**************************
+	int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
+    //*****************************************************************
 
 	//***************************交互的初始化**************************
 	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);      //初始化串口0与电脑上位机通讯
-	lcd_init();     //初始化TFT屏幕
+	lcd_init();                                                     //初始化TFT屏幕
+	gpio_init(P20_8, GPO, 0, PUSHPULL);                             //初始化LED：设置P20_8为输出
     //*****************************************************************
 
     //**************************传感器模块初始化**************************
-//	mt9v03x_init(); //初始化摄像头
+	mt9v03x_init(); //初始化摄像头
 	//********************************************************************
 
 	//**************************驱动模块初始化**************************
-	gtm_pwm_init(STEER_PIN, 50, STEER_MID);                         //初始化舵机
-	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);                        //初始化左电机
-	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);
-	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);                       //初始化右电机
-	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);
-	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
-	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
+//	gtm_pwm_init(STEER_PIN, 50, STEER_MID);                         //初始化舵机
+//	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);                        //初始化左电机
+//	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);
+//	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);                       //初始化右电机
+//	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);
+//	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
+//	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
 	//********************************************************************
 
     //等待所有核心初始化完毕
@@ -68,14 +73,45 @@ int core0_main(void)
 	while (TRUE)
 	{
 	    //图像处理模块
-//	    if(mt9v03x_finish_flag)
-//	    {
-//	        ImageBinary();//图像二值化
-//	        //SPI发送图像到1.8TFT
-//	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);
-//
-//            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
-//	    }
+	    if(mt9v03x_finish_flag)
+	    {
+	        ImageBinary();//图像二值化
+	        //SPI发送图像到1.8TFT
+	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
+//	        lcd_displayimage032(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);  //原始灰度图像
+	        //将处理后左中右三线在屏幕上显示
+	        GetImagBasic(LeftLine,CentreLine,RightLine);
+	        for(int i=0;i<MT9V03X_H;i++)
+	        {
+//                lcd_drawpoint(LeftLine[i],i,BLUE);
+//                lcd_drawpoint(CentreLine[i],i,RED);
+//                lcd_drawpoint(RightLine[i],i,GREEN);
+//	            if(CentreLine[i]>159)
+//	            {
+//	                CentreLine[i]=159;
+//	            }
+//	            lcd_drawpoint(CentreLine[i],i,RED);
+	            CentreLine[i]=CentreLine[i]*160/188;
+	            lcd_drawpoint(CentreLine[i],i,RED);
+	            LeftLine[i]=LeftLine[i]*160/188;
+                lcd_drawpoint(LeftLine[i],i,BLUE);
+                RightLine[i]=RightLine[i]*160/188;
+                lcd_drawpoint(RightLine[i],i,GREEN);
+	        }
+
+            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
+	    }
+
+	    gpio_toggle(P20_8);//翻转IO：LED
+
+
+
+
+
+
+
+
+
 	    //电机控制模块
 //	    SteerCtrl(850);
 //	    MotorCtrl(1000,1000);

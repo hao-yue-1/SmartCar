@@ -16,7 +16,8 @@ int LostNum_LeftLine=0,LostNum_RightLine=0; //记录左右边界丢线数
 
 void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
 {
-    int row,cloum;   //行,列
+    int row,cloum;              //行,列
+    uint8 flag_l=0,flag_r=0;    //记录是否丢线flag，flag=0：丢线
     //开始扫线(从下往上,从中间往两边),为了扫线的严谨性,我们做BORDER_BIAS的误差处理，即扫线范围会小于图像大小
     for(row=0;(row-BORDER_BIAS)<MT9V03X_H;row++) //图像的原点在左下角
     {
@@ -26,6 +27,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
             if(BinaryImage[row][cloum]==IMAGE_BLACK && BinaryImage[row][cloum-BORDER_BIAS]==IMAGE_BLACK)  //判断左边界点（BORDER_BIAS防偶然因素）
             {
                 LeftLine[row]=cloum;    //记录左边界点
+                flag_l=1;               //flag做无丢线标记
                 break;
             }
         }
@@ -35,25 +37,29 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
             if(BinaryImage[row][cloum]==IMAGE_BLACK && BinaryImage[row][cloum+BORDER_BIAS]==IMAGE_BLACK)  //判断右边界点（BORDER_BIAS防偶然因素）
             {
                 RightLine[row]=cloum;   //记录右边界点
+                flag_r=1;               //flag做无丢线标记
                 break;
             }
         }
-        //数据处理
+        //1.29晚上重新写的数据处理
+        if(flag_l==0)   //左边界丢线
+        {
+            LeftLine[row]=0;            //左边界点等于图像的左边界
+            LostNum_LeftLine++;         //左丢线数+1
+        }
+        if(flag_r==0)   //右边界丢线
+        {
+            RightLine[row]=MT9V03X_W;   //右边界点等于图像的右边界
+            LostNum_RightLine++;        //右丢线数+1
+        }
         CentreLine[row]=(LeftLine[row]+RightLine[row])/2;   //记录中线点
-        if(LeftLine[row]==0)     //左边界丢线
-            LostNum_LeftLine++;  //左丢线数+1
-        if(RightLine[row]==0)    //右边界丢线
-        {
-            RightLine[row]=MT9V03X_W;//把右边丢线的点直接拉到最右边的值方便找拐点的时候排序
-            LostNum_RightLine++; //右丢线数+1
-        }
         //防止扫线到赛道外
-        if(BinaryImage[row][CentreLine[row]]==IMAGE_BLACK && BinaryImage[row+BORDER_BIAS][CentreLine[row]]==IMAGE_BLACK)    //row行的中线是黑，扫到了赛道外
-        {
-            Lost_CentreLine=row;    //记录中线点丢失的行坐标
-            if(row>20)              //对前20行不做处理
-                break;              //若已经在20行后发现扫描到了赛道外,直接break跳出该图的扫线处理
-        }
+//        if(BinaryImage[row][CentreLine[row]]==IMAGE_BLACK && BinaryImage[row+BORDER_BIAS][CentreLine[row]]==IMAGE_BLACK)    //row行的中线是黑，扫到了赛道外
+//        {
+//            Lost_CentreLine=row;    //记录中线点丢失的行坐标
+//            if(row>20)              //对前20行不做处理
+//                break;              //若已经在20行后发现扫描到了赛道外,直接break跳出该图的扫线处理
+//        }
 
         /*
          ** 参考的代码中都是有专门的数组单独记录每一行是否有丢线情况 这里先不做这样的记录
@@ -61,8 +67,9 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
          ** 不等于0的情况都视为没有丢线
          ** */
 
-
-        Mid=CentreLine[row];      //以上一次的中线值为下一次扫线的中间点
+        Mid=CentreLine[row];    //以上一次的中线值为下一次扫线的中间点
+        flag_l=0;               //左边界丢线flag置0
+        flag_r=0;               //右边界丢线flag置0
     }
 }
 
@@ -140,7 +147,8 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
 void GetUpInflection(int *LeftLine,int *RightLine,Point *DownInflectionL,Point *DownInflectionR,Point *UpInflectionL,Point *UpInflectionR)
 {
     /*
-     ** 上拐点的获取：左边的上拐点在右边界线，右边的上拐点在左边界线；
+     ** 简单粗暴的方法：
+     ** 左边的上拐点在右边界线，右边的上拐点在左边界线；
      ** 当下拐点出现时，对应的上拐点是一定存在的，只是是否有在摄像头获取的图像中出现的问题；且由于赛道宽度一定，即在最后的图像中，上拐点会
      ** 出现在对应下拐点往上X行的位置，我们只需要做一个是否数组越界的判断
      * */
@@ -159,6 +167,10 @@ void GetUpInflection(int *LeftLine,int *RightLine,Point *DownInflectionL,Point *
     }
 
 
+    /*
+         ** 另一种方法：
+         ** 类似寻找下拐点的方法，寻找一个数组值突变的点
+         * */
 //    int row;    //行
 //    //遍历左线，从左拐点开始扫
 //    for(row=DownInflectionL->Y;row<MT9V03X_H;row++)  //行扫：从下往上扫
