@@ -19,26 +19,83 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
     int row,cloum;              //行,列
     uint8 flag_l=0,flag_r=0;    //记录是否丢线flag，flag=0：丢线
     //开始扫线(从下往上,从中间往两边),为了扫线的严谨性,我们做BORDER_BIAS的误差处理，即扫线范围会小于图像大小
-    for(row=0;(row-BORDER_BIAS)<MT9V03X_H;row++) //图像的原点在左下角
+    for(row=MT9V03X_H;row>0;row--) //图像的原点在左上角
     {
-        //左边扫线
-        for(cloum=Mid;(cloum-BORDER_BIAS)>0;cloum--)
+        //下面这个if是为了解决扫线一开始就在赛道外的问题，帮助重新找回赛道
+        if(BinaryImage[row][Mid]==IMAGE_BLACK)  //扫线中点是黑色的（中点在赛道外）
         {
-            if(BinaryImage[row][cloum]==IMAGE_BLACK && BinaryImage[row][cloum-BORDER_BIAS]==IMAGE_BLACK)  //判断左边界点（BORDER_BIAS防偶然因素）
+            //先向左边扫线，寻找右边界点
+            for(cloum=Mid;(cloum-BORDER_BIAS)>0;cloum--)    //向左边扫线
             {
-                LeftLine[row]=cloum;    //记录左边界点
-                flag_l=1;               //flag做无丢线标记
-                break;
+                if(BinaryImage[row][cloum]==IMAGE_WHITE && BinaryImage[row][cloum-BORDER_BIAS]==IMAGE_WHITE)  //判断右边界点（从赛道外扫到赛道内应该是黑变白的过程）
+                {
+                    RightLine[row]=cloum;    //记录右边界点（向左找到的是右边界点）
+                    flag_r=1;               //flag做无丢线标记
+                    break;
+                }
+            }
+            //根据上面扫线的结果判断丢失的赛道是在左边还是右边从而决定继续向哪边扫线
+            if(flag_r==1)   //向左扫线找到了右边界没有丢线（丢失的赛道在左边）
+            {
+                for(;(cloum-BORDER_BIAS)>0;cloum--)    //继续向左边扫线找到真正的左边界
+                {
+                    if(BinaryImage[row][cloum]==IMAGE_BLACK && BinaryImage[row][cloum+BORDER_BIAS]==IMAGE_BLACK)    //判断左边界点（正常情况由白变黑）
+                    {
+                        LeftLine[row]=cloum;   //记录左边界点
+                        flag_l=1;              //flag做无丢线标记
+                        break;
+                    }
+                }
+            }
+            //向左扫线没有找到右边界点，那么向右扫线寻找左边界点
+            else
+            {
+                for(cloum=Mid;(cloum+BORDER_BIAS)<MT9V03X_W;cloum++)    //向右边扫线
+                {
+                    if(BinaryImage[row][cloum]==IMAGE_WHITE && BinaryImage[row][cloum+BORDER_BIAS]==IMAGE_WHITE)  //判断左边界点
+                    {
+                        LeftLine[row]=cloum;   //记录左边界点（向右找到的是左边界点）
+                        flag_l=1;              //flag做无丢线标记
+                        break;
+                    }
+                }
+                if(flag_l==1)   //向右扫线找到了左边界没有丢线（丢失的赛道在右边）
+                {
+                    for(;(cloum+BORDER_BIAS)<MT9V03X_W;cloum++)    //继续向右边扫线，寻找右边界点
+                    {
+                        if(BinaryImage[row][cloum]==IMAGE_BLACK && BinaryImage[row][cloum+BORDER_BIAS]==IMAGE_BLACK)  //判断右边界点
+                        {
+                            RightLine[row]=cloum;   //记录右边界点
+                            flag_r=1;               //flag做无丢线标记
+                            break;
+                        }
+                    }
+                }
             }
         }
-        //右边扫线
-        for(cloum=Mid;(cloum+BORDER_BIAS)<MT9V03X_W;cloum++)
+
+        //这里else里面是之前的扫线内容，如果上面的if成立的话就不执行这里面的内容，避免造成重复扫线覆盖了之前的结果
+        else
         {
-            if(BinaryImage[row][cloum]==IMAGE_BLACK && BinaryImage[row][cloum+BORDER_BIAS]==IMAGE_BLACK)  //判断右边界点（BORDER_BIAS防偶然因素）
+            //左边扫线
+            for(cloum=Mid;(cloum-BORDER_BIAS)>0;cloum--)
             {
-                RightLine[row]=cloum;   //记录右边界点
-                flag_r=1;               //flag做无丢线标记
-                break;
+                if(BinaryImage[row][cloum]==IMAGE_BLACK && BinaryImage[row][cloum-BORDER_BIAS]==IMAGE_BLACK)  //判断左边界点（BORDER_BIAS防偶然因素）
+                {
+                    LeftLine[row]=cloum;    //记录左边界点
+                    flag_l=1;               //flag做无丢线标记
+                    break;
+                }
+            }
+            //右边扫线
+            for(cloum=Mid;(cloum+BORDER_BIAS)<MT9V03X_W;cloum++)
+            {
+                if(BinaryImage[row][cloum]==IMAGE_BLACK && BinaryImage[row][cloum+BORDER_BIAS]==IMAGE_BLACK)  //判断右边界点（BORDER_BIAS防偶然因素）
+                {
+                    RightLine[row]=cloum;   //记录右边界点
+                    flag_r=1;               //flag做无丢线标记
+                    break;
+                }
             }
         }
         //1.29晚上重新写的数据处理
@@ -53,6 +110,12 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
             LostNum_RightLine++;        //右丢线数+1
         }
         CentreLine[row]=(LeftLine[row]+RightLine[row])/2;   //记录中线点
+
+        //LCD调试
+        CentreLine[row]=CentreLine[row]*160/188;
+        lcd_drawpoint(CentreLine[row],row,RED);     //将中线点显示在LCD上，显示效果是从下往上的
+        systick_delay_ms(STM0, 10);
+
         //防止扫线到赛道外
 //        if(BinaryImage[row][CentreLine[row]]==IMAGE_BLACK && BinaryImage[row+BORDER_BIAS][CentreLine[row]]==IMAGE_BLACK)    //row行的中线是黑，扫到了赛道外
 //        {
@@ -67,7 +130,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
          ** 不等于0的情况都视为没有丢线
          ** */
 
-        Mid=CentreLine[row];    //以上一次的中线值为下一次扫线的中间点
+        Mid=CentreLine[row];    //以上一次的中线值为下一次扫线的中间点，若上一次的中线值刚好在边缘上，下一次的扫线会出现中线全跑到中线的情况
         flag_l=0;               //左边界丢线flag置0
         flag_r=0;               //右边界丢线flag置0
     }

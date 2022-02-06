@@ -10,6 +10,8 @@
 
 #include "Binarization.h"       //二值化之后的图像数组
 #include "SEEKFREE_MT9V03X.h"   //为了要uint8这种定义,二值化算法中的某些数学计算,摄像头图像的全局变量
+#include "SEEKFREE_18TFT.h"     //使用LCD调试
+#include "zf_stm_systick.h"     //使用延时函数
 
 //宏定义
 #define BORDER_BIAS 0   //扫线误差

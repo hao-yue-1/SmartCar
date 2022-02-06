@@ -5009,3 +5009,370 @@ Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infin
 
 !ENTRY com.infineon.aurix.buildsystem 1 0 2022-01-30 00:13:08.479
 !MESSAGE Include paths were discovered in 60 milliseconds.
+!SESSION 2022-02-06 17:01:15.048 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:31:15.745
+!MESSAGE Project was boosted in 3644 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:31:15.875
+!MESSAGE Include paths were discovered in 126 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:32:42.052
+!MESSAGE Project was boosted in 2281 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:32:42.142
+!MESSAGE Include paths were discovered in 90 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:32:50.472
+!MESSAGE Project was boosted in 2266 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:32:50.573
+!MESSAGE Include paths were discovered in 102 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:33:19.889
+!MESSAGE Project was boosted in 2274 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:33:19.969
+!MESSAGE Include paths were discovered in 74 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:33:52.992
+!MESSAGE Project was boosted in 2286 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:33:53.072
+!MESSAGE Include paths were discovered in 82 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:34:07.802
+!MESSAGE Project was boosted in 2275 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:34:07.882
+!MESSAGE Include paths were discovered in 78 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:34:19.509
+!MESSAGE Project was boosted in 2260 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:34:19.581
+!MESSAGE Include paths were discovered in 70 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:34:31.541
+!MESSAGE Project was boosted in 2212 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:34:31.611
+!MESSAGE Include paths were discovered in 65 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:35:00.058
+!MESSAGE Project was boosted in 2273 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:35:00.138
+!MESSAGE Include paths were discovered in 78 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:35:42.097
+!MESSAGE Project was boosted in 2256 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:35:42.156
+!MESSAGE Include paths were discovered in 63 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:48:54.075
+!MESSAGE Project was boosted in 2272 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:48:54.145
+!MESSAGE Include paths were discovered in 66 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:49:12.981
+!MESSAGE Project was boosted in 2247 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:49:13.042
+!MESSAGE Include paths were discovered in 62 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:49:31.441
+!MESSAGE Project was boosted in 2271 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:49:31.511
+!MESSAGE Include paths were discovered in 67 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:49:54.700
+!MESSAGE Project was boosted in 2279 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:49:54.770
+!MESSAGE Include paths were discovered in 62 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:50:06.855
+!MESSAGE Project was boosted in 2262 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:50:06.915
+!MESSAGE Include paths were discovered in 63 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:51:31.177
+!MESSAGE Project was boosted in 2282 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:51:31.247
+!MESSAGE Include paths were discovered in 64 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:57:38.585
+!MESSAGE Project was boosted in 2251 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 17:57:38.655
+!MESSAGE Include paths were discovered in 66 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:49:38.752
+!MESSAGE Project was boosted in 2286 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:49:38.812
+!MESSAGE Include paths were discovered in 59 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:50:13.724
+!MESSAGE Project was boosted in 2303 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:50:13.784
+!MESSAGE Include paths were discovered in 62 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:50:59.369
+!MESSAGE Project was boosted in 2332 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:50:59.439
+!MESSAGE Include paths were discovered in 68 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:51:11.056
+!MESSAGE Project was boosted in 2257 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:51:11.116
+!MESSAGE Include paths were discovered in 61 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:51:24.983
+!MESSAGE Project was boosted in 2254 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:51:25.043
+!MESSAGE Include paths were discovered in 60 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:59:36.067
+!MESSAGE Project was boosted in 2251 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:59:36.147
+!MESSAGE Include paths were discovered in 79 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:59:49.028
+!MESSAGE Project was boosted in 2233 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 19:59:49.088
+!MESSAGE Include paths were discovered in 61 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:01:25.276
+!MESSAGE Project was boosted in 2293 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:01:25.346
+!MESSAGE Include paths were discovered in 62 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:01:36.719
+!MESSAGE Project was boosted in 2222 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:01:36.779
+!MESSAGE Include paths were discovered in 60 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:01:56.874
+!MESSAGE Project was boosted in 2258 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:01:56.934
+!MESSAGE Include paths were discovered in 58 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:02:08.379
+!MESSAGE Project was boosted in 2222 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:02:08.441
+!MESSAGE Include paths were discovered in 66 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:22:31.800
+!MESSAGE Project was boosted in 2291 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:22:31.860
+!MESSAGE Include paths were discovered in 62 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:22:46.459
+!MESSAGE Project was boosted in 2230 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:22:46.529
+!MESSAGE Include paths were discovered in 64 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:24:06.869
+!MESSAGE Project was boosted in 2286 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:24:06.929
+!MESSAGE Include paths were discovered in 61 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:25:05.650
+!MESSAGE Project was boosted in 2261 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:25:05.720
+!MESSAGE Include paths were discovered in 69 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:26:45.941
+!MESSAGE Project was boosted in 2329 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:26:46.002
+!MESSAGE Include paths were discovered in 60 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:28:33.200
+!MESSAGE Project was boosted in 2295 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:28:33.260
+!MESSAGE Include paths were discovered in 62 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:28:44.313
+!MESSAGE Project was boosted in 2256 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:28:44.373
+!MESSAGE Include paths were discovered in 61 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:31:05.444
+!MESSAGE Project was boosted in 2308 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:31:05.514
+!MESSAGE Include paths were discovered in 62 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:31:17.158
+!MESSAGE Project was boosted in 2291 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:31:17.228
+!MESSAGE Include paths were discovered in 63 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:31:29.232
+!MESSAGE Project was boosted in 2260 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:31:29.292
+!MESSAGE Include paths were discovered in 61 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:31:41.230
+!MESSAGE Project was boosted in 2323 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:31:41.290
+!MESSAGE Include paths were discovered in 61 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:31:57.886
+!MESSAGE Project was boosted in 2266 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:31:57.946
+!MESSAGE Include paths were discovered in 61 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:32:49.149
+!MESSAGE Project was boosted in 2324 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:32:49.209
+!MESSAGE Include paths were discovered in 58 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:33:00.445
+!MESSAGE Project was boosted in 2248 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:33:00.515
+!MESSAGE Include paths were discovered in 62 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:46:06.216
+!MESSAGE Project was boosted in 2287 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:46:06.296
+!MESSAGE Include paths were discovered in 80 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:47:47.631
+!MESSAGE Project was boosted in 2250 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:47:47.691
+!MESSAGE Include paths were discovered in 57 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:48:00.090
+!MESSAGE Project was boosted in 2253 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:48:00.150
+!MESSAGE Include paths were discovered in 56 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:49:39.588
+!MESSAGE Project was boosted in 2267 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:49:39.648
+!MESSAGE Include paths were discovered in 63 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:50:29.276
+!MESSAGE Project was boosted in 2204 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 20:50:29.336
+!MESSAGE Include paths were discovered in 61 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:09:54.232
+!MESSAGE Project was boosted in 2235 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:09:54.292
+!MESSAGE Include paths were discovered in 58 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:10:11.759
+!MESSAGE Project was boosted in 2233 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:10:11.819
+!MESSAGE Include paths were discovered in 57 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:13:21.827
+!MESSAGE Project was boosted in 2240 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:13:21.887
+!MESSAGE Include paths were discovered in 60 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:13:33.336
+!MESSAGE Project was boosted in 2201 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:13:33.396
+!MESSAGE Include paths were discovered in 57 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:14:52.830
+!MESSAGE Project was boosted in 2248 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:14:52.890
+!MESSAGE Include paths were discovered in 61 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:15:03.726
+!MESSAGE Project was boosted in 2199 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:15:03.785
+!MESSAGE Include paths were discovered in 58 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:18:25.579
+!MESSAGE Project was boosted in 2236 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:18:25.629
+!MESSAGE Include paths were discovered in 57 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:18:36.659
+!MESSAGE Project was boosted in 2221 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:18:36.719
+!MESSAGE Include paths were discovered in 59 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:20:45.234
+!MESSAGE Project was boosted in 2262 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:20:45.294
+!MESSAGE Include paths were discovered in 60 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:21:05.973
+!MESSAGE Project was boosted in 2250 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:21:06.033
+!MESSAGE Include paths were discovered in 57 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:22:04.340
+!MESSAGE Project was boosted in 2225 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:22:04.400
+!MESSAGE Include paths were discovered in 59 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:22:14.614
+!MESSAGE Project was boosted in 2202 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:22:14.674
+!MESSAGE Include paths were discovered in 62 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:41:35.099
+!MESSAGE Project was boosted in 2255 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-06 21:41:35.169
+!MESSAGE Include paths were discovered in 66 milliseconds.

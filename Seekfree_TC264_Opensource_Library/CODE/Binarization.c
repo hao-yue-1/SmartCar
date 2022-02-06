@@ -59,15 +59,17 @@ uint8 otsuThreshold(uint8 *image, uint16 width, uint16 height)
 void ImageBinary()
 {
     uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);
-    //数组中第一维这样处理是为了将图像原点变为左下角（原图像数组为左上角）
+
     for (int i = 0; i < MT9V03X_H; ++i)
     {
         for (int j = 0; j < MT9V03X_W; ++j)
         {
             if (mt9v03x_image[i][j] <= Image_Threshold)//进行二值化之前只是得到阈值
-                BinaryImage[MT9V03X_H - 1 - i][j] = IMAGE_BLACK;//0是黑色
+//                BinaryImage[MT9V03X_H - 1 - i][j] = IMAGE_BLACK;//0是黑色    //图像原点变为左下角
+                BinaryImage[i][j] = IMAGE_BLACK;//0是黑色  //图像原点不变
             else
-                BinaryImage[MT9V03X_H - 1 - i][j] = IMAGE_WHITE;//1是白色
+//                BinaryImage[MT9V03X_H - 1 - i][j] = IMAGE_WHITE;//1是白色    //图像原点变为左下角
+                BinaryImage[i][j] = IMAGE_WHITE;//1是白色  //图像原点不变
         }
     }
 }
