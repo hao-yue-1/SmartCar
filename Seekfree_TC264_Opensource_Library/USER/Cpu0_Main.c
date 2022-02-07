@@ -31,6 +31,7 @@
 #include "Steer.h"          //舵机控制
 #include "Motor.h"          //电机控制
 #include "ImageBasic.h"     //图像的基础处理
+#include "ImageSpecial.h"   //图像特殊元素处理
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -48,10 +49,10 @@ int core0_main(void)
 	//***************************交互的初始化**************************
 	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);      //初始化串口0与电脑上位机通讯
 	lcd_init();                                                     //初始化TFT屏幕
-	gpio_init(P20_8, GPO, 0, PUSHPULL);                             //初始化LED：设置P20_8为输出
-	gpio_init(P20_9, GPO, 0, PUSHPULL);
-    gpio_init(P21_4, GPO, 0, PUSHPULL);
-    gpio_init(P21_5, GPO, 0, PUSHPULL);
+	gpio_init(P20_8, GPO, 1, PUSHPULL);                             //初始化LED：设置P20_8为输出
+	gpio_init(P20_9, GPO, 1, PUSHPULL);
+    gpio_init(P21_4, GPO, 1, PUSHPULL);
+    gpio_init(P21_5, GPO, 1, PUSHPULL);
     //*****************************************************************
 
     //**************************传感器模块初始化**************************
@@ -84,20 +85,20 @@ int core0_main(void)
 //	        lcd_displayimage032(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);  //原始灰度图像
 	        //将处理后左中右三线在屏幕上显示
 	        GetImagBasic(LeftLine,CentreLine,RightLine);
-////	        for(int i=0;i<MT9V03X_H;i++)    //LCD上的线从上往下画
-//	        for(int i=MT9V03X_H;i>0;i--)    //LCD上的线从下往上画
+	        for(int i=MT9V03X_H;i>0;i--)    //LCD上的线从下往上画
+	        {
+	            CentreLine[i]=CentreLine[i]*160/188;
+	            lcd_drawpoint(CentreLine[i],i,RED); //中红
+//	            LeftLine[i]=LeftLine[i]*160/188;
+//                lcd_drawpoint(LeftLine[i],i,BLUE);  //左蓝
+//                RightLine[i]=RightLine[i]*160/188;
+//                lcd_drawpoint(RightLine[i],i,GREEN);//右绿
+                systick_delay_ms(STM0, 10);
+	        }
+//	        if(StartLineFlag(LeftLine,RightLine)==1)
 //	        {
-//	            CentreLine[i]=CentreLine[i]*160/188;
-//	            lcd_drawpoint(CentreLine[i],i,RED);
-//	            systick_delay_ms(STM0, 10);
-////	            LeftLine[i]=LeftLine[i]*160/188;
-////                lcd_drawpoint(LeftLine[i],i,BLUE);
-////                RightLine[i]=RightLine[i]*160/188;
-////                lcd_drawpoint(RightLine[i],i,GREEN);
+//	            gpio_set(P20_9,0);
 //	        }
-
-
-
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
 	    }
 

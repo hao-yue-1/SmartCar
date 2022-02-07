@@ -1,13 +1,12 @@
-21:41:37 **** Incremental Build of configuration Debug for project Seekfree_TC264_Opensource_Library ****
-make --output-sync -j8 all 
-TASKING VX-toolset for AURIX Development Studio (non-commercial): ELF size v1.1r7 Build 21033142
-Invoking: Print Size
-elfsize  "Seekfree_TC264_Opensource_Library.elf"
-Total sizes:
-ROM: 0x10a62 (68194) = code: 0x99bc (39356) + romdata: 0x70a6 (28838)
-RAM: 0x1179f (71583) = data + bss
-Finished building: Seekfree_TC264_Opensource_Library.siz
- 
-
-21:41:39 Build Finished. 0 errors, 0 warnings. (took 2s.467ms)
-
+Aurix Flasher 2.2.1.0, built on 2020/10/2 15:20:38
+Given Command Lines Parameters: 
+    Arg[0-1] = [-hex seekfree_tc264_opensource_library.hex]
+DAS init done
+::Creating Flash Memory Model for TRICORE: TC26x B step
+::HEX file parsing .......... (Done)
+::Checking address map .......... (Done)
+::Flash memory erase .......... (Done)
+::Flash memory program .......... (Done)
+Overall time: 1333 ms
+AurixFlasher Exit Status: pass
+Flashing was successfull

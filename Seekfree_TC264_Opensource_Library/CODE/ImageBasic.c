@@ -73,8 +73,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
                 }
             }
         }
-
-        //这里else里面是之前的扫线内容，如果上面的if成立的话就不执行这里面的内容，避免造成重复扫线覆盖了之前的结果
+        //在赛道中上，正常扫线
         else
         {
             //左边扫线
@@ -111,24 +110,18 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
         }
         CentreLine[row]=(LeftLine[row]+RightLine[row])/2;   //记录中线点
 
-        //LCD调试
-        CentreLine[row]=CentreLine[row]*160/188;
-        lcd_drawpoint(CentreLine[row],row,RED);     //将中线点显示在LCD上，显示效果是从下往上的
-        systick_delay_ms(STM0, 10);
+//        //LCD调试
+//        CentreLine[row]=CentreLine[row]*160/188;
+//        lcd_drawpoint(CentreLine[row],row,RED);     //将中线点显示在LCD上，显示效果是从下往上的
+//        systick_delay_ms(STM0, 10);
 
-        //防止扫线到赛道外
+//        //防止扫线到赛道外，这个方案不行
 //        if(BinaryImage[row][CentreLine[row]]==IMAGE_BLACK && BinaryImage[row+BORDER_BIAS][CentreLine[row]]==IMAGE_BLACK)    //row行的中线是黑，扫到了赛道外
 //        {
 //            Lost_CentreLine=row;    //记录中线点丢失的行坐标
 //            if(row>20)              //对前20行不做处理
 //                break;              //若已经在20行后发现扫描到了赛道外,直接break跳出该图的扫线处理
 //        }
-
-        /*
-         ** 参考的代码中都是有专门的数组单独记录每一行是否有丢线情况 这里先不做这样的记录
-         ** 默认丢线情况下LeftLine[]==0
-         ** 不等于0的情况都视为没有丢线
-         ** */
 
         Mid=CentreLine[row];    //以上一次的中线值为下一次扫线的中间点，若上一次的中线值刚好在边缘上，下一次的扫线会出现中线全跑到中线的情况
         flag_l=0;               //左边界丢线flag置0
