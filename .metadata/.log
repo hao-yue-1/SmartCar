@@ -5527,3 +5527,32 @@ Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infin
 
 !ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-07 22:21:43.371
 !MESSAGE Include paths were discovered in 62 milliseconds.
+!SESSION 2022-02-21 23:35:37.741 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-21 23:36:08.003
+!MESSAGE Project index is not complete, and cannot be used for boosting.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-21 23:36:08.006
+!MESSAGE Project was boosted in 7 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-21 23:36:08.254
+!MESSAGE Include paths were discovered in 241 milliseconds.
+!SESSION 2022-02-21 23:38:14.979 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-21 23:44:58.974
+!MESSAGE Project was boosted in 2772 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-21 23:44:59.117
+!MESSAGE Include paths were discovered in 139 milliseconds.

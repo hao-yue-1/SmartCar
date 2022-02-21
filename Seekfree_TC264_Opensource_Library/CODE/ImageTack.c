@@ -16,6 +16,7 @@
  ** 返 回 值: 拟合出来的回归方程的斜率的倒数
  ** 作    者: LJF
  ** 注    意：因为偏差是int类型的所以return的时候如果是偏差小于45度也就是斜率小于1的时候可能会因为精度确实造成是0
+ **           对于图像数组原点不在左下角，此时图像会上下颠倒但是并不影响我们与y轴的角度，可以画图看一下，然后再倒转本子发现和y轴的夹角是相同的
  ********************************************************************************************
  */
 float Regression_Slope(int startline,int endline,int *CentreLine)
@@ -38,8 +39,8 @@ float Regression_Slope(int startline,int endline,int *CentreLine)
         SumUp+=(CentreLine[i]-avrX)*(i-avrY);//分子
         SumDown+=(CentreLine[i]-avrX)*(CentreLine[i]-avrX);//分母
     }
-    if(SumDown==0)//斜率不存在的时候所以偏差是0
-        Bias=0;
+    if(SumUp==0)//分子为0时即直线与x轴平行，所以此时Bias的分母为0需要做处理
+        Bias=57.3;//tan89°为57.2899
     else
         //B=(int)(SumUp/SumDown);斜率
         Bias=SumDown/SumUp;//我们要的是与Y轴的夹角所以是斜率的倒数正负代表方向
