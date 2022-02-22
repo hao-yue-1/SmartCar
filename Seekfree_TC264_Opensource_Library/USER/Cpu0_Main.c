@@ -44,7 +44,9 @@ int core0_main(void)
 	//用户在此处调用各种初始化函数等
 	//***************************变量定义**************************
 	int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
-    //*****************************************************************
+	Point LeftDownPoint,RightDownPoint;
+	LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;
+	//*****************************************************************
 
 	//***************************交互的初始化**************************
 	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);      //初始化串口0与电脑上位机通讯
@@ -95,10 +97,7 @@ int core0_main(void)
 //                lcd_drawpoint(RightLine[i],i,GREEN);//右绿
                 systick_delay_ms(STM0, 10);
 	        }
-//	        if(StartLineFlag(LeftLine,RightLine)==1)
-//	        {
-//	            gpio_set(P20_9,0);
-//	        }
+
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
 	    }
 

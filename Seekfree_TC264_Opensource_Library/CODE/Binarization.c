@@ -54,21 +54,83 @@ uint8 otsuThreshold(uint8 *image, uint16 width, uint16 height)
 
     return threshold;
 }
+/***************************************************************************
+ ** 函数功能: 谷底最小值二值化算法
+ ** 参    数: uint16 width : 图像宽度
+ **           uint16 height: 图像高度
+ ** 返 回 值: 二值化阈值
+ ** 作    者: 师兄
+ ** 注    意：运用了摄像头采集的灰度图像的全局变量
+ *************************************************************************/
+uint8 GuDiThreshold(uint16 width, uint16 height)     //计算二值化阈值：谷底最小值
+{
+    uint16 graynum[256] = {0};
+    for (int i = 0; i < height; ++i)
+    {
+        for (int j = 0; j < width; ++j)
+        {
+            uint8 pix = mt9v03x_image[i][j];
+            graynum[pix]++;
+        }
+    }
+    uint8 Max[2] = {0};
+    uint8 index[2] = {0};
+    for (int i = 0; i < 2; ++i)
+    {
+        for (uint16 j = 0; j < 256; ++j)
+        {
+            if (i == 0)
+            {
+                if (graynum[j] > Max[i])
+                {
+                    Max[i] = graynum[j];
+                    index[i] = j;
+                }
+            }
+            else
+            {
+                if (graynum[j] > Max[i] && graynum[j] != Max[0])
+                {
+                    Max[i] = graynum[j];
+                    index[i] = j;
+                }
+            }
+        }
+    }
+    if (index[0] > index[1])
+    {
+        uint8 temp = 0;
+        temp = index[0];
+        index[0] = index[1];
+        index[1] = temp;
+    }
+
+    uint8 Min = 255, index_Min = 0;
+    for (uint8 i = index[0]; i < index[1]; ++i)
+    {
+        if (graynum[i] < Min)
+        {
+            Min = graynum[i];
+            index_Min = i;
+        }
+    }
+
+    return index_Min;
+}
 
 //根据场地条件调用大津法或谷底最小值得到二值化阈值然后根据灰度图得到黑白图像
 void ImageBinary()
 {
-    uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);
+    uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);//使用大津法得到二值化阈值
+    //uint8 Image_Threshold = GuDiThreshold(MT9V03X_W,MT9V03X_H);//使用谷底最小值得到二值化阈值
 
     for (int i = 0; i < MT9V03X_H; ++i)
     {
         for (int j = 0; j < MT9V03X_W; ++j)
         {
             if (mt9v03x_image[i][j] <= Image_Threshold)//进行二值化之前只是得到阈值
-//                BinaryImage[MT9V03X_H - 1 - i][j] = IMAGE_BLACK;//0是黑色    //图像原点变为左下角
                 BinaryImage[i][j] = IMAGE_BLACK;//0是黑色  //图像原点不变
             else
-//                BinaryImage[MT9V03X_H - 1 - i][j] = IMAGE_WHITE;//1是白色    //图像原点变为左下角
                 BinaryImage[i][j] = IMAGE_WHITE;//1是白色  //图像原点不变
         }
     }
