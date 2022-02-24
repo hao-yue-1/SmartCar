@@ -92,11 +92,17 @@ int core0_main(void)
 	            CentreLine[i]=CentreLine[i]*160/188;
 	            lcd_drawpoint(CentreLine[i],i,RED); //中红
 //	            LeftLine[i]=LeftLine[i]*160/188;
-//                lcd_drawpoint(LeftLine[i],i,BLUE);  //左蓝
+//                lcd_drawpoint(LeftLine[i],i,GREEN);  //左蓝
 //                RightLine[i]=RightLine[i]*160/188;
 //                lcd_drawpoint(RightLine[i],i,GREEN);//右绿
                 systick_delay_ms(STM0, 10);
 	        }
+	        GetDownInflection(110,60,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
+	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y,GREEN);
+	        lcd_drawpoint((LeftDownPoint.X+1)*160/188,LeftDownPoint.Y,GREEN);
+	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y+1,GREEN);
+	        lcd_drawpoint((LeftDownPoint.X-1)*160/188,LeftDownPoint.Y,GREEN);
+	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y-1,GREEN);
 
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
 	    }
