@@ -15,8 +15,9 @@
  **           int *CentreLine：中线数组
  ** 返 回 值: 拟合出来的回归方程的斜率的倒数
  ** 作    者: LJF
- ** 注    意：因为偏差是int类型的所以return的时候如果是偏差小于45度也就是斜率小于1的时候可能会因为精度确实造成是0
- **           对于图像数组原点不在左下角，此时图像会上下颠倒但是并不影响我们与y轴的角度，可以画图看一下，然后再倒转本子发现和y轴的夹角是相同的
+ ** 注    意： - 因为偏差是int类型的所以return的时候如果是偏差小于45度也就是斜率小于1的时候可能会因为精度确实造成是0
+ **           - 图像原点在左上方，所以我们进行公式运算的时候把图像模拟到第四象限，所以进行Y的运算的时候加个负号
+ **           - startline>endline
  ********************************************************************************************
  */
 float Regression_Slope(int startline,int endline,int *CentreLine)
@@ -24,19 +25,19 @@ float Regression_Slope(int startline,int endline,int *CentreLine)
     //Y=BX+A
     int i=0,SumX=0,SumY=0,SumLines=0;
     float SumUp=0,SumDown=0,avrX=0,avrY=0,Bias=0;
-    SumLines=endline-startline;   // startline 为开始行， //endline 结束行 //SumLines
+    SumLines=startline-endline;   // startline 为开始行， //endline 结束行 //SumLines
 
-    for(i=startline;i<endline;i++)
+    for(i=startline;i>endline;i--)
     {
-        SumY+=i;                      //Y行数进行求和
+        SumY-=i;                      //Y行数进行求和
         SumX+=CentreLine[i];         //X列数进行求和
     }
     avrX=(float)(SumX/SumLines);     //X的平均值
     avrY=(float)(SumY/SumLines);     //Y的平均值
 
-    for(i=startline;i<endline;i++)
+    for(i=startline;i>endline;i--)
     {
-        SumUp+=(CentreLine[i]-avrX)*(i-avrY);//分子
+        SumUp+=(CentreLine[i]-avrX)*(-i-avrY);//分子
         SumDown+=(CentreLine[i]-avrX)*(CentreLine[i]-avrX);//分母
     }
     if(SumUp==0)//分子为0时即直线与x轴平行，所以此时Bias的分母为0需要做处理
