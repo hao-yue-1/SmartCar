@@ -138,14 +138,15 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
  **           Point *InflectionL: 左边拐点
  **           Point *InflectionR: 右边拐点
  ** 返 回 值: 无
- ** 说    明: 用指针带入进来函数，最后得到的点可以两点确定直线进行补线
+ ** 说    明: - 用指针带入进来函数，最后得到的点可以两点确定直线进行补线
+ **           - 由于图像原点在左上角，所以起始行是大于结束行，左右线数组从下往上遍历
  ** 作    者: LJF
  */
 void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR)
 {
     int i;
 
-    for(i=startline;i<endline;i++)
+    for(i=startline;i>endline;i--)
     {
         //遍历左线，求出先变小大后变小的点，多加三个点的判断是为了误判，左边丢线为0
         if(LeftLine[i]>LeftLine[i-1] && LeftLine[i]>LeftLine[i-3] && LeftLine[i]>LeftLine[i+1] && LeftLine[i]>LeftLine[i+3])
