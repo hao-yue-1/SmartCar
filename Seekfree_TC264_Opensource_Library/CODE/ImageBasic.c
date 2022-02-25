@@ -154,15 +154,18 @@ void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Po
         {
             InflectionL->X=LeftLine[i];//存入拐点的（x,y）坐标
             InflectionL->Y=i;
-            /*打印被判断为拐点的列坐标，用于调试
-            lcd_showint32(0,6,InflectionL->X,3);
-            systick_delay_ms(STM0, 1000);*/
+            /*打印被判断为拐点的列坐标，用于调试*/
+//            lcd_showint32(0,6,InflectionL->X,3);
+//            systick_delay_ms(STM0, 1000);
         }
         //遍历右线，求出列数最小的点就是右边的拐点，右边线丢线为MT9V03X_W
         if(RightLine[i]<RightLine[i-3] && RightLine[i]<RightLine[i-5] && RightLine[i]<RightLine[i+3] && RightLine[i]<RightLine[i+5])
         {
             InflectionR->X=RightLine[i];//存入拐点的（x,y）坐标
             InflectionR->Y=i;
+            /*打印被判断为拐点的列坐标，用于调试*/
+//            lcd_showint32(TFT_X_MAX-50,6,InflectionR->X,3);
+//            systick_delay_ms(STM0, 1000);
         }
         /*打印被判断为拐点的列坐标，用于调试
         lcd_showint32(0,0,LeftLine[i],3);
@@ -185,12 +188,17 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
     UpInflectionC->X=(DownInflectionL.X+DownInflectionR.X)/2;//V型上拐点的列坐标为左右拐点均值，需要修改，不一定是正入三岔
     starline=(DownInflectionL.Y+DownInflectionR.Y)/2;//起始行为左右拐点行的均值
     //从下往上找到那个跳变的点即为上拐点
-    for(i=starline;i<MT9V03X_H;i++)
+    for(i=starline;i>0;i--)
     {
         //图像数组是[高][宽]
-        if(BinaryImage[i][UpInflectionC->X]==IMAGE_WHITE&&BinaryImage[i+1][UpInflectionC->X]==IMAGE_BLACK)
+        if(BinaryImage[i][UpInflectionC->X]==IMAGE_WHITE && BinaryImage[i-1][UpInflectionC->X]==IMAGE_BLACK)
         {
             UpInflectionC->Y=i;//Y坐标是行数
+            /*打印上拐点坐标，用于测试*/
+//            lcd_showint32(0,0,UpInflectionC->Y,3);
+//            lcd_showint32(TFT_X_MAX-50,0,UpInflectionC->X,3);
+//            systick_delay_ms(STM0, 1000);
+            return;
         }
     }
 }

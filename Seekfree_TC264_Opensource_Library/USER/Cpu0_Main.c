@@ -32,6 +32,7 @@
 #include "Motor.h"          //电机控制
 #include "ImageBasic.h"     //图像的基础处理
 #include "ImageSpecial.h"   //图像特殊元素处理
+#include "ImageTack.h"      //循迹误差计算
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -46,6 +47,9 @@ int core0_main(void)
 	int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 	Point LeftDownPoint,RightDownPoint;
 	LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;
+	Point ForkUpPoint;
+	ForkUpPoint.X=0;ForkUpPoint.Y=0;
+	float Bias=0;
 	//*****************************************************************
 
 	//***************************交互的初始化**************************
@@ -85,7 +89,7 @@ int core0_main(void)
 	        //SPI发送图像到1.8TFT
 	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
 //	        lcd_displayimage032(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);  //原始灰度图像
-	        //将处理后左中右三线在屏幕上显示
+	        /*扫线函数测试*/
 	        GetImagBasic(LeftLine,CentreLine,RightLine);
 	        for(int i=MT9V03X_H;i>0;i--)    //LCD上的线从下往上画
 	        {
@@ -97,12 +101,27 @@ int core0_main(void)
 //                lcd_drawpoint(RightLine[i],i,GREEN);//右绿
                 systick_delay_ms(STM0, 10);
 	        }
+
+	        /*斜率函数测试*/
+//	        Bias=Regression_Slope(110,50,CentreLine);
+//	        lcd_showfloat(0,0,Bias,2,3);
+//	        systick_delay_ms(STM0, 1000);
+
+	        /*左右下拐点函数测试*/
 	        GetDownInflection(110,60,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
-	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y,GREEN);
-	        lcd_drawpoint((LeftDownPoint.X+1)*160/188,LeftDownPoint.Y,GREEN);
-	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y+1,GREEN);
-	        lcd_drawpoint((LeftDownPoint.X-1)*160/188,LeftDownPoint.Y,GREEN);
-	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y-1,GREEN);
+//	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y,GREEN);
+//	        lcd_drawpoint((LeftDownPoint.X+1)*160/188,LeftDownPoint.Y,GREEN);
+//	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y+1,GREEN);
+//	        lcd_drawpoint((LeftDownPoint.X-1)*160/188,LeftDownPoint.Y,GREEN);
+//	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y-1,GREEN);
+
+	        /*三岔上拐点函数测试*/
+	        GetForkUpInflection(LeftDownPoint,RightDownPoint,&ForkUpPoint);
+	        lcd_drawpoint(ForkUpPoint.X*160/188,ForkUpPoint.Y,GREEN);
+            lcd_drawpoint((ForkUpPoint.X+1)*160/188,ForkUpPoint.Y,GREEN);
+            lcd_drawpoint(ForkUpPoint.X*160/188,ForkUpPoint.Y+1,GREEN);
+            lcd_drawpoint((ForkUpPoint.X-1)*160/188,ForkUpPoint.Y,GREEN);
+            lcd_drawpoint(ForkUpPoint.X*160/188,ForkUpPoint.Y-1,GREEN);
 
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
 	    }

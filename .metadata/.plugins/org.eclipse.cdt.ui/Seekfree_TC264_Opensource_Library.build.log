@@ -1,2 +1,0 @@
-23:11:32 **** Incremental Build of configuration Debug for project Seekfree_TC264_Opensource_Library ****
-make --output-sync -j8 all 
