@@ -99,7 +99,6 @@ int core0_main(void)
 //                lcd_drawpoint(LeftLine[i],i,GREEN);  //左蓝
 //                RightLine[i]=RightLine[i]*160/188;
 //                lcd_drawpoint(RightLine[i],i,GREEN);//右绿
-                systick_delay_ms(STM0, 10);
 	        }
 
 	        /*斜率函数测试*/
@@ -109,19 +108,15 @@ int core0_main(void)
 
 	        /*左右下拐点函数测试*/
 	        GetDownInflection(110,60,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
-//	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y,GREEN);
-//	        lcd_drawpoint((LeftDownPoint.X+1)*160/188,LeftDownPoint.Y,GREEN);
-//	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y+1,GREEN);
-//	        lcd_drawpoint((LeftDownPoint.X-1)*160/188,LeftDownPoint.Y,GREEN);
-//	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y-1,GREEN);
+	        //打印左边
+	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y,GREEN);
+	        //打印右边
+	        lcd_drawpoint(RightDownPoint.X*160/188,RightDownPoint.Y,GREEN);
+            systick_delay_ms(STM0, 800);
 
 	        /*三岔上拐点函数测试*/
-	        GetForkUpInflection(LeftDownPoint,RightDownPoint,&ForkUpPoint);
-	        lcd_drawpoint(ForkUpPoint.X*160/188,ForkUpPoint.Y,GREEN);
-            lcd_drawpoint((ForkUpPoint.X+1)*160/188,ForkUpPoint.Y,GREEN);
-            lcd_drawpoint(ForkUpPoint.X*160/188,ForkUpPoint.Y+1,GREEN);
-            lcd_drawpoint((ForkUpPoint.X-1)*160/188,ForkUpPoint.Y,GREEN);
-            lcd_drawpoint(ForkUpPoint.X*160/188,ForkUpPoint.Y-1,GREEN);
+//	        GetForkUpInflection(LeftDownPoint,RightDownPoint,&ForkUpPoint);
+//	        lcd_drawpoint(ForkUpPoint.X*160/188,ForkUpPoint.Y,GREEN);
 
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
 	    }
