@@ -50,6 +50,8 @@ int core0_main(void)
 	Point ForkUpPoint;
 	ForkUpPoint.X=0;ForkUpPoint.Y=0;
 	float Bias=0;
+
+	int row;
 	//*****************************************************************
 
 	//***************************交互的初始化**************************
@@ -82,6 +84,9 @@ int core0_main(void)
 
 	while (TRUE)
 	{
+	    /*初始化参数*/
+
+
 	    //图像处理模块
 	    if(mt9v03x_finish_flag)
 	    {
@@ -95,6 +100,12 @@ int core0_main(void)
 	        {
 	            CentreLine[i]=CentreLine[i]*160/188;
 	            lcd_drawpoint(CentreLine[i],i,RED); //中红
+//	            lcd_showint32(0,0,i,3);
+//                lcd_showint32(0,1,RightLine[i],3);
+//
+//                lcd_showint32(0,5,i,3);
+//                lcd_showint32(0,6,LeftLine[i],3);
+//                systick_delay_ms(STM0, 500);
 //	            LeftLine[i]=LeftLine[i]*160/188;
 //                lcd_drawpoint(LeftLine[i],i,GREEN);  //左蓝
 //                RightLine[i]=RightLine[i]*160/188;
@@ -107,16 +118,29 @@ int core0_main(void)
 //	        systick_delay_ms(STM0, 1000);
 
 	        /*左右下拐点函数测试*/
+	        LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;  //拐点置零
 	        GetDownInflection(110,60,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
 	        //打印左边
 	        lcd_drawpoint(LeftDownPoint.X*160/188,LeftDownPoint.Y,GREEN);
 	        //打印右边
 	        lcd_drawpoint(RightDownPoint.X*160/188,RightDownPoint.Y,GREEN);
-            systick_delay_ms(STM0, 800);
+            lcd_showint32(0,6,RightDownPoint.Y,3);
+            lcd_showint32(0,7,RightDownPoint.X,3);
+            systick_delay_ms(STM0, 500);
+	        //            systick_delay_ms(STM0, 800);
 
 	        /*三岔上拐点函数测试*/
 //	        GetForkUpInflection(LeftDownPoint,RightDownPoint,&ForkUpPoint);
 //	        lcd_drawpoint(ForkUpPoint.X*160/188,ForkUpPoint.Y,GREEN);
+
+            /*进入环岛前的判断*/
+            row=CircleIsland_Begin(LeftLine,RightLine,LeftDownPoint,RightDownPoint);    //调用检测环岛入口的函数
+            lcd_drawpoint(RightLine[row]*160/188,row,GREEN);
+            lcd_showint32(0,0,row,3);
+            lcd_showint32(0,1,RightLine[row],3);
+            systick_delay_ms(STM0, 500);
+//            lcd_drawpoint(LeftLine[row],row,BLUE);
+            systick_delay_ms(STM0, 800);
 
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
 	    }

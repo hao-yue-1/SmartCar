@@ -3,5 +3,5 @@ LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/name
 LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/os=win32
 configDescList=org.eclipse.launchbar.core.descriptorType.default\:Seekfree_TC264_Opensource_Library
 eclipse.preferences.version=1
-org.eclipse.launchbar.core.descriptorType.default\:Seekfree_TC264_Opensource_Library/activeLaunchMode=debug
+org.eclipse.launchbar.core.descriptorType.default\:Seekfree_TC264_Opensource_Library/activeLaunchMode=run
 org.eclipse.launchbar.core.descriptorType.default\:Seekfree_TC264_Opensource_Library/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
