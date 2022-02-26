@@ -55,14 +55,17 @@ float Regression_Slope(int startline,int endline,int *CentreLine)
  **           Point EndPoint:     终点
  ** 返 回 值: 无
  ** 作    者: LJF
+ ** 注    意：- StarPoint.Y>EndPoint.Y
+ **           - 把图像映射到第四象限进行y=kx+b的操作，y先全取负运算之后，描黑的时候再负运算
  *********************************************************************************************/
 void FillingLine(Point StarPoint,Point EndPoint)
 {
     int K,B,i;
-    K=(EndPoint.Y-StarPoint.Y)/(EndPoint.X-StarPoint.X);//k=(y2-y1)/(x2-x1)
-    B=StarPoint.Y-K*StarPoint.X;//b=y-kx
-    for(i=StarPoint.Y;i<EndPoint.Y;i++)
+    K=(-EndPoint.Y+StarPoint.Y)/(EndPoint.X-StarPoint.X);//k=(y2-y1)/(x2-x1)
+    B=-StarPoint.Y-K*StarPoint.X;//b=y-kx
+
+    for(i=StarPoint.Y;i>EndPoint.Y;i--)
     {
-        BinaryImage[i][K*i+B]=IMAGE_BLACK;//BinaryImage[H][W]
+        BinaryImage[i][(-i-B)/K]=IMAGE_BLACK;//BinaryImage[H][W],x=(y-b)/k
     }
 }

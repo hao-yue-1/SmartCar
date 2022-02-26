@@ -12,3 +12,9 @@ ImageSpecial.o :	../CODE/ImageBasic.h
 ../CODE/ImageBasic.h :
 ImageSpecial.o :	../CODE/Binarization.h
 ../CODE/Binarization.h :
+ImageSpecial.o :	../CODE/ImageTack.h
+../CODE/ImageTack.h :
+ImageSpecial.o :	../CODE/Binarization.h
+../CODE/Binarization.h :
+ImageSpecial.o :	../CODE/ImageBasic.h
+../CODE/ImageBasic.h :

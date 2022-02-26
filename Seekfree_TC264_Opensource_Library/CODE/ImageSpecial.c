@@ -134,30 +134,51 @@ uint8 StartLineFlag(int *LeftLine,int *RightLine)
  **           1：识别到环岛且在车身左侧
  **           2：识别到环岛且在车身右侧
  ** 作    者: WBN
- ** 注    意：环岛的识别分为两部分，一是识别到环岛但并为到达入口，二是识别到了环岛入口
+ ** 注    意：传入的拐点需确保：若该图不存在拐点则拐点的数据均为0
  ********************************************************************************************
  */
-int CircleIsland_Begin(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+uint8 CircleIslandBegin(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
     /*
      ** 这个可能的情况比较多，比较难处理，后面再写
      ** 当识别到前面有环岛时，主要是对环岛进行一个屏蔽的补线，避免车子误判为拐弯而拐进环岛的出口
      * */
-    int row,cloum;          //行,列
-    if(InflectionR.X!=0&&InflectionR.Y!=0)    //拐点（环岛）在左边
-    {
-        for(row=InflectionR.Y-10;row>0;row--)      //从右拐点开始向前行扫线
+    int row;          //行
+    Point Inflection;
+    if(InflectionL.X!=0&&InflectionL.Y!=0)  //拐点（环岛）在左边
         {
-//            lcd_showint32(0,0,row,3);
-//            lcd_showint32(0,3,RightLine[row],3);
-//            systick_delay_ms(STM0, 500);
-            if(RightLine[row]!=MT9V03X_W)   //右边界线没有丢线（右边界不是图像的最右侧）
+            for(row=InflectionL.Y-10;row>0;row--)      //从左拐点开始向前行扫线
             {
-                break;
+                if(LeftLine[row]==MT9V03X_W&&LeftLine[row-1]!=MT9V03X_W)  //该行丢线而下一行不丢线
+                {
+                    return 1;
+                }
+            }
+        }
+    if(InflectionR.X!=0&&InflectionR.Y!=0)    //拐点（环岛）在右边
+    {
+        for(row=InflectionR.Y;row-1>0;row--)      //从右拐点开始向前行扫线
+        {
+            if(RightLine[row]==MT9V03X_W&&RightLine[row-1]!=MT9V03X_W)  //该行丢线而下一行不丢线
+            {
+
+//                lcd_drawpoint(RightLine[row-1],row,GREEN);
+//
+//                Inflection.Y=row-1;
+//                Inflection.X=RightLine[row-1];
+//                FillingLine(InflectionR,Inflection);
+
+
+                return 2;
             }
         }
     }
-    return row;
+    return 0;
+}
+
+uint8 CircleIslandEnd(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+{
+
 }
 
 /*********************************************************************************
