@@ -23,8 +23,14 @@
 extern uint8 Flag_CircleBegin;   //发现环岛
 extern uint8 Flag_CircleIn;      //环岛入口
 
+/*起跑线相关函数*/
 uint8 StartLineFlag(int *LeftLine,int *RightLine);      //起跑线识别
+
+/*环岛相关函数*/
 int CircleIsland_Begin(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+
+/*三岔相关函数*/
+void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC);//搜寻出三岔上拐点
 uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR,Point *InflectionC);//三岔识别
 
 #endif /* CODE_IMAGESPECIAL_H_ */

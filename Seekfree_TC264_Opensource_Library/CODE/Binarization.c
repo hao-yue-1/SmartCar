@@ -121,14 +121,14 @@ uint8 GuDiThreshold(uint16 width, uint16 height)     //¼ÆËã¶şÖµ»¯ãĞÖµ£º¹Èµ××îĞ¡Ö
 //¸ù¾İ³¡µØÌõ¼şµ÷ÓÃ´ó½ò·¨»ò¹Èµ××îĞ¡ÖµµÃµ½¶şÖµ»¯ãĞÖµÈ»ºó¸ù¾İ»Ò¶ÈÍ¼µÃµ½ºÚ°×Í¼Ïñ
 void ImageBinary()
 {
-    uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);//Ê¹ÓÃ´ó½ò·¨µÃµ½¶şÖµ»¯ãĞÖµ
-    //uint8 Image_Threshold = GuDiThreshold(MT9V03X_W,MT9V03X_H);//Ê¹ÓÃ¹Èµ××îĞ¡ÖµµÃµ½¶şÖµ»¯ãĞÖµ
+      uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);//Ê¹ÓÃ´ó½ò·¨µÃµ½¶şÖµ»¯ãĞÖµ
+//    uint8 Image_Threshold = GuDiThreshold(MT9V03X_W,MT9V03X_H);//Ê¹ÓÃ¹Èµ××îĞ¡ÖµµÃµ½¶şÖµ»¯ãĞÖµ
 
     for (int i = 0; i < MT9V03X_H; ++i)
     {
         for (int j = 0; j < MT9V03X_W; ++j)
         {
-            if (mt9v03x_image[i][j] <= Image_Threshold)//½øĞĞ¶şÖµ»¯Ö®Ç°Ö»ÊÇµÃµ½ãĞÖµ
+            if (mt9v03x_image[i][j] <= Image_Threshold+30)//½øĞĞ¶şÖµ»¯Ö®Ç°Ö»ÊÇµÃµ½ãĞÖµ
                 BinaryImage[i][j] = IMAGE_BLACK;//0ÊÇºÚÉ«  //Í¼ÏñÔ­µã²»±ä
             else
                 BinaryImage[i][j] = IMAGE_WHITE;//1ÊÇ°×É«  //Í¼ÏñÔ­µã²»±ä
