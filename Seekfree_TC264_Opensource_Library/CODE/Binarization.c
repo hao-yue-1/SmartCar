@@ -118,6 +118,48 @@ uint8 GuDiThreshold(uint16 width, uint16 height)     //¼ÆËã¶şÖµ»¯ãĞÖµ£º¹Èµ××îĞ¡Ö
     return index_Min;
 }
 
+/*
+ *******************************************************************************************
+ ** º¯Êı¹¦ÄÜ: ÀàËÆÒ»Î¬MeansµÄ¶şÖµ»¯ãĞÖµ¼ÆËã
+ ** ²Î    Êı: width£ºÍ¼Ïñ¿í¶È
+ **           height£ºÍ¼Ïñ¸ß¶È
+ ** ·µ »Ø Öµ: ¶şÖµ»¯ãĞÖµ
+ ** ×÷    Õß: WBN
+ ********************************************************************************************
+ */
+uint8 OneDimensionalThreshold(uint16 width, uint16 height)
+{
+    int row,cloum;
+    int G1=0,G2=0;
+    int g1=0,g2=0;
+    uint8 threshold=0,threshold_last=1;   //ãĞÖµÓëÉÏÒ»´ÎãĞÖµ£¬³õÊ¼»¯Îª²»Í¬µÄÖµ
+
+    while(threshold!=threshold_last)   //Ö»ÓĞµ±Á¬ĞøÁ½´Î¼ÆËãµÄãĞÖµÏàµÈÊ±²Å»áÌø³öwhile
+    {
+        //½øĞĞG1ºÍG2µÄ·ÖÀà
+        for(row=0;row<height;row++)
+        {
+            for(cloum=0;cloum<width;cloum++)
+            {
+                if(mt9v03x_image[row][cloum]>120)
+                {
+                    G1+=mt9v03x_image[row][cloum];
+                    g1++;
+                }
+                else
+                {
+                    G2+=mt9v03x_image[row][cloum];
+                    g2++;
+                }
+            }
+        }
+        //½øĞĞĞÂãĞÖµµÄ¼ÆËã
+        threshold_last=threshold;       //±£´æÉÏÒ»´ÎµÄãĞÖµ
+        threshold=((G1/g1)+(G2/g2))/2;  //ãĞÖµ=£¨G1Æ½¾ùÖµ+G2Æ½¾ùÖµ£©/ 2
+    }
+    return threshold;
+}
+
 //¸ù¾İ³¡µØÌõ¼şµ÷ÓÃ´ó½ò·¨»ò¹Èµ××îĞ¡ÖµµÃµ½¶şÖµ»¯ãĞÖµÈ»ºó¸ù¾İ»Ò¶ÈÍ¼µÃµ½ºÚ°×Í¼Ïñ
 void ImageBinary()
 {
