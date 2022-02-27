@@ -130,12 +130,15 @@ uint8 GuDiThreshold(uint16 width, uint16 height)     //¼ÆËã¶şÖµ»¯ãĞÖµ£º¹Èµ××îĞ¡Ö
 uint8 OneDimensionalThreshold(uint16 width, uint16 height)
 {
     int row,cloum;
-    int G1=0,G2=0;
-    int g1=0,g2=0;
+    int G1,G2;
+    int g1,g2;
     uint8 threshold=0,threshold_last=1;   //ãĞÖµÓëÉÏÒ»´ÎãĞÖµ£¬³õÊ¼»¯Îª²»Í¬µÄÖµ
 
     while(threshold!=threshold_last)   //Ö»ÓĞµ±Á¬ĞøÁ½´Î¼ÆËãµÄãĞÖµÏàµÈÊ±²Å»áÌø³öwhile
     {
+        //³õÊ¼»¯Êı¾İ
+        G1=0;G2=0;
+        g1=0;g2=0;
         //½øĞĞG1ºÍG2µÄ·ÖÀà
         for(row=0;row<height;row++)
         {
@@ -164,7 +167,8 @@ uint8 OneDimensionalThreshold(uint16 width, uint16 height)
 void ImageBinary()
 {
       uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);//Ê¹ÓÃ´ó½ò·¨µÃµ½¶şÖµ»¯ãĞÖµ
-//    uint8 Image_Threshold = GuDiThreshold(MT9V03X_W,MT9V03X_H);//Ê¹ÓÃ¹Èµ××îĞ¡ÖµµÃµ½¶şÖµ»¯ãĞÖµ
+//      uint8 Image_Threshold = GuDiThreshold(MT9V03X_W,MT9V03X_H);//Ê¹ÓÃ¹Èµ××îĞ¡ÖµµÃµ½¶şÖµ»¯ãĞÖµ
+//      uint8 Image_Threshold = OneDimensionalThreshold(MT9V03X_W,MT9V03X_H);//Ê¹ÓÃĞÂ·½·¨µÃµ½¶şÖµ»¯ãĞÖµ
 
     for (int i = 0; i < MT9V03X_H; ++i)
     {

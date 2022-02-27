@@ -6653,3 +6653,46 @@ org.eclipse.core.runtime.CoreException: Corrupted database: Seekfree_TC264_Opens
 
 !ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-26 18:11:14.616
 !MESSAGE Include paths were discovered in 122 milliseconds.
+!SESSION 2022-02-27 13:00:18.965 -----------------------------------------------
+eclipse.buildId=1.5.2
+java.version=11.0.2
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -perspective com.infineon.aurix.buildmanager.perspective.c
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective com.infineon.aurix.buildmanager.perspective.c
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-27 13:03:50.729
+!MESSAGE Project was boosted in 1952 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-27 13:03:50.879
+!MESSAGE Include paths were discovered in 141 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-27 13:06:27.469
+!MESSAGE Project was boosted in 1288 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-27 13:06:27.569
+!MESSAGE Include paths were discovered in 96 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-27 13:06:55.153
+!MESSAGE Project was boosted in 1277 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-27 13:06:55.233
+!MESSAGE Include paths were discovered in 79 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-27 13:07:41.634
+!MESSAGE Project was boosted in 1233 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-27 13:07:41.714
+!MESSAGE Include paths were discovered in 76 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-27 13:08:16.602
+!MESSAGE Project was boosted in 1275 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-27 13:08:16.672
+!MESSAGE Include paths were discovered in 68 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-27 13:09:59.415
+!MESSAGE Project was boosted in 1242 milliseconds.
+
+!ENTRY com.infineon.aurix.buildsystem 1 0 2022-02-27 13:09:59.485
+!MESSAGE Include paths were discovered in 64 milliseconds.

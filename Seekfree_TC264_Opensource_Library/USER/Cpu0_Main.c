@@ -97,36 +97,36 @@ int core0_main(void)
 //	        lcd_displayimage032(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);  //原始灰度图像
 
 
-	        /*扫线函数测试*/
-	        GetImagBasic(LeftLine,CentreLine,RightLine);
-	        for(int i=MT9V03X_H;i>0;i--)    //LCD上的线从下往上画
-	        {
-	            CentreLine[i]=CentreLine[i]*160/188;
-	            lcd_drawpoint(CentreLine[i],i,RED); //中红
-//	            lcd_showint32(0,0,i,3);
-//                lcd_showint32(0,1,RightLine[i],3);
-//
-//                lcd_showint32(0,5,i,3);
-//                lcd_showint32(0,6,LeftLine[i],3);
-//                systick_delay_ms(STM0, 500);
-//	            LeftLine[i]=LeftLine[i]*160/188;
-//                lcd_drawpoint(LeftLine[i],i,GREEN);  //左
-//                RightLine[i]=RightLine[i]*160/188;
-//                lcd_drawpoint(RightLine[i],i,BLUE);//右
-	        }
+//	        /*扫线函数测试*/
+//	        GetImagBasic(LeftLine,CentreLine,RightLine);
+//	        for(int i=MT9V03X_H;i>0;i--)    //LCD上的线从下往上画
+//	        {
+//	            CentreLine[i]=CentreLine[i]*160/188;
+//	            lcd_drawpoint(CentreLine[i],i,RED); //中红
+////	            lcd_showint32(0,0,i,3);
+////                lcd_showint32(0,1,RightLine[i],3);
+////
+////                lcd_showint32(0,5,i,3);
+////                lcd_showint32(0,6,LeftLine[i],3);
+////                systick_delay_ms(STM0, 500);
+////	            LeftLine[i]=LeftLine[i]*160/188;
+////                lcd_drawpoint(LeftLine[i],i,GREEN);  //左
+////                RightLine[i]=RightLine[i]*160/188;
+////                lcd_drawpoint(RightLine[i],i,BLUE);//右
+//	        }
 //
 //	        /*斜率函数测试*/
 ////	        Bias=Regression_Slope(80,40,CentreLine);
 ////	        lcd_showfloat(0,0,Bias,2,3);
 ////	        systick_delay_ms(STM0, 1000);
 //
-	        /*左右下拐点函数测试*/
-	        LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;  //拐点置零
-	        GetDownInflection(110,60,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
-	        //打印左边
-	        lcd_drawpoint(LeftDownPoint.X,LeftDownPoint.Y,GREEN);
-	        //打印右边
-	        lcd_drawpoint(RightDownPoint.X,RightDownPoint.Y,GREEN);
+//	        /*左右下拐点函数测试*/
+//	        LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;  //拐点置零
+//	        GetDownInflection(110,60,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
+//	        //打印左边
+//	        lcd_drawpoint(LeftDownPoint.X,LeftDownPoint.Y,GREEN);
+//	        //打印右边
+//	        lcd_drawpoint(RightDownPoint.X,RightDownPoint.Y,GREEN);
 //            systick_delay_ms(STM0, 800);
 //
 //	        /*三岔上拐点函数测试*/
@@ -134,9 +134,9 @@ int core0_main(void)
 ////	        GetForkUpInflection(LeftDownPoint,RightDownPoint,&ForkUpPoint);
 ////	        lcd_drawpoint(ForkUpPoint.X*160/188,ForkUpPoint.Y,GREEN);
 //
-            /*进入环岛前的判断*/
-            CircleIslandBegin(LeftLine,RightLine,LeftDownPoint,RightDownPoint);    //调用检测环岛入口的函数
-            systick_delay_ms(STM0, 800);
+//            /*进入环岛前的判断*/
+//            CircleIslandBegin(LeftLine,RightLine,LeftDownPoint,RightDownPoint);    //调用检测环岛入口的函数
+//            systick_delay_ms(STM0, 800);
 
 
 
