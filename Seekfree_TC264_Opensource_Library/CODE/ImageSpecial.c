@@ -8,10 +8,6 @@
 
 #include "ImageSpecial.h"
 
-//环岛判断flag
-uint8 Flag_CircleBegin=0;   //发现环岛
-uint8 Flag_CircleIn=0;      //环岛入口
-
 /*
  *******************************************************************************************
  ** 函数功能: 识别起跑线
@@ -125,7 +121,7 @@ uint8 StartLineFlag(int *LeftLine,int *RightLine)
 
 /*
  *******************************************************************************************
- ** 函数功能: 识别环岛但没有到达环岛入口
+ ** 函数功能: 识别环岛入口
  ** 参    数: LeftLine：左线数组
  **           RightLine：右线数组
  **           InflectionL：左拐点
@@ -139,35 +135,41 @@ uint8 StartLineFlag(int *LeftLine,int *RightLine)
  */
 uint8 CircleIslandBegin(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    /*
-     ** 这个可能的情况比较多，比较难处理，后面再写
-     ** 当识别到前面有环岛时，主要是对环岛进行一个屏蔽的补线，避免车子误判为拐弯而拐进环岛的出口
-     * */
-    int row;          //行
-    Point Inflection;
+    int row;            //行
+    Point Inflection;   //上拐点，用于补线
+
     if(InflectionL.X!=0&&InflectionL.Y!=0)  //拐点（环岛）在左边
+    {
+        for(row=InflectionL.Y;row-1-C_BIAS>0;row--)      //从左拐点开始向前行扫线
         {
-            for(row=InflectionL.Y-10;row>0;row--)      //从左拐点开始向前行扫线
+//            if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE&&BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)  //直接使用二值化的图像去寻找上拐点
+            if(LeftLine[row]==0&&LeftLine[row-1]!=0)  //该行丢线而下一行不丢线
             {
-                if(LeftLine[row]==MT9V03X_W&&LeftLine[row-1]!=MT9V03X_W)  //该行丢线而下一行不丢线
-                {
-                    return 1;
-                }
+                //记录上拐点
+                Inflection.Y=row-1-C_BIAS;
+                Inflection.X=InflectionL.X+10;  //由于扫线的特性，这里的处理方法和环岛在右边不一样
+                FillingLine(InflectionL,Inflection);                        //补线处理
+                //Debug：打印补线后的图像
+//                lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
+//                systick_delay_ms(STM0, 1000);
+
+                return 1;
             }
         }
+    }
     if(InflectionR.X!=0&&InflectionR.Y!=0)    //拐点（环岛）在右边
     {
-        for(row=InflectionR.Y;row-1>0;row--)      //从右拐点开始向前行扫线
+        for(row=InflectionR.Y;row-1-C_BIAS>0;row--)      //从右拐点开始向前行扫线
         {
             if(RightLine[row]==MT9V03X_W&&RightLine[row-1]!=MT9V03X_W)  //该行丢线而下一行不丢线
             {
-
-//                lcd_drawpoint(RightLine[row-1],row,GREEN);
-//
-//                Inflection.Y=row-1;
-//                Inflection.X=RightLine[row-1];
-//                FillingLine(InflectionR,Inflection);
-
+                //记录上拐点
+                Inflection.Y=row-1-C_BIAS;
+                Inflection.X=RightLine[row-1-C_BIAS];
+                FillingLine(InflectionR,Inflection);                        //补线处理
+                //Debug：打印补线后的图像
+//                lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
+//                systick_delay_ms(STM0, 1000);
 
                 return 2;
             }
@@ -179,6 +181,48 @@ uint8 CircleIslandBegin(int *LeftLine,int *RightLine,Point InflectionL,Point Inf
 uint8 CircleIslandEnd(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
 
+    return 0;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 识别十字回环出口
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ **           InflectionL：左拐点
+ **           InflectionR：右拐点
+ ** 返 回 值: 0：没有识别十字回环出口
+ **           1：识别到十字回环出口
+ ** 作    者: WBN
+ ** 注    意：传入的拐点需确保：若该图不存在拐点则拐点的数据均为0
+ ********************************************************************************************
+ */
+uint8 CrossLoopEnd(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+{
+    int row;  //行
+
+    if(InflectionL.X!=0&&InflectionL.Y!=0)  //拐点在左边
+    {
+        for(row=InflectionL.Y;row>0;row--)
+        {
+            if(LeftLine[row]==0&&LeftLine[row-1]!=0)  //该行丢线而下一行不丢线
+            {
+                return 1;
+            }
+        }
+    }
+    if(InflectionR.X!=0&&InflectionR.Y!=0)  //拐点在右边
+    {
+        for(row=InflectionR.Y;row>0;row--)
+        {
+            if(RightLine[row]==MT9V03X_W&&RightLine[row-1]!=MT9V03X_W)  //该行丢线而下一行不丢线
+            {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
 }
 
 /*********************************************************************************

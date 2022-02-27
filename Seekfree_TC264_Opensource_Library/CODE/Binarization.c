@@ -174,7 +174,7 @@ void ImageBinary()
     {
         for (int j = 0; j < MT9V03X_W; ++j)
         {
-            if (mt9v03x_image[i][j] <= Image_Threshold+30)//进行二值化之前只是得到阈值
+            if (mt9v03x_image[i][j] <= Image_Threshold)//进行二值化之前只是得到阈值
                 BinaryImage[i][j] = IMAGE_BLACK;//0是黑色  //图像原点不变
             else
                 BinaryImage[i][j] = IMAGE_WHITE;//1是白色  //图像原点不变

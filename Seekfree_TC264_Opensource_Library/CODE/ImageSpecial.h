@@ -17,9 +17,8 @@
 #define S_BLACK_WIDTH  3    //斑马线黑线宽度阈值 //用于判断该线是否为斑马线黑线
 #define S_BLACK_NUM    8    //斑马线黑线数量阈值 //用于判断该行是否为斑马线
 #define S_BLACK_TIMES  3    //斑马线数量阈值     //用于判断该路段是否为斑马线
-//环岛识别
-#define C_LOST1 5           //不丢线一边的丢线数阈值
-#define C_LOST2 20          //丢线一边的丢线数阈值
+//环岛判定误差
+#define C_BIAS  2           //用于消除小毛刺的影响，补线更加丝滑
 
 /*起跑线相关函数*/
 uint8 StartLineFlag(int *LeftLine,int *RightLine);      //起跑线识别
@@ -27,6 +26,7 @@ uint8 StartLineFlag(int *LeftLine,int *RightLine);      //起跑线识别
 /*环岛相关函数*/
 uint8 CircleIslandBegin(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
 uint8 CircleIslandEnd(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CrossLoopEnd(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
 /*三岔相关函数*/
 void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC);//搜寻出三岔上拐点
 uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR,Point *InflectionC);//三岔识别
