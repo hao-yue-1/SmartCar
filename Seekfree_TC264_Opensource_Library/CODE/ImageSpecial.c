@@ -237,6 +237,7 @@ uint8 CrossLoopEnd(int *LeftLine,int *RightLine,Point InflectionL,Point Inflecti
 void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC)
 {
     int starline,i;
+    UpInflectionC->X=0;UpInflectionC->Y=0;//上拐点置零
     UpInflectionC->X=(DownInflectionL.X+DownInflectionR.X)/2;//V型上拐点的列坐标为左右拐点均值，需要修改，不一定是正入三岔
     starline=(DownInflectionL.Y+DownInflectionR.Y)/2;//起始行为左右拐点行的均值
     //从下往上找到那个跳变的点即为上拐点
@@ -273,7 +274,7 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
 uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR,Point *InflectionC)
 {
     GetDownInflection(startline, endline, LeftLine, RightLine, InflectionL, InflectionR);//获取左右拐点
-    if(InflectionL->X!=0&&InflectionR->X!=0)//当左右拐点存在
+    if(InflectionL->X!=0 && InflectionR->X!=0)//当左右拐点存在
     {
         GetForkUpInflection(*InflectionL, *InflectionR, InflectionC);//去搜索上拐点
         if(InflectionC->X!=0)

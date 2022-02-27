@@ -140,6 +140,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
 void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR)
 {
     int i=0;
+    InflectionL->X=0;InflectionL->Y=0;InflectionR->X=0;InflectionR->Y=0;//×óÓÒ¹ÕµãÖÃÁã
 
     for(i=startline;i>endline;i--)
     {

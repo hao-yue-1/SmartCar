@@ -168,7 +168,7 @@ void ImageBinary()
 {
       uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);//使用大津法得到二值化阈值
 //      uint8 Image_Threshold = GuDiThreshold(MT9V03X_W,MT9V03X_H);//使用谷底最小值得到二值化阈值
-//      uint8 Image_Threshold = OneDimensionalThreshold(MT9V03X_W,MT9V03X_H);//使用新方法得到二值化阈值
+//      uint8 Image_Threshold = OneDimensionalThreshold(MT9V03X_W,MT9V03X_H);//使用一维means法得到二值化阈值
 
     for (int i = 0; i < MT9V03X_H; ++i)
     {

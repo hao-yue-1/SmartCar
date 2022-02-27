@@ -57,15 +57,22 @@ float Regression_Slope(int startline,int endline,int *CentreLine)
  ** 作    者: LJF
  ** 注    意：- StarPoint.Y>EndPoint.Y
  **           - 把图像映射到第四象限进行y=kx+b的操作，y先全取负运算之后，描黑的时候再负运算
+ **           - 2022/2/27 17:40 DeBuglog: K应该为浮点型，否则精度损失为0
  *********************************************************************************************/
 void FillingLine(Point StarPoint,Point EndPoint)
 {
-    int K,B,i;
-    K=(-EndPoint.Y+StarPoint.Y)/(EndPoint.X-StarPoint.X);//k=(y2-y1)/(x2-x1)
+    float K;//斜率为浮点型，否则K<1时，K=0
+    int B,Y,X;
+    K=(float)(-EndPoint.Y+StarPoint.Y)/(EndPoint.X-StarPoint.X);//k=(y2-y1)/(x2-x1)，强制类型转化否则会损失精度仍然为0
     B=-StarPoint.Y-K*StarPoint.X;//b=y-kx
 
-    for(i=StarPoint.Y;i>EndPoint.Y;i--)
+    for(Y=StarPoint.Y;Y>EndPoint.Y;Y--)
     {
-        BinaryImage[i][(-i-B)/K]=IMAGE_BLACK;//BinaryImage[H][W],x=(y-b)/k
+        X=(int)((-Y-B)/K);//强制类型转化：指针索引的时候只能是整数
+        BinaryImage[Y][X]=IMAGE_BLACK;//BinaryImage[H][W],x=(y-b)/k
+        /*测试函数：打印所有补的点的坐标*/
+//        lcd_showint32(0,3,Y,3);
+//        lcd_showint32(0,0,X,3);
+//        systick_delay_ms(STM0, 800);
     }
 }
