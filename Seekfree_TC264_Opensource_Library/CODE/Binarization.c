@@ -132,7 +132,7 @@ uint8 OneDimensionalThreshold(uint16 width, uint16 height)
     int row,cloum;
     int G1,G2;
     int g1,g2;
-    uint8 threshold=0,threshold_last=1;   //阈值与上一次阈值，初始化为不同的值
+    uint8 threshold=120,threshold_last=0;   //阈值与上一次阈值，初始化为不同的值，第一个阈值是认为随机设定的
 
     while(threshold!=threshold_last)   //只有当连续两次计算的阈值相等时才会跳出while
     {
@@ -144,7 +144,7 @@ uint8 OneDimensionalThreshold(uint16 width, uint16 height)
         {
             for(cloum=0;cloum<width;cloum++)
             {
-                if(mt9v03x_image[row][cloum]>120)
+                if(mt9v03x_image[row][cloum]>threshold)
                 {
                     G1+=mt9v03x_image[row][cloum];
                     g1++;
