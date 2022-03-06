@@ -179,7 +179,8 @@ IFX_INTERRUPT(uart2_rx_isr, 0, UART2_RX_INT_PRIO)
 {
 	enableInterrupts();//开启中断嵌套
     IfxAsclin_Asc_isrReceive(&uart2_handle);
-    switch(wireless_type)
+//    switch(wireless_type)     //由于默认为无线转串口模块，这里使用蓝牙但不调用它的初始化函数，所以直接在这里修改
+    switch(2)
     {
     	case WIRELESS_SI24R1:
     	{

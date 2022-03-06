@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../CODE/Binarization.c \
+../CODE/BluetoothSend.c \
 ../CODE/FuzzyPID.c \
 ../CODE/ImageBasic.c \
 ../CODE/ImageSpecial.c \
@@ -15,6 +16,7 @@ C_SRCS += \
 
 OBJS += \
 ./CODE/Binarization.o \
+./CODE/BluetoothSend.o \
 ./CODE/FuzzyPID.o \
 ./CODE/ImageBasic.o \
 ./CODE/ImageSpecial.o \
@@ -25,6 +27,7 @@ OBJS += \
 
 COMPILED_SRCS += \
 ./CODE/Binarization.src \
+./CODE/BluetoothSend.src \
 ./CODE/FuzzyPID.src \
 ./CODE/ImageBasic.src \
 ./CODE/ImageSpecial.src \
@@ -35,6 +38,7 @@ COMPILED_SRCS += \
 
 C_DEPS += \
 ./CODE/Binarization.d \
+./CODE/BluetoothSend.d \
 ./CODE/FuzzyPID.d \
 ./CODE/ImageBasic.d \
 ./CODE/ImageSpecial.d \

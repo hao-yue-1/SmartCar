@@ -21,7 +21,6 @@ typedef struct MotorPID
 {
     int P;
     int I;
-    int D;
 }MotorPID;
 
 //这里还要写个PID初始化的函数调参在这里进行

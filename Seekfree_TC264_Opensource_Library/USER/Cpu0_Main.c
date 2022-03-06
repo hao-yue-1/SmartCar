@@ -33,12 +33,15 @@
 #include "ImageBasic.h"     //图像的基础处理
 #include "ImageSpecial.h"   //图像特殊元素处理
 #include "ImageTack.h"      //循迹误差计算
-#include "PID.h"
+#include "PID.h"            //PID
+#include "BluetoothSend.h" //蓝牙发送信息给手机APP上位机
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
 //定义变量
 int *LeftLine,*CentreLine,*RightLine;   //左中右三线
+SteerPID SteerK;
+MotorPID MotorK;
 
 int core0_main(void)
 {
@@ -55,8 +58,7 @@ int core0_main(void)
 	int row;
 
 	int16 left_encoder=0,right_encoder=0;
-	SteerPID SteerK;
-	MotorPID MotorK;
+
 	//*****************************************************************
 
 	//***************************交互的初始化**************************
@@ -176,9 +178,15 @@ int core0_main(void)
 
 	    /*编码器测试*/
 	    MotorEncoder(&left_encoder,&right_encoder);
-	    Speed_PI_Left(left_encoder,1000,MotorK);
-	    Speed_PI_Right(right_encoder,1000,MotorK);
-	    printf("left_encoder=%d,right_encoder=%d",left_encoder,right_encoder);
+//	    Speed_PI_Left(left_encoder,1000,MotorK);
+//	    Speed_PI_Right(right_encoder,1000,MotorK);
+//	    printf("left_encoder=%d,right_encoder=%d",left_encoder,right_encoder);
+	    BluetoothSendToApp(left_encoder,right_encoder); //发送数据到上位机波形显示
+//	    BluetoothReceiveFromApp(MotorK.P,MotorK.I);     //接收上位机的数据调整P、I参数
+//	    MotorCtrl(Speed_PI_Left(left_encoder,1000,MotorK),Speed_PI_Right(right_encoder,1000,MotorK));
+	    lcd_showint32(0,0,MotorK.P,3);
+	    lcd_showint32(0,6,MotorK.I,3);
+	    systick_delay_ms(STM0, 100);
 	}
 }
 

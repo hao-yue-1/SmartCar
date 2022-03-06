@@ -30,6 +30,7 @@
 #include "zf_uart.h"
 #include "zf_assert.h"
 #include "SEEKFREE_BLUETOOTH_CH9141.h"
+#include "Cpu0_Main.h"      //存放PID全局变量的头文件
 
 uint8 uart_flag;
 uint8 uart_data;
@@ -44,6 +45,7 @@ uint8 mac_address[17];      //本机mac地址
 
 uint8   bluetooth_ch9141_rx_buffer;
 
+uint8 flag_head=0,flag_end=0;                //帧头帧尾flag
 
 void bluetooth_ch9141_check_response(void);
 
@@ -54,11 +56,22 @@ void bluetooth_ch9141_check_response(void);
 //  @since      v1.0
 //  Sample usage:	
 //  @note       该函数在ISR文件 串口8中断程序被调用
+//  注 意：        - 帧头和帧尾的Flag如果是在回调函数里面初始化的时候，头flag被置为1之后会马上再变0，疑似退出再进行回调错过了0XA5
+//             - 所以这时候的数组0是在头字节的后一个才为0，所以校验包的以及前面两个字节需要i-1
+//             - 遗留问题：i和j记录数组和循环次数放为全局变量的时候，i马上从8到9就return了，消失在检测不到帧尾，i=0;j=8
 //-------------------------------------------------------------------------------------------------------------------
 void bluetooth_ch9141_uart_callback()
 {
+    //自己的代码部分
+    uint8 uart_rx_buf[11];                       //数据包
+    uint8 err;                                   //校验和
+    uint8 i=0,j=0;
+//    uint8 flag_head=0,flag_end=0;                //帧头帧尾flag
+
+
     while(uart_query(BLUETOOTH_CH9141_UART, &bluetooth_ch9141_rx_buffer))
     {
+        //逐飞的蓝牙模块代码，这里注释掉替换为JDY-31蓝牙模块自己编写的中断接收处理代码
         if(1 == at_mode)
         {
             //进入AT模式 接收应答信号 此处if语句内代码用户不要改动
@@ -78,9 +91,56 @@ void bluetooth_ch9141_uart_callback()
             // 读取无线串口的数据 并且置位接收标志
             uart_flag = 1;
             uart_data = bluetooth_ch9141_rx_buffer;
+
+
+            if(bluetooth_ch9141_rx_buffer==0xA5&&flag_end==0)
+            {
+                gpio_toggle(P21_4);//翻转IO：LED
+                flag_head=1;    //接收到帧头
+            }
+            if(bluetooth_ch9141_rx_buffer==0x5A&&flag_head==1)
+            {
+                flag_end=1;     //接收到帧尾
+            }
+            if(flag_head==1)    //已经接收到帧头
+            {
+                uart_rx_buf[i]=bluetooth_ch9141_rx_buffer;
+                i++;
+                if(i==10)   //已经接收完整组数据包
+                {
+
+                    if(bluetooth_ch9141_rx_buffer!=0x5A)    //最后一帧不是帧尾
+                    {
+                        flag_head=0;
+                        flag_end=0;
+                        i=0;
+                        j=0;
+                        return; //直接退出中断
+                    }
+                    else                                    //最后一帧是帧尾
+                    {
+                        err = ((uint8)(uart_rx_buf[1]+uart_rx_buf[2]+uart_rx_buf[3]+uart_rx_buf[4]+uart_rx_buf[5]+uart_rx_buf[6]+uart_rx_buf[7]+uart_rx_buf[0])&0xFF);
+                        if(err!=uart_rx_buf[8])
+                        {
+                            flag_head=0;
+                            flag_end=0;
+                            return; //校验和错误，直接return
+                        }
+                        //校验和正确，赋值操作
+                        MotorK.P=(int)uart_rx_buf[0];
+                        MotorK.I=(int)uart_rx_buf[4];
+                        gpio_toggle(P21_5);//翻转IO：LED
+                        flag_head=0;
+                        flag_end=0;
+                        return;
+                    }
+                }
+            }
         }
-        
+        systick_delay_ms(STM0, 500);
+        j++;
     }
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------
