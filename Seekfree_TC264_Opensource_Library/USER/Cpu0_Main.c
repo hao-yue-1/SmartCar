@@ -33,6 +33,7 @@
 #include "ImageBasic.h"     //图像的基础处理
 #include "ImageSpecial.h"   //图像特殊元素处理
 #include "ImageTack.h"      //循迹误差计算
+#include "PID.h"
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -52,10 +53,15 @@ int core0_main(void)
 	float Bias=0;
 
 	int row;
+
+	int16 left_encoder=0,right_encoder=0;
+	SteerPID SteerK;
+	MotorPID MotorK;
 	//*****************************************************************
 
 	//***************************交互的初始化**************************
 	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);      //初始化串口0与电脑上位机通讯
+	uart_init (BLUETOOTH_CH9141_UART, BLUETOOTH_CH9141_UART_BAUD, BLUETOOTH_CH9141_UART_TX, BLUETOOTH_CH9141_UART_RX);//初始化蓝牙模块所用的串口
 	lcd_init();                                                     //初始化TFT屏幕
 	gpio_init(P20_8, GPO, 1, PUSHPULL);                             //初始化LED：设置P20_8为输出
 	gpio_init(P20_9, GPO, 1, PUSHPULL);
@@ -69,13 +75,17 @@ int core0_main(void)
 
 	//**************************驱动模块初始化**************************
 //	gtm_pwm_init(STEER_PIN, 50, STEER_MID);                         //初始化舵机
-//	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);                        //初始化左电机
-//	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);
-//	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);                       //初始化右电机
-//	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);
-//	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
-//	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
+	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);                        //初始化左电机
+	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);
+	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);                       //初始化右电机
+	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);
+	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
+	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
 	//********************************************************************
+
+	/**********************PID初始化***********************************************/
+	PID_init(&SteerK,&MotorK);
+	/**************************************************************/
 
     //等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
@@ -97,7 +107,7 @@ int core0_main(void)
 
 
 	        /*扫线函数测试*/
-	        GetImagBasic(LeftLine,CentreLine,RightLine);
+//	        GetImagBasic(LeftLine,CentreLine,RightLine);
 //	        for(int i=MT9V03X_H;i>0;i--)    //LCD上的线从下往上画
 //	        {
 //	            lcd_drawpoint(CentreLine[i],i,RED); //中红
@@ -134,7 +144,7 @@ int core0_main(void)
 //	        lcd_drawpoint(ForkUpPoint.X*160/188,ForkUpPoint.Y,GREEN);
 
 	        /*三岔识别函数测试*/
-	        ForkIdentify(110,40,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint,&ForkUpPoint);
+//	        ForkIdentify(110,40,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint,&ForkUpPoint);
 //	        lcd_drawpoint(RightDownPoint.X,RightDownPoint.Y,GREEN);//描点
 //	        lcd_drawpoint(LeftDownPoint.X,LeftDownPoint.Y,GREEN);
 //	        lcd_drawpoint(ForkUpPoint.X,ForkUpPoint.Y,GREEN);
@@ -160,9 +170,15 @@ int core0_main(void)
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
 	    }
 
-	    //电机控制模块
-//	    SteerCtrl(850);
+	    /*电机驱动测试*/
+//	    SteerCtrl(STEER_MID);
 //	    MotorCtrl(1000,1000);
+
+	    /*编码器测试*/
+	    MotorEncoder(&left_encoder,&right_encoder);
+	    Speed_PI_Left(left_encoder,1000,MotorK);
+	    Speed_PI_Right(right_encoder,1000,MotorK);
+	    printf("left_encoder=%d,right_encoder=%d",left_encoder,right_encoder);
 	}
 }
 
