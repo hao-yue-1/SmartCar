@@ -16,7 +16,7 @@
 void PID_init(SteerPID *SteerK,MotorPID *MotorK)
 {
     SteerK->P=0;SteerK->D=0;
-    MotorK->P=0;MotorK->I=0;
+    MotorK->P=1;MotorK->I=1;
 }
 
 /*
@@ -31,10 +31,10 @@ void PID_init(SteerPID *SteerK,MotorPID *MotorK)
  **           Bias的正负是这里处理还是传进来之前，这个问题跟第一个问题有关联？
  ********************************************************************************************
  */
-int Steer_Position_PID(float SlopeBias,SteerPID K)//舵机位置式PID控制，采用分段式PID控制
+uint32 Steer_Position_PID(float SlopeBias,SteerPID K)//舵机位置式PID控制，采用分段式PID控制
 {
     static float LastSlopeBias;
-    int PWM;
+    uint32 PWM;
     PWM=K.P*SlopeBias+K.D*(SlopeBias-LastSlopeBias);
     LastSlopeBias=SlopeBias;
     return PWM;

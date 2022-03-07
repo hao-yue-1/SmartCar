@@ -54,11 +54,7 @@ int core0_main(void)
 	Point ForkUpPoint;
 	ForkUpPoint.X=0;ForkUpPoint.Y=0;
 	float Bias=0;
-
-	int row;
-
-	int16 left_encoder=0,right_encoder=0;
-
+	uint32 StreePWM=STEER_MID;
 	//*****************************************************************
 
 	//***************************交互的初始化**************************
@@ -76,13 +72,13 @@ int core0_main(void)
 	//********************************************************************
 
 	//**************************驱动模块初始化**************************
-//	gtm_pwm_init(STEER_PIN, 50, STEER_MID);                         //初始化舵机
+	gtm_pwm_init(STEER_PIN, 50, STEER_MID);                         //初始化舵机
 	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);                        //初始化左电机
 	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);
 	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);                       //初始化右电机
 	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);
-	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
-	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
+//	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
+//	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
 	//********************************************************************
 
 	/**********************PID初始化***********************************************/
@@ -93,6 +89,10 @@ int core0_main(void)
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
 	enableInterrupts();
+
+	/*电机驱动测试*/
+    SteerCtrl(STEER_MID);
+    MotorCtrl(1000,1000);
 
 	while (TRUE)
 	{
@@ -107,86 +107,32 @@ int core0_main(void)
 	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
 //	        lcd_displayimage032(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);  //原始灰度图像
 
-
 	        /*扫线函数测试*/
-//	        GetImagBasic(LeftLine,CentreLine,RightLine);
-//	        for(int i=MT9V03X_H;i>0;i--)    //LCD上的线从下往上画
-//	        {
-//	            lcd_drawpoint(CentreLine[i],i,RED); //中红
-//	            lcd_showint32(0,0,i,3);
-//                lcd_showint32(0,1,RightLine[i],3);
-//
-//                lcd_showint32(0,5,i,3);
-//                lcd_showint32(0,6,LeftLine[i],3);
-//                systick_delay_ms(STM0, 500);
-//	            lcd_drawpoint(LeftLine[i],i,GREEN);  //左
-//                RightLine[i]=RightLine[i]*160/188;
-//                lcd_drawpoint(RightLine[i],i,BLUE);//右
-//	        }
-//
-//	        /*斜率函数测试*/
-//	        Bias=Regression_Slope(80,40,CentreLine);
-//	        lcd_showfloat(0,0,Bias,2,3);
-//	        systick_delay_ms(STM0, 1000);
-//
-	        /*左右下拐点函数测试*/
-//	        GetDownInflection(110,40,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
-//	        lcd_showint32(0,3,LeftDownPoint.Y,3);
-//            lcd_showint32(0,4,LeftDownPoint.X,3);
-//            lcd_showint32(0,6,RightDownPoint.Y,3);
-//            lcd_showint32(0,7,RightDownPoint.X,3);
-	        //打印左边
-//	        lcd_drawpoint(LeftDownPoint.X,LeftDownPoint.Y,GREEN);
-//	        //打印右边
-//	        lcd_drawpoint(RightDownPoint.X,RightDownPoint.Y,GREEN);
-//            systick_delay_ms(STM0, 800);
-//
-	        /*三岔上拐点函数测试*/
-//	        GetForkUpInflection(LeftDownPoint,RightDownPoint,&ForkUpPoint);
-//	        lcd_drawpoint(ForkUpPoint.X*160/188,ForkUpPoint.Y,GREEN);
+	        GetImagBasic(LeftLine,CentreLine,RightLine);
 
-	        /*三岔识别函数测试*/
-//	        ForkIdentify(110,40,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint,&ForkUpPoint);
-//	        lcd_drawpoint(RightDownPoint.X,RightDownPoint.Y,GREEN);//描点
-//	        lcd_drawpoint(LeftDownPoint.X,LeftDownPoint.Y,GREEN);
-//	        lcd_drawpoint(ForkUpPoint.X,ForkUpPoint.Y,GREEN);
-//	        lcd_showint32(0,3,LeftDownPoint.Y,3);//打印坐标
-//	        lcd_showint32(0,0,LeftDownPoint.X,3);
-//	        systick_delay_ms(STM0, 2000);
-//	        lcd_showint32(0,3,ForkUpPoint.Y,3);
-//            lcd_showint32(0,0,ForkUpPoint.X,3);
-//            systick_delay_ms(STM0, 2000);
-//	        FillingLine(LeftDownPoint,ForkUpPoint);//补线画线
-//	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);
-//	        systick_delay_ms(STM0, 800);
-//	        FillingLine(RightDownPoint,ForkUpPoint);
-//            lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);
-//            systick_delay_ms(STM0, 800);
-
-//
-            /*进入环岛前的判断测试*/
-//            CircleIslandBegin(LeftLine,RightLine,LeftDownPoint,RightDownPoint);    //调用检测环岛入口的函数
-
+	        /*斜率函数测试*/
+	        Bias=Regression_Slope(80,40,CentreLine);
+	        BluetooothSendBias(Bias);//蓝牙发送
 
 	        gpio_toggle(P20_8);//翻转IO：LED
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
 	    }
 
-	    /*电机驱动测试*/
-//	    SteerCtrl(STEER_MID);
-//	    MotorCtrl(1000,1000);
-
 	    /*编码器测试*/
-	    MotorEncoder(&left_encoder,&right_encoder);
-//	    Speed_PI_Left(left_encoder,1000,MotorK);
-//	    Speed_PI_Right(right_encoder,1000,MotorK);
-//	    printf("left_encoder=%d,right_encoder=%d",left_encoder,right_encoder);
-	    BluetoothSendToApp(left_encoder,right_encoder); //发送数据到上位机波形显示
-//	    BluetoothReceiveFromApp(MotorK.P,MotorK.I);     //接收上位机的数据调整P、I参数
-//	    MotorCtrl(Speed_PI_Left(left_encoder,1000,MotorK),Speed_PI_Right(right_encoder,1000,MotorK));
-	    lcd_showint32(0,0,MotorK.P,3);
-	    lcd_showint32(0,6,MotorK.I,3);
-	    systick_delay_ms(STM0, 100);
+//	    MotorEncoder(&left_encoder,&right_encoder);
+//	    BluetoothSendToApp(left_encoder,right_encoder); //发送数据到上位机波形显示
+
+	    /*独立电机速度环调参测试*/
+//	    MotorLPWM=Speed_PI_Left(left_encoder,1000,MotorK);
+//	    MotorRPWM=Speed_PI_Right(right_encoder,1000,MotorK);
+//	    MotorCtrl(MotorLPWM,MotorRPWM);
+//	    lcd_showint32(0,0,MotorK.P,3);
+//	    lcd_showint32(0,6,MotorK.I,3);
+//	    systick_delay_ms(STM0, 100);
+
+	    /*开环转向环无元素测试*/
+//	    StreePWM=Steer_Position_PID(Bias,SteerK);
+//	    SteerCtrl(StreePWM);
 	}
 }
 

@@ -16,7 +16,7 @@
 ** 返 回 值: 无
 *********************************************************************************************************
 */
-void MotorCtrl(int16 left_speed,int16 right_speed)
+void MotorCtrl(uint32 left_speed,uint32 right_speed)
 {
     //限幅处理
     if(left_speed>GTM_ATOM0_PWM_DUTY_MAX)
