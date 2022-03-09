@@ -65,9 +65,8 @@ void bluetooth_ch9141_uart_callback()
     //自己的代码部分
     uint8 uart_rx_buf[11];                       //数据包
     uint8 err;                                   //校验和
-    uint8 i=0,j=0;
+    uint8 i=0;
 //    uint8 flag_head=0,flag_end=0;                //帧头帧尾flag
-
 
     while(uart_query(BLUETOOTH_CH9141_UART, &bluetooth_ch9141_rx_buffer))
     {
@@ -92,10 +91,8 @@ void bluetooth_ch9141_uart_callback()
             uart_flag = 1;
             uart_data = bluetooth_ch9141_rx_buffer;
 
-
             if(bluetooth_ch9141_rx_buffer==0xA5&&flag_end==0)
             {
-                gpio_toggle(P21_4);//翻转IO：LED
                 flag_head=1;    //接收到帧头
             }
             if(bluetooth_ch9141_rx_buffer==0x5A&&flag_head==1)
@@ -108,13 +105,12 @@ void bluetooth_ch9141_uart_callback()
                 i++;
                 if(i==10)   //已经接收完整组数据包
                 {
-
+                    //进行帧尾的判断
                     if(bluetooth_ch9141_rx_buffer!=0x5A)    //最后一帧不是帧尾
                     {
                         flag_head=0;
                         flag_end=0;
                         i=0;
-                        j=0;
                         return; //直接退出中断
                     }
                     else                                    //最后一帧是帧尾
@@ -129,7 +125,6 @@ void bluetooth_ch9141_uart_callback()
                         //校验和正确，赋值操作
                         MotorK.P=(int)uart_rx_buf[0];
                         MotorK.I=(int)uart_rx_buf[4];
-                        gpio_toggle(P21_5);//翻转IO：LED
                         flag_head=0;
                         flag_end=0;
                         return;
@@ -137,10 +132,7 @@ void bluetooth_ch9141_uart_callback()
                 }
             }
         }
-        systick_delay_ms(STM0, 500);
-        j++;
     }
-
 }
 
 //-------------------------------------------------------------------------------------------------------------------
