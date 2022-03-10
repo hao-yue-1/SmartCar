@@ -16,17 +16,17 @@
 ** 返 回 值: 无
 *********************************************************************************************************
 */
-void MotorCtrl(uint32 left_speed,uint32 right_speed)
+void MotorCtrl(int left_speed,int right_speed)
 {
     //限幅处理
-    if(left_speed>GTM_ATOM0_PWM_DUTY_MAX)
-        left_speed=GTM_ATOM0_PWM_DUTY_MAX;
-    else if(left_speed<-GTM_ATOM0_PWM_DUTY_MAX)
-        left_speed=-GTM_ATOM0_PWM_DUTY_MAX;
-    if(right_speed>GTM_ATOM0_PWM_DUTY_MAX)
-        right_speed=GTM_ATOM0_PWM_DUTY_MAX;
-    else if(right_speed<-GTM_ATOM0_PWM_DUTY_MAX)
-        right_speed=-GTM_ATOM0_PWM_DUTY_MAX;
+//    if(left_speed>GTM_ATOM0_PWM_DUTY_MAX)
+//        left_speed=GTM_ATOM0_PWM_DUTY_MAX;
+//    else if(left_speed<-GTM_ATOM0_PWM_DUTY_MAX)
+//        left_speed=-GTM_ATOM0_PWM_DUTY_MAX;
+//    if(right_speed>GTM_ATOM0_PWM_DUTY_MAX)
+//        right_speed=GTM_ATOM0_PWM_DUTY_MAX;
+//    else if(right_speed<-GTM_ATOM0_PWM_DUTY_MAX)
+//        right_speed=-GTM_ATOM0_PWM_DUTY_MAX;
     //判断电机的正反转并进行速度赋值
     //左电机
     if(left_speed>=0)   //正转
@@ -36,7 +36,7 @@ void MotorCtrl(uint32 left_speed,uint32 right_speed)
     }
     else                //反转
     {
-        pwm_duty(LEFT_MOTOR_PIN1,left_speed);
+        pwm_duty(LEFT_MOTOR_PIN1,-left_speed);
         pwm_duty(LEFT_MOTOR_PIN2,0);
     }
     //右电机
@@ -48,7 +48,7 @@ void MotorCtrl(uint32 left_speed,uint32 right_speed)
     else                //反转
     {
         pwm_duty(RIGHT_MOTOR_PIN1,0);
-        pwm_duty(RIGHT_MOTOR_PIN2,right_speed);
+        pwm_duty(RIGHT_MOTOR_PIN2,-right_speed);
     }
 }
 

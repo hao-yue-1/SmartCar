@@ -89,7 +89,7 @@ IFX_EXTERN App_Cpu0 g_AppCpu0;
 
 extern SteerPID SteerK;
 extern MotorPID MotorK;
-
+extern char power_switch;
 
 
 

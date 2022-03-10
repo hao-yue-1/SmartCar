@@ -42,6 +42,7 @@
 int *LeftLine,*CentreLine,*RightLine;   //左中右三线
 SteerPID SteerK;
 MotorPID MotorK;
+char power_switch=1;
 
 int core0_main(void)
 {
@@ -60,7 +61,7 @@ int core0_main(void)
 	//***************************交互的初始化**************************
 	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);      //初始化串口0与电脑上位机通讯
 	uart_init(BLUETOOTH_CH9141_UART, BLUETOOTH_CH9141_UART_BAUD, BLUETOOTH_CH9141_UART_TX, BLUETOOTH_CH9141_UART_RX);//初始化蓝牙模块所用的串口
-	lcd_init();                                                     //初始化TFT屏幕
+//	lcd_init();                                                     //初始化TFT屏幕
 	gpio_init(P20_8, GPO, 1, PUSHPULL);                             //初始化LED：设置P20_8为输出
 	gpio_init(P20_9, GPO, 1, PUSHPULL);
     gpio_init(P21_4, GPO, 1, PUSHPULL);
@@ -68,7 +69,7 @@ int core0_main(void)
     //*****************************************************************
 
     //**************************传感器模块初始化**************************
-	mt9v03x_init(); //初始化摄像头
+//	mt9v03x_init(); //初始化摄像头
 	//********************************************************************
 
 	//**************************驱动模块初始化**************************
@@ -91,13 +92,18 @@ int core0_main(void)
 	enableInterrupts();
 
 	/*电机驱动测试*/
-    SteerCtrl(STEER_MID);
-    MotorCtrl(1000,1000);
+//    SteerCtrl(STEER_MID);
+//    MotorCtrl(-1000,1000);
+    pwm_duty(LEFT_MOTOR_PIN1,0);
+    pwm_duty(LEFT_MOTOR_PIN2,10000);
+
+    pwm_duty(RIGHT_MOTOR_PIN1,0);
+    pwm_duty(RIGHT_MOTOR_PIN2,10000);
+    gpio_toggle(P20_8);//翻转IO：LED
 
 	while (TRUE)
 	{
 	    /*初始化参数*/
-
 
 	    //图像处理模块
 	    if(mt9v03x_finish_flag)
@@ -128,6 +134,7 @@ int core0_main(void)
 //	    MotorCtrl(MotorLPWM,MotorRPWM);
 //	    lcd_showint32(0,0,MotorK.P,3);
 //	    lcd_showint32(0,6,MotorK.I,3);
+//	    lcd_showint32(0,3,power_switch,3);
 //	    systick_delay_ms(STM0, 100);
 
 	    /*开环转向环无元素测试*/

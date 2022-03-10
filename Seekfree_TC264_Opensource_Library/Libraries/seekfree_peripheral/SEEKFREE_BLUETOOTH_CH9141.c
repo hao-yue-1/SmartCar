@@ -45,7 +45,8 @@ uint8 mac_address[17];      //本机mac地址
 
 uint8   bluetooth_ch9141_rx_buffer;
 
-uint8 flag_head=0,flag_end=0;                //帧头帧尾flag
+uint8 flag_head=0,flag_end=0;     //帧头帧尾flag
+uint8 i_blue=0;                   //数据包指针
 
 void bluetooth_ch9141_check_response(void);
 
@@ -63,72 +64,45 @@ void bluetooth_ch9141_check_response(void);
 void bluetooth_ch9141_uart_callback()
 {
     //自己的代码部分
-    uint8 uart_rx_buf[11];                       //数据包
+    uint8 uart_rx_buf[12];                       //数据包
     uint8 err;                                   //校验和
-    uint8 i=0;
-//    uint8 flag_head=0,flag_end=0;                //帧头帧尾flag
 
     while(uart_query(BLUETOOTH_CH9141_UART, &bluetooth_ch9141_rx_buffer))
     {
         //逐飞的蓝牙模块代码，这里注释掉替换为JDY-31蓝牙模块自己编写的中断接收处理代码
-        if(1 == at_mode)
+        if(bluetooth_ch9141_rx_buffer==0xA5&&i_blue==0)
         {
-            //进入AT模式 接收应答信号 此处if语句内代码用户不要改动
-            at_mode_data[at_mode_num++] = bluetooth_ch9141_rx_buffer;
-            bluetooth_ch9141_check_response();
+            flag_head=1;    //接收到帧头
         }
-        else if(2 == at_mode)
+        if(flag_head==1)    //已经接收到帧头
         {
-            //模块正在复位中 此处if语句内代码用户不要改动
-            at_mode_num++;
-        }
-        else
-        {
-            //透传模式 用户在此处接收配对的蓝牙发送过来的额数据
-            //接到一个字节后单片机将会进入此处，通过在此处读取bluetooth_ch9141_rx_buffer可以取走数据
-
-            // 读取无线串口的数据 并且置位接收标志
-            uart_flag = 1;
-            uart_data = bluetooth_ch9141_rx_buffer;
-
-            if(bluetooth_ch9141_rx_buffer==0xA5&&flag_end==0)
+            uart_rx_buf[i_blue++]=bluetooth_ch9141_rx_buffer;
+            if(i_blue==12)   //已经接收完整组数据包
             {
-                flag_head=1;    //接收到帧头
-            }
-            if(bluetooth_ch9141_rx_buffer==0x5A&&flag_head==1)
-            {
-                flag_end=1;     //接收到帧尾
-            }
-            if(flag_head==1)    //已经接收到帧头
-            {
-                uart_rx_buf[i]=bluetooth_ch9141_rx_buffer;
-                i++;
-                if(i==10)   //已经接收完整组数据包
+                //进行帧尾的判断
+                if(bluetooth_ch9141_rx_buffer!=0x5A)    //最后一帧不是帧尾
                 {
-                    //进行帧尾的判断
-                    if(bluetooth_ch9141_rx_buffer!=0x5A)    //最后一帧不是帧尾
+                    flag_head=0;
+                    i_blue=0;
+                    return; //直接退出中断
+                }
+                else                                    //最后一帧是帧尾
+                {
+                    err = ((uint8)(uart_rx_buf[1]+uart_rx_buf[2]+uart_rx_buf[3]+uart_rx_buf[4]+uart_rx_buf[5]+uart_rx_buf[6]+uart_rx_buf[7]+uart_rx_buf[8]+uart_rx_buf[9])&0xFF);
+                    if(err!=uart_rx_buf[10])
                     {
                         flag_head=0;
-                        flag_end=0;
-                        i=0;
-                        return; //直接退出中断
+                        i_blue=0;
+                        return; //校验和错误，直接return
                     }
-                    else                                    //最后一帧是帧尾
-                    {
-                        err = ((uint8)(uart_rx_buf[1]+uart_rx_buf[2]+uart_rx_buf[3]+uart_rx_buf[4]+uart_rx_buf[5]+uart_rx_buf[6]+uart_rx_buf[7]+uart_rx_buf[0])&0xFF);
-                        if(err!=uart_rx_buf[8])
-                        {
-                            flag_head=0;
-                            flag_end=0;
-                            return; //校验和错误，直接return
-                        }
-                        //校验和正确，赋值操作
-                        MotorK.P=(int)uart_rx_buf[0];
-                        MotorK.I=(int)uart_rx_buf[4];
-                        flag_head=0;
-                        flag_end=0;
-                        return;
-                    }
+                    //校验和正确，赋值操作
+                    power_switch=(char)uart_rx_buf[1];
+                    MotorK.P=(int)uart_rx_buf[2];
+                    MotorK.I=(int)uart_rx_buf[6];
+
+                    flag_head=0;
+                    i_blue=0;
+                    return;
                 }
             }
         }
