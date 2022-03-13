@@ -271,12 +271,12 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
  ** 注    意：1 . 目前仅仅是正入三岔的时候的函数，因为三岔前面都会有个弯道所以会出现车身斜的情况，此时的左右拐点并不一定都存在
  **           2.这个是进三岔的函数，出三岔时候应该重写一个，并在进入三岔后再开启出三岔的判断
  *********************************************************************************************/
-uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR,Point *InflectionC)
+uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR,Point *InflectionC)
 {
-    GetDownInflection(startline, endline, LeftLine, RightLine, InflectionL, InflectionR);//获取左右拐点
-    if(InflectionL->X!=0 && InflectionR->X!=0 && LeftLine[InflectionL->Y-5]!=0)//当左右拐点存在,且左右拐点不会太快出现丢线情况
+    //此处默认使用该函数的时候前面已经判断了左右下拐点存在
+    if(LeftLine[DownInflectionL.Y-5]!=0 && RightLine[DownInflectionR.Y-5]!=0)//当左右拐点存在,且左右拐点不会太快出现丢线情况
     {
-        GetForkUpInflection(*InflectionL, *InflectionR, InflectionC);//去搜索上拐点
+        GetForkUpInflection(DownInflectionL, DownInflectionR, InflectionC);//去搜索上拐点
         if(InflectionC->X!=0)
         {
             //关于三岔的上拐点还会有其他的条件判断，比如不超过多少行什么的，这个要具体才能判断了
@@ -296,7 +296,7 @@ uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point 
  **           Point *UpInflectionC: 左边上拐点
  **           Point *UpInflectionC: 右边上拐点
  ** 返 回 值: 无
- ** 说    明: 无
+ ** 说    明: 此函数仅仅是正入十字时的一个操作函数，不是识别函数
  ** 作    者: LJF
  **********************************************************************************/
 void GetCrossRoadsUpInflection(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR,Point *UpInflectionL,Point *UpInflectionR)
@@ -325,5 +325,32 @@ void GetCrossRoadsUpInflection(int *LeftLine,int *RightLine,Point DownInflection
             FillingLine(DownInflectionR,*UpInflectionR);                        //补线处理
             break;//记录完之后就退出循环
         }
+    }
+}
+
+/********************************************************************************************
+ ** 函数功能: 识别十字路口
+ ** 参    数: 左线数组：int *LeftLine
+ **           右线数组：int *RightLine
+ **           左下拐点：Point DownInflectionL
+ **           右下拐点：Point DownInflectionR
+ ** 返 回 值: 0：不是十字路口
+ **           1：正入十字
+ ** 作    者: LJF
+ ** 注    意：无
+ *********************************************************************************************/
+uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR)
+{
+    if(LostNum_LeftLine>30 && LostNum_RightLine>30)//左右两边大量丢线
+    {
+        return 1;//正入十字
+    }
+    else if(LostNum_LeftLine>60 && DownInflectionR.X!=0 && LeftLine[DownInflectionR.Y-5]==0)//左边丢线超过一半，并且右拐点上面一段对应的左边丢线
+    {
+        return 2;//向右斜入十字
+    }
+    else if(LostNum_RightLine>60 && DownInflectionL.X!=0 && LeftLine[DownInflectionL.Y-5]==0)//左边丢线超过一半，并且右拐点上面一段对应的左边丢线
+    {
+        return 3;//向左斜入十字
     }
 }
