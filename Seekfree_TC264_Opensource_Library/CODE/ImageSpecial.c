@@ -336,6 +336,8 @@ void GetCrossRoadsUpInflection(int *LeftLine,int *RightLine,Point DownInflection
  **           右下拐点：Point DownInflectionR
  ** 返 回 值: 0：不是十字路口
  **           1：正入十字
+ **           2：右斜入十字
+ **           3：左斜入十字
  ** 作    者: LJF
  ** 注    意：无
  *********************************************************************************************/
@@ -349,8 +351,9 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
     {
         return 2;//向右斜入十字
     }
-    else if(LostNum_RightLine>60 && DownInflectionL.X!=0 && LeftLine[DownInflectionL.Y-5]==0)//左边丢线超过一半，并且右拐点上面一段对应的左边丢线
+    else if(LostNum_RightLine>60 && DownInflectionL.X!=0 && RightLine[DownInflectionL.Y-5]==MT9V03X_W-1)//左边丢线超过一半，并且右拐点上面一段对应的左边丢线
     {
         return 3;//向左斜入十字
     }
+    else return 0;
 }
