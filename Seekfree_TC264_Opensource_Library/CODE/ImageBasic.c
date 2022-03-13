@@ -165,9 +165,10 @@ void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Po
 //            lcd_showint32(TFT_X_MAX-50,6,InflectionR->X,3);
 //            systick_delay_ms(STM0, 1000);
         }
-        /*打印被判断为拐点的列坐标，用于调试
-        lcd_showint32(0,0,LeftLine[i],3);
-        systick_delay_ms(STM0, 800);*/
+        /*打印被判断为拐点的列坐标，用于调试*/
+//        lcd_drawpoint(RightLine[i],i,RED);
+//        lcd_showint32(0,0,RightLine[i],3);
+//        systick_delay_ms(STM0, 800);
     }
 }
 

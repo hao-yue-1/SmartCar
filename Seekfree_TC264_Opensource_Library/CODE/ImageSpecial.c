@@ -274,7 +274,7 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
 uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR,Point *InflectionC)
 {
     GetDownInflection(startline, endline, LeftLine, RightLine, InflectionL, InflectionR);//获取左右拐点
-    if(InflectionL->X!=0 && InflectionR->X!=0)//当左右拐点存在
+    if(InflectionL->X!=0 && InflectionR->X!=0 && LeftLine[InflectionL->Y-5]!=0)//当左右拐点存在,且左右拐点不会太快出现丢线情况
     {
         GetForkUpInflection(*InflectionL, *InflectionR, InflectionC);//去搜索上拐点
         if(InflectionC->X!=0)

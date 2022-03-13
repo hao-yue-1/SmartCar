@@ -113,22 +113,45 @@ int core0_main(void)
 	        GetImagBasic(LeftLine,CentreLine,RightLine);
 //	        for(int i=MT9V03X_H;i>0;i--)
 //	        {
-//	            lcd_drawpoint(LeftLine[i],i,BLUE);
-//	            lcd_drawpoint(RightLine[i],i,RED);
 //	            lcd_drawpoint(CentreLine[i],i,RED);
+//	            lcd_drawpoint(RightLine[i],i,RED);
 //	        }
 
-	        /*十字路口测试*/
-	        GetDownInflection(100,10,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
-	        lcd_drawpoint(LeftDownPoint.X,LeftDownPoint.Y,GREEN);
-            lcd_drawpoint(RightDownPoint.X,RightDownPoint.Y,GREEN);
-//            systick_delay_ms(STM0, 1000);
-	        GetCrossRoadsUpInflection(LeftLine,RightLine,LeftDownPoint,RightDownPoint,&CrossRoadUpLPoint,&CrossRoadUpRPoint);
-	        lcd_drawpoint(CrossRoadUpLPoint.X,CrossRoadUpLPoint.Y,RED);
-	        lcd_drawpoint(CrossRoadUpRPoint.X,CrossRoadUpRPoint.Y,RED);
-//	        systick_delay_ms(STM0, 1000);
-	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
-	        systick_delay_ms(STM0, 500);
+	        /*三岔和十字结合的图像处理逻辑测试*/
+	        GetDownInflection(110,10,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
+	        if(LeftDownPoint.X!=0 && RightDownPoint.X!=0)//当左右拐点存在
+	        {
+	            if(LeftLine[RightDownPoint.Y-5]!=0)//拐点上面一点不会太快出现丢线现象:三岔
+	            {
+                    GetForkUpInflection(LeftDownPoint, RightDownPoint, &ForkUpPoint);//去搜索上拐点
+                    if(ForkUpPoint.X!=0 && ForkUpPoint.Y!=0)//上拐点存在时
+                    {
+                        FillingLine(LeftDownPoint,ForkUpPoint);
+                        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
+                        systick_delay_ms(STM0, 1000);
+                    }
+	            }
+	            else
+	            {
+                    GetCrossRoadsUpInflection(LeftLine,RightLine,LeftDownPoint, RightDownPoint, &CrossRoadUpLPoint,&CrossRoadUpRPoint);
+                    if(CrossRoadUpLPoint.X!=0 && CrossRoadUpLPoint.Y!=0 && CrossRoadUpRPoint.X!=0 && CrossRoadUpRPoint.Y!=0)
+                    {
+                        FillingLine(LeftDownPoint,CrossRoadUpLPoint);
+                        FillingLine(RightDownPoint,CrossRoadUpRPoint);
+                        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
+                        systick_delay_ms(STM0, 1000);
+                    }
+	            }
+	        }
+	        //根据补线的二值化图像重新扫线
+	        GetImagBasic(LeftLine,CentreLine,RightLine);
+            for(int i=MT9V03X_H;i>0;i--)
+            {
+                lcd_drawpoint(LeftLine[i],i,RED);
+                lcd_drawpoint(CentreLine[i],i,RED);
+                lcd_drawpoint(RightLine[i],i,RED);
+            }
+            systick_delay_ms(STM0, 1000);
 
 	        /*斜率函数测试*/
 //	        Bias=Regression_Slope(80,40,CentreLine);
