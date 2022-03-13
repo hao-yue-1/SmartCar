@@ -105,7 +105,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
         }
         if(flag_r==0)   //右边界丢线
         {
-            RightLine[row]=MT9V03X_W;   //右边界点等于图像的右边界
+            RightLine[row]=MT9V03X_W-1;   //右边界点等于图像的右边界
             LostNum_RightLine++;        //右丢线数+1
         }
         CentreLine[row]=(LeftLine[row]+RightLine[row])/2;   //记录中线点
@@ -146,7 +146,8 @@ void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Po
     {
         //遍历左线，求出先变小大后变小的点，多加三个点的判断是为了误判，左边丢线为0
         /*注意：这里如果判断条件是和相邻的1,3的值对比的话，会区间太小从而如果有相等的列数存在的话，会影响判断，所以需要改大比较的区间*/
-        if(LeftLine[i]>LeftLine[i-3] && LeftLine[i]>LeftLine[i-5] && LeftLine[i]>LeftLine[i+3] && LeftLine[i]>LeftLine[i+5])
+        //加了个判断InflectionL->Y==0是为了从下往上遍历，找到了之后就不再继续往上找了，这样遍历时候的截距图片就不用刚刚好了
+        if(InflectionL->Y==0 && LeftLine[i]>LeftLine[i-3] && LeftLine[i]>LeftLine[i-5] && LeftLine[i]>LeftLine[i+3] && LeftLine[i]>LeftLine[i+5])
         {
             InflectionL->X=LeftLine[i];//存入拐点的（x,y）坐标
             InflectionL->Y=i;
@@ -155,7 +156,8 @@ void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Po
 //            systick_delay_ms(STM0, 1000);
         }
         //遍历右线，求出列数最小的点就是右边的拐点，右边线丢线为MT9V03X_W
-        if(RightLine[i]<RightLine[i-3] && RightLine[i]<RightLine[i-5] && RightLine[i]<RightLine[i+3] && RightLine[i]<RightLine[i+5])
+        //加了个判断InflectionR->Y==0是为了从下往上遍历，找到了之后就不再继续往上找了，这样遍历时候的截距图片就不用刚刚好了
+        if(InflectionR->Y==0 && RightLine[i]<RightLine[i-3] && RightLine[i]<RightLine[i-5] && RightLine[i]<RightLine[i+3] && RightLine[i]<RightLine[i+5])
         {
             InflectionR->X=RightLine[i];//存入拐点的（x,y）坐标
             InflectionR->Y=i;

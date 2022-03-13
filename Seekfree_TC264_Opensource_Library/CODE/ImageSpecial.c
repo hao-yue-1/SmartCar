@@ -161,7 +161,7 @@ uint8 CircleIslandBegin(int *LeftLine,int *RightLine,Point InflectionL,Point Inf
     {
         for(row=InflectionR.Y;row-1-C_BIAS>0;row--)      //从右拐点开始向前行扫线
         {
-            if(RightLine[row]==MT9V03X_W&&RightLine[row-1]!=MT9V03X_W)  //该行丢线而下一行不丢线
+            if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)  //该行丢线而下一行不丢线
             {
                 //记录上拐点
                 Inflection.Y=row-1-C_BIAS;
@@ -215,7 +215,7 @@ uint8 CrossLoopEnd(int *LeftLine,int *RightLine,Point InflectionL,Point Inflecti
     {
         for(row=InflectionR.Y;row>0;row--)
         {
-            if(RightLine[row]==MT9V03X_W&&RightLine[row-1]!=MT9V03X_W)  //该行丢线而下一行不丢线
+            if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)  //该行丢线而下一行不丢线
             {
                 return 1;
             }
@@ -287,4 +287,43 @@ uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point 
         }
     }
     return 0;
+}
+
+/*********************************************************************************
+ ** 函数功能: 根据左右下拐点搜寻出十字路口的左右上拐点
+ ** 参    数: Point InflectionL: 左边拐点
+ **           Point InflectionR: 右边拐点
+ **           Point *UpInflectionC: 左边上拐点
+ **           Point *UpInflectionC: 右边上拐点
+ ** 返 回 值: 无
+ ** 说    明: 无
+ ** 作    者: LJF
+ **********************************************************************************/
+void GetCrossRoadsUpInflection(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR,Point *UpInflectionL,Point *UpInflectionR)
+{
+    int row=0;//起始行
+    UpInflectionL->X=DownInflectionL.X+5;UpInflectionL->Y=0;//左上拐点置零
+    UpInflectionR->X=DownInflectionR.X-5;UpInflectionR->Y=0;//右上拐点置零
+
+    for(row=DownInflectionL.Y;row>0;row--)
+    {
+        if(BinaryImage[row][UpInflectionL->X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionL->X]==IMAGE_BLACK)  //由白到黑跳变
+        {
+            //记录上拐点
+            UpInflectionL->Y=row-1;
+            FillingLine(DownInflectionL,*UpInflectionL);                        //补线处理
+            break;//记录完之后就退出循环
+        }
+    }
+
+    for(row=DownInflectionR.Y;row>0;row--)
+    {
+        if(BinaryImage[row][UpInflectionR->X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionR->X]==IMAGE_BLACK)  //由白到黑跳变
+        {
+            //记录上拐点
+            UpInflectionR->Y=row-1;
+            FillingLine(DownInflectionR,*UpInflectionR);                        //补线处理
+            break;//记录完之后就退出循环
+        }
+    }
 }
