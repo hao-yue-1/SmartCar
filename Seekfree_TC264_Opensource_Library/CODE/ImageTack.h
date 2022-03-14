@@ -14,6 +14,7 @@
 
 float Regression_Slope(int startline,int endline,int *CentreLine);//求中线数组点拟合出来的回归方程
 void FillingLine(Point StarPoint,Point EndPoint);//根据两点进行补线
+float DifferentBias(int startline,int endline,int *CentreLine);
 
 
 #endif /* CODE_IMAGETACK_H_ */

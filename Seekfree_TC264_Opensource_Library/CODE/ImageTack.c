@@ -77,3 +77,25 @@ void FillingLine(Point StarPoint,Point EndPoint)
 //        systick_delay_ms(STM0, 800);
     }
 }
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 根据中线数组所在离散的点计算出离中线的偏差Bias
+ ** 参    数: int starline:    离散点的起始行
+ **           int endline:     离散点的结束行
+ **           int *CentreLine： 中线数组
+ ** 返 回 值: 偏差Bias
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+float DifferentBias(int startline,int endline,int *CentreLine)
+{
+    float bias=0;
+
+    for(int i=startline;i>endline;i--)
+    {
+        bias+=(MT9V03X_W/2-CentreLine[i]);  //累积偏差
+    }
+
+    return bias/(startline-endline);    //返回偏差的均值
+}

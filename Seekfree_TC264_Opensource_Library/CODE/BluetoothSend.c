@@ -31,12 +31,11 @@ void BluetooothSendBias(float Bias)
     uint8 uart_tx_buf[7];                       //数据包
     uart_tx_buf[0]=0xA5;                        //包头
     Float_to_Byte(Bias,&uart_tx_buf[1]);        //原数据
-
     //计算校验和
     for(int cnt_tx=1;cnt_tx<=7-3;cnt_tx++)
         uart_tx_buf[7-2] += uart_tx_buf[cnt_tx];
     uart_tx_buf[7-2] = uart_tx_buf[7-2]&0xff;
-
+//    uart_tx_buf[5]=(uint8)Bias;                 //计算校验和
     uart_tx_buf[6]=0x5A;                        //包尾
 
     uart_putbuff(UART_2,uart_tx_buf,7);         //通过串口2发送数据到蓝牙
