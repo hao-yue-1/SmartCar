@@ -15,8 +15,8 @@
  *********************************************************************************************/
 void PID_init(SteerPID *SteerK,MotorPID *MotorK)
 {
-    SteerK->P=10;SteerK->D=0;
-    MotorK->P=1;MotorK->I=1;
+    SteerK->P=5;SteerK->D=5;
+    MotorK->P=20;MotorK->I=30;
 }
 
 /*
@@ -53,9 +53,9 @@ uint32 Steer_Position_PID(float SlopeBias,SteerPID K)//舵机位置式PID控制，采用分
  **           2.输出的是增量，即变化量，可以有更好的容错
  ********************************************************************************************
  */
-int16 Speed_PI_Left(int16 left_encoder,int16 left_target,MotorPID K)
+int Speed_PI_Left(int16 left_encoder,int16 left_target,MotorPID K)
 {
-    static int16 Bias,Last_Bias,PWM;    //当前偏差，上一次偏差，输出的PWM
+    static int Bias,Last_Bias,PWM;    //当前偏差，上一次偏差，输出的PWM
 
     Bias=left_target-left_encoder;           //求出当前偏差，期望值-当前值
     PWM+=K.P*(Bias-Last_Bias)+K.I*Bias;      //增量式PI，并把结果直接叠加在上一次的PWM上
@@ -77,9 +77,9 @@ int16 Speed_PI_Left(int16 left_encoder,int16 left_target,MotorPID K)
  **           2.输出的是增量，即变化量，可以有更好的容错
  ********************************************************************************************
  */
-int16 Speed_PI_Right(int16 right_encoder,int16 right_target,MotorPID K)
+int Speed_PI_Right(int16 right_encoder,int16 right_target,MotorPID K)
 {
-    static int16 Bias,Last_Bias,PWM;    //当前偏差，上一次偏差，输出的PWM
+    static int Bias,Last_Bias,PWM;    //当前偏差，上一次偏差，输出的PWM
 
     Bias=right_target-right_encoder;         //求出当前偏差，期望值-当前值
     PWM+=K.P*(Bias-Last_Bias)+K.I*Bias;      //增量式PI，并把结果直接叠加在上一次的PWM上

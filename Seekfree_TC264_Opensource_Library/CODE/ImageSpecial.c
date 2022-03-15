@@ -148,7 +148,7 @@ uint8 CircleIslandBegin(int *LeftLine,int *RightLine,Point InflectionL,Point Inf
                 //记录上拐点
                 Inflection.Y=row-1-C_BIAS;
                 Inflection.X=InflectionL.X+10;  //由于扫线的特性，这里的处理方法和环岛在右边不一样
-                FillingLine(InflectionL,Inflection);                        //补线处理
+//                FillingLine(InflectionL,Inflection);                        //补线处理
                 //Debug：打印补线后的图像
 //                lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
 //                systick_delay_ms(STM0, 1000);
@@ -166,7 +166,7 @@ uint8 CircleIslandBegin(int *LeftLine,int *RightLine,Point InflectionL,Point Inf
                 //记录上拐点
                 Inflection.Y=row-1-C_BIAS;
                 Inflection.X=RightLine[row-1-C_BIAS];
-                FillingLine(InflectionR,Inflection);                        //补线处理
+//                FillingLine(InflectionR,Inflection);                        //补线处理
                 //Debug：打印补线后的图像
 //                lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
 //                systick_delay_ms(STM0, 1000);
@@ -279,11 +279,7 @@ uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point 
         GetForkUpInflection(DownInflectionL, DownInflectionR, InflectionC);//去搜索上拐点
         if(InflectionC->X!=0)
         {
-            //关于三岔的上拐点还会有其他的条件判断，比如不超过多少行什么的，这个要具体才能判断了
-            //三岔成立的条件太简单了会存在误判，比如从十字出来的时候就可能会遇到同样的具有三个点
-            //这里我想采用元素互斥的原则,给一个非十字的标志
             return 1;//三个拐点存在三岔成立
-            /*还需要写根据左右选择标识符来选择往左还是右边从而进行补线*/
         }
     }
     return 0;
@@ -311,7 +307,7 @@ void GetCrossRoadsUpInflection(int *LeftLine,int *RightLine,Point DownInflection
         {
             //记录上拐点
             UpInflectionL->Y=row-1;
-            FillingLine(DownInflectionL,*UpInflectionL);                        //补线处理
+//            FillingLine(DownInflectionL,*UpInflectionL);                        //补线处理
             break;//记录完之后就退出循环
         }
     }
@@ -322,7 +318,7 @@ void GetCrossRoadsUpInflection(int *LeftLine,int *RightLine,Point DownInflection
         {
             //记录上拐点
             UpInflectionR->Y=row-1;
-            FillingLine(DownInflectionR,*UpInflectionR);                        //补线处理
+//            FillingLine(DownInflectionR,*UpInflectionR);                        //补线处理
             break;//记录完之后就退出循环
         }
     }
