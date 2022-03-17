@@ -39,7 +39,7 @@
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
 //定义变量
-int *LeftLine,*CentreLine,*RightLine;   //左中右三线
+int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 SteerPID SteerK;
 MotorPID MotorK;
 char power_switch=1;
@@ -49,7 +49,6 @@ int core0_main(void)
 	get_clk();//获取时钟频率  务必保留
 	//用户在此处调用各种初始化函数等
 	//***************************变量定义**************************
-	int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 	Point LeftDownPoint,RightDownPoint;     //左右下拐点
 	LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;
 	Point ForkUpPoint;
@@ -121,7 +120,7 @@ int core0_main(void)
 
 	        /*扫描左右拐点*/
 	        GetDownInflection(100,40,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
-	        ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint,&ForkUpPoint);
+	        ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);
 
 	        FillingLine(LeftLine,CentreLine,RightLine,LeftDownPoint,ForkUpPoint);
             //把中线画出来

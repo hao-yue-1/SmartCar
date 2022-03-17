@@ -247,10 +247,6 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
         if(BinaryImage[i][UpInflectionC->X]==IMAGE_WHITE && BinaryImage[i-1][UpInflectionC->X]==IMAGE_BLACK)
         {
             UpInflectionC->Y=i;//Y坐标是行数
-            /*打印上拐点坐标，用于测试*/
-//            lcd_showint32(0,0,UpInflectionC->Y,3);
-//            lcd_showint32(TFT_X_MAX-50,0,UpInflectionC->X,3);
-//            systick_delay_ms(STM0, 1000);
             return;
         }
     }
@@ -271,14 +267,16 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
  ** 注    意：1 . 目前仅仅是正入三岔的时候的函数，因为三岔前面都会有个弯道所以会出现车身斜的情况，此时的左右拐点并不一定都存在
  **           2.这个是进三岔的函数，出三岔时候应该重写一个，并在进入三岔后再开启出三岔的判断
  *********************************************************************************************/
-uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR,Point *InflectionC)
+uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR)
 {
+    Point UpInflectionC;
     //此处默认使用该函数的时候前面已经判断了左右下拐点存在
     if(LeftLine[DownInflectionL.Y-5]!=0 && RightLine[DownInflectionR.Y-5]!=0)//当左右拐点存在,且左右拐点不会太快出现丢线情况
     {
-        GetForkUpInflection(DownInflectionL, DownInflectionR, InflectionC);//去搜索上拐点
-        if(InflectionC->X!=0)
+        GetForkUpInflection(DownInflectionL, DownInflectionR, &UpInflectionC);//去搜索上拐点
+        if(UpInflectionC.X!=0)
         {
+            FillingLine(LeftLine, CentreLine, RightLine, DownInflectionL,UpInflectionC);//三岔成立了就在返回之前补线
             return 1;//三个拐点存在三岔成立
         }
     }
@@ -307,7 +305,6 @@ void GetCrossRoadsUpInflection(int *LeftLine,int *RightLine,Point DownInflection
         {
             //记录上拐点
             UpInflectionL->Y=row-1;
-//            FillingLine(DownInflectionL,*UpInflectionL);                        //补线处理
             break;//记录完之后就退出循环
         }
     }
@@ -318,7 +315,6 @@ void GetCrossRoadsUpInflection(int *LeftLine,int *RightLine,Point DownInflection
         {
             //记录上拐点
             UpInflectionR->Y=row-1;
-//            FillingLine(DownInflectionR,*UpInflectionR);                        //补线处理
             break;//记录完之后就退出循环
         }
     }
@@ -339,16 +335,38 @@ void GetCrossRoadsUpInflection(int *LeftLine,int *RightLine,Point DownInflection
  *********************************************************************************************/
 uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR)
 {
+    int row=0;//起始行
+    Point UpInflectionL,UpInflectionR;//左右上拐点
+    UpInflectionL.X=DownInflectionL.X+5;UpInflectionL.Y=0;//左上拐点置零
+    UpInflectionR.X=DownInflectionR.X-5;UpInflectionR.Y=0;//右上拐点置零
     if(LostNum_LeftLine>30 && LostNum_RightLine>30)//左右两边大量丢线
     {
         return 1;//正入十字
     }
     else if(LostNum_LeftLine>60 && DownInflectionR.X!=0 && LeftLine[DownInflectionR.Y-5]==0)//左边丢线超过一半，并且右拐点上面一段对应的左边丢线
     {
+        for(row=DownInflectionR.Y;row>0;row--)//直接右下拐点往上冲找到上拐点
+        {
+            if(BinaryImage[row][UpInflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionR.X]==IMAGE_BLACK)  //由白到黑跳变
+            {
+                UpInflectionR.Y=row-1;//记录上拐点
+                FillingLine(LeftLine, CentreLine, RightLine, DownInflectionR, UpInflectionR);
+                break;//记录完之后就退出循环
+            }
+        }
         return 2;//向右斜入十字
     }
     else if(LostNum_RightLine>60 && DownInflectionL.X!=0 && RightLine[DownInflectionL.Y-5]==MT9V03X_W-1)//左边丢线超过一半，并且右拐点上面一段对应的左边丢线
     {
+        for(row=DownInflectionL.Y;row>0;row--)
+        {
+            if(BinaryImage[row][UpInflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionL.X]==IMAGE_BLACK)  //由白到黑跳变
+            {
+                UpInflectionL.Y=row-1;//记录上拐点
+                FillingLine(LeftLine, CentreLine, RightLine, DownInflectionL, UpInflectionL);
+                break;//记录完之后就退出循环
+            }
+        }
         return 3;//向左斜入十字
     }
     else return 0;
