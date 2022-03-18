@@ -14,6 +14,7 @@
 typedef struct SteerPID
 {
     int P;
+    int I;
     int D;
 }SteerPID;
 //电机PID控制的结构体

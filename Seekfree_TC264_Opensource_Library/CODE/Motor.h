@@ -10,6 +10,7 @@
 
 #include "zf_gtm_pwm.h"
 #include "zf_gpt12.h"
+#include "zf_gpio.h"
 
 //定义控制电机的PWM引脚
 #define LEFT_MOTOR_PIN1     ATOM0_CH4_P02_4

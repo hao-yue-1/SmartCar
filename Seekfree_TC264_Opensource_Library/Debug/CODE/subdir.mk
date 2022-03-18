@@ -6,6 +6,7 @@
 C_SRCS += \
 ../CODE/Binarization.c \
 ../CODE/BluetoothSend.c \
+../CODE/Filter.c \
 ../CODE/FuzzyPID.c \
 ../CODE/ImageBasic.c \
 ../CODE/ImageSpecial.c \
@@ -17,6 +18,7 @@ C_SRCS += \
 OBJS += \
 ./CODE/Binarization.o \
 ./CODE/BluetoothSend.o \
+./CODE/Filter.o \
 ./CODE/FuzzyPID.o \
 ./CODE/ImageBasic.o \
 ./CODE/ImageSpecial.o \
@@ -28,6 +30,7 @@ OBJS += \
 COMPILED_SRCS += \
 ./CODE/Binarization.src \
 ./CODE/BluetoothSend.src \
+./CODE/Filter.src \
 ./CODE/FuzzyPID.src \
 ./CODE/ImageBasic.src \
 ./CODE/ImageSpecial.src \
@@ -39,6 +42,7 @@ COMPILED_SRCS += \
 C_DEPS += \
 ./CODE/Binarization.d \
 ./CODE/BluetoothSend.d \
+./CODE/Filter.d \
 ./CODE/FuzzyPID.d \
 ./CODE/ImageBasic.d \
 ./CODE/ImageSpecial.d \
@@ -52,7 +56,7 @@ C_DEPS += \
 CODE/%.src: ../CODE/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: TASKING C/C++ Compiler'
-	cctc -D__CPU__=tc26xb "-fE:/nodeanddata/studio/FSL/Complete/S17/Project/SmartCar/Seekfree_TC264_Opensource_Library/Debug/TASKING_C_C___Compiler-Include_paths.opt" --iso=99 --c++14 --language=+volatile --exceptions --anachronisms --fp-model=3 -O0 --tradeoff=4 --compact-max-size=200 -g -Wc-w544 -Wc-w557 -Ctc26xb -o "$@"  "$<"  -cs --dep-file="$(@:.src=.d)" --misrac-version=2012 -N0 -Z0 -Y0 2>&1;
+	cctc -D__CPU__=tc26xb "-fD:/Infineon/InfinenoProject/SmartCar/Seekfree_TC264_Opensource_Library/Debug/TASKING_C_C___Compiler-Include_paths.opt" --iso=99 --c++14 --language=+volatile --exceptions --anachronisms --fp-model=3 -O0 --tradeoff=4 --compact-max-size=200 -g -Wc-w544 -Wc-w557 -Ctc26xb -o "$@"  "$<"  -cs --dep-file="$(@:.src=.d)" --misrac-version=2012 -N0 -Z0 -Y0 2>&1;
 	@echo 'Finished building: $<'
 	@echo ' '
 
