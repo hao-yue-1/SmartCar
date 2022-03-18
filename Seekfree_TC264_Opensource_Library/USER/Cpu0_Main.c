@@ -59,6 +59,7 @@ int core0_main(void)
 	uint32 StreePWM=STEER_MID;
 	int16 encoder_l=0,encoder_r=0;   //左右电机编码器
 	int pwm_l=0,pwm_r=0;             //左右电机PWM
+	int flag;//三岔识别的标志变量
 	//*****************************************************************
 
 	//***************************交互的初始化**************************
@@ -98,7 +99,16 @@ int core0_main(void)
 	enableInterrupts();
 
 	/*电机驱动测试*/
-//	MotorCtrl(2000,2000);
+
+//	for(int i=500;i<5000;i+=500)
+//    {
+//        MotorCtrl(i,i);
+//        systick_delay_ms(STM0,3000);
+//        MotorEncoder(&encoder_l,&encoder_r);              //获取左右电机编码器
+//        printf("encoder_l=%d   encoder_r=%d   i=%d\r\n",encoder_l,encoder_r,i);
+//    }
+
+	MotorCtrl(1500,1500);
 
 	while (TRUE)
 	{
@@ -113,30 +123,36 @@ int core0_main(void)
 
 	        /*扫线函数测试*/
 	        GetImagBasic(LeftLine,CentreLine,RightLine);
-//	        for(int i=MT9V03X_H;i>0;i--)
-//	        {
-//	            lcd_drawpoint(CentreLine[i],i,RED);
-//	        }
 
-	        /*扫描左右拐点*/
+	        /*路径检测*/
 	        GetDownInflection(100,40,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
-	        ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);
+	        if(!CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint))    //十字
+	        {
+	            flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
+	        }
 
-	        FillingLine(LeftLine,CentreLine,RightLine,LeftDownPoint,ForkUpPoint);
-            //把中线画出来
+	        //把中线画出来
             for(int i=MT9V03X_H;i>0;i--)
             {
+//                lcd_showint32(0, 0, LeftLine[i], 3);
+//                systick_delay_ms(STM0,100);
                 lcd_drawpoint(LeftLine[i],i,GREEN);
                 lcd_drawpoint(CentreLine[i],i,RED);
+//                BluetooothSendBias(LeftLine[i]);
+                lcd_drawpoint(RightLine[i],i,BLUE);
             }
-            systick_delay_ms(STM0, 1000);
-	        /*图像识别*/
-//	        if(ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint,&ForkUpPoint)==1)    //三岔识别
-//	            gpio_toggle(P20_9);
 
 	        /*斜率函数测试*/
 //	        Bias=Regression_Slope(100,40,CentreLine);
 //	        Bias=DifferentBias(100,40,CentreLine);
+            if(flag==1)
+            {
+                Bias=DifferentBias(110,90,CentreLine);
+                gpio_toggle(P21_4);
+                flag=0;
+            }
+            else
+                Bias=DifferentBias(100,60,CentreLine);
 //	        BluetooothSendBias(Bias);//蓝牙发送
 
 	        gpio_toggle(P20_8);//翻转IO：LED
@@ -144,16 +160,19 @@ int core0_main(void)
 	    }
 
 	    /*开环转向环无元素测试*/
-//	    StreePWM=Steer_Position_PID(Bias,SteerK);
-//	    SteerCtrl(StreePWM);
+	    StreePWM=Steer_Position_PID(Bias,SteerK);
+	    SteerCtrl(StreePWM);
 
 	    /*电机速度环测试*/
 //	    MotorEncoder(&encoder_l,&encoder_r);              //获取左右电机编码器
-//	    BluetoothSendToApp(encoder_l,encoder_r);
+////	    BluetoothSendToApp(encoder_l,encoder_r);
 //	    printf("encoder_l=%d      encoder_r=%d\r\n",encoder_l,encoder_r);
-//	    pwm_l=Speed_PI_Right(encoder_l,1000,MotorK);    //左右电机PID
-//	    pwm_r=Speed_PI_Right(encoder_r,1000,MotorK);
-//	    Motor(pwm_l,pwm_r);                             //电机PWM赋值
+//	    systick_delay_ms(STM0,100);
+//	    pwm_l=Speed_PI_Left(encoder_l,35,MotorK);    //左右电机PID
+//	    pwm_r=Speed_PI_Right(encoder_r,35,MotorK);
+//	    MotorCtrl(pwm_l,pwm_r);                             //电机PWM赋值
+
+
 	}
 }
 

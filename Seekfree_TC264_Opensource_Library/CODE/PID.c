@@ -15,7 +15,7 @@
  *********************************************************************************************/
 void PID_init(SteerPID *SteerK,MotorPID *MotorK)
 {
-    SteerK->P=5;SteerK->D=5;
+    SteerK->P=4;SteerK->D=0;
     MotorK->P=20;MotorK->I=30;
 }
 

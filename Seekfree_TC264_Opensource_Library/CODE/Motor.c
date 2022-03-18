@@ -30,12 +30,12 @@ void MotorCtrl(int left_speed,int right_speed)
     //判断电机的正反转并进行速度赋值
     if(left_speed>=0)   //左电机正转
     {
-        gpio_set(P02_6,1);
+        gpio_set(P02_6,0);
         pwm_duty(LEFT_MOTOR_PIN1,left_speed);
     }
     else                //左电机反转
     {
-        gpio_set(P02_6,0);
+        gpio_set(P02_6,1);
         pwm_duty(LEFT_MOTOR_PIN1,-left_speed);
     }
     if(right_speed>=0)  //右电机正转

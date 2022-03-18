@@ -99,7 +99,6 @@ RM := rm -rf
 -include Libraries/infineon_libraries/Service/CpuGeneric/If/subdir.mk
 -include Libraries/infineon_libraries/Infra/Platform/Tricore/Compilers/subdir.mk
 -include CODE/subdir.mk
--include .metadata/.plugins/org.eclipse.cdt.make.core/subdir.mk
 -include subdir.mk
 -include objects.mk
 
