@@ -15,6 +15,6 @@
 #define STEER_LEFT  850                 //舵机向左打死值
 #define STEER_RIGHT 680                 //舵机向右打死值
 
-void SteerCtrl(uint16 pwm);     //控制舵机
+void SteerCtrl(uint32 pwm);     //控制舵机
 
 #endif /* CODE_STEER_H_ */

@@ -6,6 +6,7 @@
  */
 
 #include "Motor.h"
+#include "Filter.h" //滤波
 
 /*
 *********************************************************************************************************
@@ -86,11 +87,41 @@ void MotorCtrl(int left_speed,int right_speed)
 */
 void MotorEncoder(int16* left_encoder,int16* right_encoder)
 {
+    static int16 last_left_encoder,last_right_encoder;
+    int16 error=0;
+
     //左编码器
     *left_encoder = gpt12_get(LEFT_ENCODER);
+
+    error=*left_encoder-last_left_encoder; //计算偏差
+    if(error>500||error<-500)
+    {
+        *left_encoder=last_left_encoder;    //用上一次的值代替这一次的值
+    }
+    if((*left_encoder>0&&*left_encoder<10)||(*left_encoder<0&&*left_encoder>-10))
+    {
+        *left_encoder=last_left_encoder;    //用上一次的值代替这一次的值
+    }
+    *left_encoder=FirstOrderLagFilter(*left_encoder);   //滤波
+    last_left_encoder=*left_encoder;        //保留该次的值作为上一次的值
+
     gpt12_clear(LEFT_ENCODER);
+
     //右编码器
     *right_encoder = -gpt12_get(RIGHT_ENCODER);
+
+    error=*right_encoder-last_right_encoder; //计算偏差
+    if(error>500||error<-500)
+    {
+        *right_encoder=last_right_encoder;    //用上一次的值代替这一次的值
+    }
+    if((*right_encoder>0&&*right_encoder<10)&&(*right_encoder<0&&*right_encoder>-10))
+    {
+        *right_encoder=last_right_encoder;    //用上一次的值代替这一次的值
+    }
+    *right_encoder=FirstOrderLagFilter(*right_encoder); //滤波
+    last_right_encoder=*right_encoder;     //保留该次的值作为上一次的值
+
     gpt12_clear(RIGHT_ENCODER);
 }
 

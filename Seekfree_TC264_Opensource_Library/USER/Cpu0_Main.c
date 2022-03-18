@@ -99,21 +99,11 @@ int core0_main(void)
 	enableInterrupts();
 
 	/*电机驱动测试*/
-
-//	for(int i=500;i<5000;i+=500)
-//    {
-//        MotorCtrl(i,i);
-//        systick_delay_ms(STM0,3000);
-//        MotorEncoder(&encoder_l,&encoder_r);              //获取左右电机编码器
-//        printf("encoder_l=%d   encoder_r=%d   i=%d\r\n",encoder_l,encoder_r,i);
-//    }
-
-	MotorCtrl(1500,1500);
+//	MotorCtrl(-1000,-1000);
 
 	while (TRUE)
 	{
 	    /*初始化参数*/
-
 	    //图像处理模块
 	    if(mt9v03x_finish_flag)
 	    {
@@ -164,14 +154,13 @@ int core0_main(void)
 	    SteerCtrl(StreePWM);
 
 	    /*电机速度环测试*/
-//	    MotorEncoder(&encoder_l,&encoder_r);              //获取左右电机编码器
+	    MotorEncoder(&encoder_l,&encoder_r);              //获取左右电机编码器
 ////	    BluetoothSendToApp(encoder_l,encoder_r);
-//	    printf("encoder_l=%d      encoder_r=%d\r\n",encoder_l,encoder_r);
+	    printf("encoder_l=%d      encoder_r=%d\r\n",encoder_l,encoder_r);
 //	    systick_delay_ms(STM0,100);
-//	    pwm_l=Speed_PI_Left(encoder_l,35,MotorK);    //左右电机PID
-//	    pwm_r=Speed_PI_Right(encoder_r,35,MotorK);
-//	    MotorCtrl(pwm_l,pwm_r);                             //电机PWM赋值
-
+	    pwm_l=Speed_PI_Left(encoder_l,50,MotorK);    //左右电机PID
+	    pwm_r=Speed_PI_Right(encoder_r,50,MotorK);
+	    MotorCtrl(pwm_l,pwm_r);                             //电机PWM赋值
 
 	}
 }
