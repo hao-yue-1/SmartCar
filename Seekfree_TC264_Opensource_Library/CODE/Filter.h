@@ -9,7 +9,7 @@
 #define CODE_FILTER_H_
 
 
-#define FIRST_LAG_P 0.4     //一阶滞后滤波系数，越小滞后效果越强
+#define FIRST_LAG_P 0.6     //一阶滞后滤波系数，越小滞后效果越强
 
 float FirstOrderLagFilter(float value); //一阶滞后滤波算法
 

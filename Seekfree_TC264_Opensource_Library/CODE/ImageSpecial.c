@@ -241,7 +241,7 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
     UpInflectionC->X=(DownInflectionL.X+DownInflectionR.X)/2;//V型上拐点的列坐标为左右拐点均值，需要修改，不一定是正入三岔
     starline=(DownInflectionL.Y+DownInflectionR.Y)/2;//起始行为左右拐点行的均值
     //从下往上找到那个跳变的点即为上拐点
-    for(i=starline;i>0;i--)
+    for(i=starline;i>1;i--)
     {
         //图像数组是[高][宽]
         if(BinaryImage[i][UpInflectionC->X]==IMAGE_WHITE && BinaryImage[i-1][UpInflectionC->X]==IMAGE_BLACK)

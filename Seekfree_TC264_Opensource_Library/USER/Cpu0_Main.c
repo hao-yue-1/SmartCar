@@ -34,7 +34,8 @@
 #include "ImageSpecial.h"   //图像特殊元素处理
 #include "ImageTack.h"      //循迹误差计算
 #include "PID.h"            //PID
-#include "BluetoothSend.h" //蓝牙发送信息给手机APP上位机
+#include "BluetoothSend.h"  //蓝牙发送信息给手机APP上位机
+#include "Filter.h"         //滤波头文件
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -57,8 +58,6 @@ int core0_main(void)
 	CrossRoadUpLPoint.X=0;CrossRoadUpLPoint.Y=0;CrossRoadUpRPoint.X=0;CrossRoadUpRPoint.Y=0;
 	float Bias=0;
 	uint32 StreePWM=STEER_MID;
-	int16 encoder_l=0,encoder_r=0;   //左右电机编码器
-	int pwm_l=0,pwm_r=0;             //左右电机PWM
 	int flag;//三岔识别的标志变量
 	//*****************************************************************
 
@@ -91,6 +90,8 @@ int core0_main(void)
 
 	/**********************PID初始化***********************************************/
 	PID_init(&SteerK,&MotorK);
+	/**********************定时器中断初始化**************************/
+//	pit_interrupt_ms(CCU6_0,PIT_CH0,5);
 	/**************************************************************/
 
     //等待所有核心初始化完毕
@@ -99,7 +100,7 @@ int core0_main(void)
 	enableInterrupts();
 
 	/*电机驱动测试*/
-//	MotorCtrl(-1000,-1000);
+	MotorSetPWM(1500,1500);
 
 	while (TRUE)
 	{
@@ -142,8 +143,13 @@ int core0_main(void)
                 flag=0;
             }
             else
+            {
                 Bias=DifferentBias(100,60,CentreLine);
+            }
+            lcd_showfloat(0, 0, Bias, 3, 3);
+
 //	        BluetooothSendBias(Bias);//蓝牙发送
+
 
 	        gpio_toggle(P20_8);//翻转IO：LED
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
@@ -151,16 +157,17 @@ int core0_main(void)
 
 	    /*开环转向环无元素测试*/
 	    StreePWM=Steer_Position_PID(Bias,SteerK);
+	    printf("Bias=%f     StreePWM=%d\r\n",Bias,StreePWM);
 	    SteerCtrl(StreePWM);
 
 	    /*电机速度环测试*/
-	    MotorEncoder(&encoder_l,&encoder_r);              //获取左右电机编码器
-////	    BluetoothSendToApp(encoder_l,encoder_r);
-	    printf("encoder_l=%d      encoder_r=%d\r\n",encoder_l,encoder_r);
+//	    MotorEncoder(&encoder_l,&encoder_r);              //获取左右电机编码器
+//	    BluetoothSendToApp(encoder_l,encoder_r);
+//	    printf("encoder_l=%d      encoder_r=%d\r\n",encoder_l,encoder_r);
 //	    systick_delay_ms(STM0,100);
-	    pwm_l=Speed_PI_Left(encoder_l,50,MotorK);    //左右电机PID
-	    pwm_r=Speed_PI_Right(encoder_r,50,MotorK);
-	    MotorCtrl(pwm_l,pwm_r);                             //电机PWM赋值
+//	    pwm_l=Speed_PI_Left(encoder_l,50,MotorK);    //左右电机PID
+//	    pwm_r=Speed_PI_Right(encoder_r,50,MotorK);
+//	    MotorSetPWM(pwm_l,pwm_r);                             //电机PWM赋值
 
 	}
 }

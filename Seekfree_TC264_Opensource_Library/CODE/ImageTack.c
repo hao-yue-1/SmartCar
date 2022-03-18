@@ -6,6 +6,7 @@
  */
 
 #include "ImageTack.h"
+#include "SEEKFREE_18TFT.h"
 
 /*
  *******************************************************************************************
@@ -30,23 +31,31 @@ float Regression_Slope(int startline,int endline,int *CentreLine)
 
     for(i=startline;i>endline;i--)
     {
-        SumY-=i;                      //Y行数进行求和
-        SumX+=CentreLine[i];         //X列数进行求和
+        SumX += i;
+        SumY += CentreLine[i];
+//        SumY-=i;                      //Y行数进行求和
+//        SumX+=CentreLine[i];         //X列数进行求和
     }
     avrX=(float)(SumX/SumLines);     //X的平均值
     avrY=(float)(SumY/SumLines);     //Y的平均值
 
     for(i=startline;i>endline;i--)
     {
-        SumUp+=(CentreLine[i]-avrX)*(-i-avrY);//分子
-        SumDown+=(CentreLine[i]-avrX)*(CentreLine[i]-avrX);//分母
+        SumUp+=(CentreLine[i]-avrY)*(i-avrY);//分子
+        SumDown+=(i-avrX)*(i-avrX);//分母
+//        SumUp+=(CentreLine[i]-avrX)*(-i-avrY);//分子
+//        SumDown+=(CentreLine[i]-avrX)*(CentreLine[i]-avrX);//分母
     }
-    if(SumUp==0)//分子为0时即直线与x轴平行，所以此时Bias的分母为0需要做处理
-        Bias=57.3;//tan89°为57.2899
+    if(SumDown==0)
+        Bias=0;
     else
-        //B=(int)(SumUp/SumDown);斜率
-        Bias=SumDown/SumUp;//我们要的是与Y轴的夹角所以是斜率的倒数正负代表方向
-    //A=(SumY-B*SumX)/SumLines;  //截距
+        Bias=SumUp/SumDown;
+//    if(SumUp==0)//分子为0时即直线与x轴平行，所以此时Bias的分母为0需要做处理
+//        Bias=57.3;//tan89°为57.2899
+//    else
+//        //B=(int)(SumUp/SumDown);斜率
+//        Bias=SumDown/SumUp;//我们要的是与Y轴的夹角所以是斜率的倒数正负代表方向
+//    //A=(SumY-B*SumX)/SumLines;  //截距
     return Bias;
 }
 
@@ -122,8 +131,15 @@ float DifferentBias(int startline,int endline,int *CentreLine)
 
     for(int i=startline;i>endline;i--)
     {
-        bias+=(MT9V03X_W/2-CentreLine[i]);  //累积偏差
+        bias+=(float)(MT9V03X_W/2-CentreLine[i]);  //累积偏差
     }
 
-    return bias/(startline-endline);    //返回偏差的均值
+    bias=bias/(startline-endline)/10;   //求偏差均值
+    lcd_showfloat(0, 1, bias, 3, 3);
+    if(bias<0.5&&bias>-0.5)
+    {
+        bias=bias*0.1;
+    }
+
+    return bias;    //返回偏差的均值
 }
