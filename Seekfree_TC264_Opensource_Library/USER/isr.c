@@ -23,25 +23,15 @@
 #include "isr_config.h"
 #include "isr.h"
 #include "motor.h"
-#include "pid.h"
-#include "Cpu0_Main.h"
 
 //PIT中断函数  示例
 IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 {
 	enableInterrupts();//开启中断嵌套
 
-	int16 encoder_l=0,encoder_r=0;
-    int pwm_l=0,pwm_r=0;             //左右电机PWM
-
-	MotorEncoder(&encoder_l,&encoder_r);              //获取左右电机编码器
-    printf("encoder_l=%d      encoder_r=%d\r\n",encoder_l,encoder_r);
-//    pwm_l=Speed_PI_Left(encoder_l,50,MotorK);    //左右电机PID
-//    pwm_r=Speed_PI_Right(encoder_r,50,MotorK);
-//    MotorCtrl(pwm_l,pwm_r);                             //电机PWM赋值
+	MotorCtrl(50,50);
 
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH0);
-
 }
 
 

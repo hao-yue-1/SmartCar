@@ -91,7 +91,7 @@ int core0_main(void)
 	/**********************PID初始化***********************************************/
 	PID_init(&SteerK,&MotorK);
 	/**********************定时器中断初始化**************************/
-//	pit_interrupt_ms(CCU6_0,PIT_CH0,5);
+	pit_interrupt_ms(CCU6_0,PIT_CH0,5);
 	/**************************************************************/
 
     //等待所有核心初始化完毕
@@ -100,7 +100,7 @@ int core0_main(void)
 	enableInterrupts();
 
 	/*电机驱动测试*/
-	MotorSetPWM(1500,1500);
+//	MotorSetPWM(1000,1000);
 
 	while (TRUE)
 	{
@@ -150,14 +150,13 @@ int core0_main(void)
 
 //	        BluetooothSendBias(Bias);//蓝牙发送
 
-
 	        gpio_toggle(P20_8);//翻转IO：LED
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
 	    }
 
 	    /*开环转向环无元素测试*/
 	    StreePWM=Steer_Position_PID(Bias,SteerK);
-	    printf("Bias=%f     StreePWM=%d\r\n",Bias,StreePWM);
+//	    printf("Bias=%f     StreePWM=%d\r\n",Bias,StreePWM);
 	    SteerCtrl(StreePWM);
 
 	    /*电机速度环测试*/

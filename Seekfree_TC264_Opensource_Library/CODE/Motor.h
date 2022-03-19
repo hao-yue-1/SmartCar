@@ -21,7 +21,8 @@
 #define LEFT_ENCODER    GPT12_T2
 #define RIGHT_ENCODER   GPT12_T6
 
-void MotorSetPWM(int pwm_l,int pwm_r);             //控制左右电机的转速与正反转
+void MotorSetPWM(int pwm_l,int pwm_r);                          //控制左右电机的转速与正反转
 void MotorEncoder(int16* left_encoder,int16* right_encoder);    //读取左右电机编码器的值
+void MotorCtrl(int16 speed_l,int16 speed_r);                    //使用PI控制器控制电机速度
 
 #endif /* CODE_MOTOR_H_ */

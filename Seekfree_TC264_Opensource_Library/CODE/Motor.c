@@ -6,7 +6,9 @@
  */
 
 #include "Motor.h"
-#include "Filter.h" //滤波
+#include "Filter.h"         //滤波
+#include <stdio.h>
+#include "Cpu0_Main.h"
 
 /*
 *********************************************************************************************************
@@ -96,5 +98,25 @@ void MotorEncoder(int16* left_encoder,int16* right_encoder)
     *right_encoder = -gpt12_get(RIGHT_ENCODER);
 //    *right_encoder=FirstOrderLagFilter(*right_encoder); //滤波
     gpt12_clear(RIGHT_ENCODER);
+}
+
+/*
+*********************************************************************************************************
+** 函 数 名: MotorCtrl
+** 功能说明: 使用增量式PI控制器控制左右电机转速
+** 形    参: speed_l：左电机速度
+**           speed_r：右电机速度
+** 返 回 值: 无
+*********************************************************************************************************
+*/
+void MotorCtrl(int16 speed_l,int16 speed_r)
+{
+    int16 encoder_l=0,encoder_r=0;   //左右电机编码器值
+    int pwm_l=0,pwm_r=0;             //左右电机PWM
+
+    MotorEncoder(&encoder_l,&encoder_r);              //获取左右电机编码器
+    pwm_l=Speed_PI_Left(encoder_l,speed_l,MotorK);    //左右电机PID
+    pwm_r=Speed_PI_Right(encoder_r,speed_r,MotorK);
+    MotorSetPWM(pwm_l,pwm_r);                         //电机PWM赋值
 }
 
