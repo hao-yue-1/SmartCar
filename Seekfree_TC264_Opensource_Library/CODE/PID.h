@@ -13,15 +13,15 @@
 //舵机PID控制的结构体，便于分段控制PID，图像识别到特殊路段之后PID的参数就发送变化
 typedef struct SteerPID
 {
-    int P;
-    int I;
-    int D;
+    float P;
+    float I;
+    float D;
 }SteerPID;
 //电机PID控制的结构体
 typedef struct MotorPID
 {
-    int P;
-    int I;
+    float P;
+    float I;
 }MotorPID;
 
 //这里还要写个PID初始化的函数调参在这里进行
