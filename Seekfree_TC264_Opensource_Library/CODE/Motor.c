@@ -9,6 +9,7 @@
 #include "Filter.h"         //滤波
 #include <stdio.h>
 #include "Cpu0_Main.h"
+#include "BluetoothSend.h"  //蓝牙调参
 
 /*
 *********************************************************************************************************
@@ -118,5 +119,7 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
     pwm_l=Speed_PI_Left(encoder_l,speed_l,MotorK);    //左右电机PID
     pwm_r=Speed_PI_Right(encoder_r,speed_r,MotorK);
     MotorSetPWM(pwm_l,pwm_r);                         //电机PWM赋值
+
+    BluetoothSendToApp(encoder_l,encoder_r);          //蓝牙调参
 }
 
