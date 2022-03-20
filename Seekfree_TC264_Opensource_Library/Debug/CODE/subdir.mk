@@ -13,7 +13,8 @@ C_SRCS += \
 ../CODE/ImageTack.c \
 ../CODE/Motor.c \
 ../CODE/PID.c \
-../CODE/Steer.c 
+../CODE/Steer.c \
+../CODE/protocol.c 
 
 OBJS += \
 ./CODE/Binarization.o \
@@ -25,7 +26,8 @@ OBJS += \
 ./CODE/ImageTack.o \
 ./CODE/Motor.o \
 ./CODE/PID.o \
-./CODE/Steer.o 
+./CODE/Steer.o \
+./CODE/protocol.o 
 
 COMPILED_SRCS += \
 ./CODE/Binarization.src \
@@ -37,7 +39,8 @@ COMPILED_SRCS += \
 ./CODE/ImageTack.src \
 ./CODE/Motor.src \
 ./CODE/PID.src \
-./CODE/Steer.src 
+./CODE/Steer.src \
+./CODE/protocol.src 
 
 C_DEPS += \
 ./CODE/Binarization.d \
@@ -49,7 +52,8 @@ C_DEPS += \
 ./CODE/ImageTack.d \
 ./CODE/Motor.d \
 ./CODE/PID.d \
-./CODE/Steer.d 
+./CODE/Steer.d \
+./CODE/protocol.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

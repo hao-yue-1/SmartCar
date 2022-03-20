@@ -8,8 +8,10 @@
 #include "Motor.h"
 #include "Filter.h"         //滤波
 #include <stdio.h>
-#include "Cpu0_Main.h"
 #include "BluetoothSend.h"  //蓝牙调参
+#include "PID.h"            //PID
+
+int16 speed_l,speed_r;  //电机左右速度目标值的全局变量
 
 /*
 *********************************************************************************************************
@@ -123,3 +125,17 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
     BluetoothSendToApp(encoder_l,encoder_r);          //蓝牙调参
 }
 
+/*
+*********************************************************************************************************
+** 函 数 名: MotorSetTarget
+** 功能说明: 设置左右电机速度的目标值
+** 形    参: target_l：左电机速度目标值
+**           target_r：右电机速度目标值
+** 返 回 值: 无
+*********************************************************************************************************
+*/
+void MotorSetTarget(int16 target_l,int16 target_r)
+{
+    speed_l=target_l;
+    speed_r=target_r;
+}

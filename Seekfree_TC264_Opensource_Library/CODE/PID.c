@@ -9,6 +9,9 @@
 #include "Filter.h" //滤波算法
 #include "Steer.h"  //舵机
 
+SteerPID SteerK;    //舵机PID参数
+MotorPID MotorK;    //电机PID参数
+
 /********************************************************************************************
  ** 函数功能: 两个PID参数的赋值初始化
  ** 参    数: SteerPID *SteerK
@@ -19,7 +22,20 @@
 void PID_init(SteerPID *SteerK,MotorPID *MotorK)
 {
     SteerK->P=30;SteerK->I=0;SteerK->D=20;    //初始化舵机的PID参数
-    MotorK->P=30;MotorK->I=2;                 //初始化电机的PID参数
+    MotorK->P=30;MotorK->I=2;MotorK->D=0;     //初始化电机的PID参数
+}
+
+/********************************************************************************************
+ ** 函数功能: 对电机速度环PID赋值
+ ** 参    数: P、I、D：PID的三个参数
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ *********************************************************************************************/
+void PIDSet(float P, float I, float D)
+{
+    MotorK.P=P;
+    MotorK.I=I;
+    MotorK.D=D;
 }
 
 /*

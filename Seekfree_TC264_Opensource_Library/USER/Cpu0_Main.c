@@ -41,8 +41,6 @@
 
 //定义变量
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
-SteerPID SteerK;    //舵机PID参数
-MotorPID MotorK;    //电机PID参数
 char power_switch=1;//电源总开关
 
 int core0_main(void)

@@ -10,3 +10,5 @@ Motor.o :	../CODE/Filter.h
 ../CODE/Filter.h :
 Motor.o :	../CODE/BluetoothSend.h
 ../CODE/BluetoothSend.h :
+Motor.o :	../CODE/PID.h
+../CODE/PID.h :
