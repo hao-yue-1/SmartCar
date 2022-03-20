@@ -342,6 +342,7 @@ int8_t receiving_process(void)
       
       case STOP_CMD:
       {
+          MotorSetTarget(0,0);              //停止电机
 //        set_motor_disable();              // 停止电机      暂时可以不使用
       }
       break;
