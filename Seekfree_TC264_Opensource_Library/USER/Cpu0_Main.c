@@ -58,6 +58,7 @@ int core0_main(void)
 	float Bias=0;
 	uint32 StreePWM=STEER_MID;
 	int flag;//三岔识别的标志变量
+	int c_flag=0;   //环岛标志变量
 	//*****************************************************************
 
 	//***************************交互的初始化**************************
@@ -119,7 +120,14 @@ int core0_main(void)
 //	        {
 //	            flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
 //	        }
-	        CircleIslandBegin(LeftLine,RightLine);
+	        if(c_flag==0)
+	        {
+	            if(CircleIslandBegin(LeftLine,RightLine)==1)
+	                {
+	                    gpio_toggle(P21_4);
+	                    c_flag=1;
+	                }
+	        }
 	        //把三线画出来
             for(int i=MT9V03X_H;i>0;i--)
             {

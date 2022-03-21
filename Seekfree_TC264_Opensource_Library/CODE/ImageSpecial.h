@@ -18,7 +18,10 @@
 #define S_BLACK_NUM    8    //斑马线黑线数量阈值 //用于判断该行是否为斑马线
 #define S_BLACK_TIMES  3    //斑马线数量阈值     //用于判断该路段是否为斑马线
 //环岛判定误差
-#define C_BIAS  2           //用于消除小毛刺的影响，补线更加丝滑
+#define C_BIAS      2       //消除小毛刺的影响，补线更加丝滑
+#define C_LOSTLINE  35      //触发环岛入口判断的丢线数         //越大条件越严谨
+#define C_INROW     60      //判定环岛入口有效的行数           //越大条件越严谨 //60：几乎只有一帧可以识别
+#define C_LINEBIAS  0.8     //判定环岛入口另一边的直行道斜率   //越小条件越严谨
 
 /*起跑线相关函数*/
 uint8 StartLineFlag(int *LeftLine,int *RightLine);      //起跑线识别

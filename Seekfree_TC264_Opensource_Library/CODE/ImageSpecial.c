@@ -7,6 +7,8 @@
  */
 
 #include "ImageSpecial.h"
+#include <math.h>
+#include "zf_gpio.h"
 
 /*
  *******************************************************************************************
@@ -124,73 +126,101 @@ uint8 StartLineFlag(int *LeftLine,int *RightLine)
  ** 函数功能: 识别环岛入口
  ** 参    数: LeftLine：左线数组
  **           RightLine：右线数组
- **           InflectionL：左拐点
- **           InflectionR：右拐点
  ** 返 回 值: 0：没有识别到环岛
  **           1：识别到环岛且在车身左侧
  **           2：识别到环岛且在车身右侧
  ** 作    者: WBN
- ** 注    意：传入的拐点需确保：若该图不存在拐点则拐点的数据均为0
  ********************************************************************************************
  */
 uint8 CircleIslandBegin(int *LeftLine,int *RightLine)
 {
-    if(LostNum_LeftLine>30)   //左边丢线而右边不丢线：环岛入口在左边
+    //环岛入口在左边
+    if(LostNum_LeftLine>C_LOSTLINE)   //左边丢线：环岛入口在左边
     {
-        gpio_toggle(P21_4);
-        for(int row=MT9V03X_H-1;row>0;row--)  //从下往上检查左边界线
+        for(int row=MT9V03X_H;row-1>0;row--)  //从下往上检查左边界线
         {
-            if(LeftLine[row]-LeftLine[row+1]>20)    //边界线存在一个跳跃，判定为环岛入口的位置
+            if(LeftLine[row]==0&&LeftLine[row-1]!=0&&row>C_INROW)    //该行丢线而下一行不丢线且该行不会太远   //C_INROW用于防止误判急拐弯的情况
             {
-                gpio_toggle(P21_5);
-                Point StarPoint,EndPoint;   //定义补线的起点和终点
-                StarPoint.Y=row;            //起点赋值
-                StarPoint.X=LeftLine[row];
-                EndPoint.Y=120;               //终点赋值
-                EndPoint.X=MT9V03X_W-1;
-                FillingLine(LeftLine, CentreLine, RightLine,EndPoint,StarPoint);    //补线
-                /*Debug*/
-                //把三线画出来
-                for(int i=MT9V03X_H;i>0;i--)
+                float bias_rightline=Regression_Slope(row,20,RightLine);   //求出右边界线的斜率
+                if(fabs(bias_rightline)<C_LINEBIAS)
                 {
-                    lcd_drawpoint(LeftLine[i],i,GREEN);
-                    lcd_drawpoint(CentreLine[i],i,RED);
-                    lcd_drawpoint(RightLine[i],i,BLUE);
+                    Point StarPoint,EndPoint;   //定义补线的起点和终点
+                    EndPoint.Y=row;             //终点赋值
+                    EndPoint.X=LeftLine[row];
+                    StarPoint.Y=120;            //起点赋值
+                    StarPoint.X=MT9V03X_W-1;
+                    //下面这部分代码防止误判环岛的入口为出口
+                    int c_left_flag=0;
+                    for(;row-1>0;row--)
+                    {
+                        if(LeftLine[row]==0&&LeftLine[row-1]==0)    //又出现丢线情况
+                        {
+                            c_left_flag=1;
+                        }
+                    }
+                    if(c_left_flag==0)
+                    {
+                        FillingLine(LeftLine, CentreLine, RightLine,StarPoint,EndPoint);    //补线
+//                        /*Debug*/
+//                        //把三线画出来
+//                        for(int i=MT9V03X_H;i>0;i--)
+//                        {
+//                            lcd_drawpoint(LeftLine[i],i,GREEN);
+//                            lcd_drawpoint(CentreLine[i],i,RED);
+//                            lcd_drawpoint(RightLine[i],i,BLUE);
+//                        }
+                        return 1;
+                    }
                 }
-//                systick_delay_ms(STM0,1000);
             }
         }
     }
+    /*暂时不考虑环岛在右边的情况*/
+//    //环岛在右边
+//    if(LostNum_RightLine>C_LOSTLINE)   //右边丢线：环岛入口在左边
+//    {
+//        for(int row=MT9V03X_H;row-1>0;row--)  //从下往上检查左边界线
+//        {
+//            if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)    //该行丢线而下一行不丢线且该行不会太远   //C_INROW用于防止误判急拐弯的情况
+//            {
+//                //由于赛道的特殊性，当环岛入口在左边时，前方并不是一条直线，所以这里的判断不同于换到入口在左边的情况
+////                float bias_leftline=Regression_Slope(row,20,LeftLine);   //求出左边界线的斜率
+////                lcdz_showfloat(0, 0, bias_leftline, 2, 2);
+////                if(fabs(bias_leftline)<C_LINEBIAS)
+////                {
+//                    Point StarPoint,EndPoint;   //定义补线的起点和终点
+//                    EndPoint.Y=row;             //终点赋值
+//                    EndPoint.X=RightLine[row];
+//                    StarPoint.Y=120;            //起点赋值
+//                    StarPoint.X=0;
+//                    //下面这部分代码防止误判环岛的入口为出口，取消这部分判断的理由同上
+////                    int c_right_flag=0;
+////                    for(;row-1>0;row--)
+////                    {
+////                        if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]==MT9V03X_W-1)    //又出现丢线情况
+////                        {
+////                            c_right_flag=1;
+////                        }
+////                    }
+////                    if(c_right_flag==0)
+////                    {
+//                        gpio_toggle(P21_5);
+//                        FillingLine(LeftLine, CentreLine, RightLine,StarPoint,EndPoint);    //补线
+//                        /*Debug*/
+//                        //把三线画出来
+//                        for(int i=MT9V03X_H;i>0;i--)
+//                        {
+//                            lcd_drawpoint(LeftLine[i],i,GREEN);
+//                            lcd_drawpoint(CentreLine[i],i,RED);
+//                            lcd_drawpoint(RightLine[i],i,BLUE);
+//                        }
+//                        return 2;
+////                    }
+////                }
+//            }
+//        }
+//    }
 
-//    if(InflectionL.X!=0&&InflectionL.Y!=0)  //拐点（环岛）在左边
-//    {
-//        for(row=InflectionL.Y;row-1-C_BIAS>0;row--)      //从左拐点开始向前行扫线
-//        {
-////            if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE&&BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)  //直接使用二值化的图像去寻找上拐点
-//            if(LeftLine[row]==0&&LeftLine[row-1]!=0)  //该行丢线而下一行不丢线
-//            {
-//                //记录上拐点
-//                Inflection.Y=row-1-C_BIAS;
-//                Inflection.X=InflectionL.X+10;  //由于扫线的特性，这里的处理方法和环岛在右边不一样
-//                /*在这里补线处理*/
-//                return 1;
-//            }
-//        }
-//    }
-//    if(InflectionR.X!=0&&InflectionR.Y!=0)    //拐点（环岛）在右边
-//    {
-//        for(row=InflectionR.Y;row-1-C_BIAS>0;row--)      //从右拐点开始向前行扫线
-//        {
-//            if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)  //该行丢线而下一行不丢线
-//            {
-//                //记录上拐点
-//                Inflection.Y=row-1-C_BIAS;
-//                Inflection.X=RightLine[row-1-C_BIAS];
-//                /*在这里补线处理*/
-//                return 2;
-//            }
-//        }
-//    }
     return 0;
 }
 
