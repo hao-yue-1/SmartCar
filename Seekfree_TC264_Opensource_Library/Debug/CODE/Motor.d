@@ -12,3 +12,5 @@ Motor.o :	../CODE/BluetoothSend.h
 ../CODE/BluetoothSend.h :
 Motor.o :	../CODE/PID.h
 ../CODE/PID.h :
+Motor.o :	../CODE/protocol.h
+../CODE/protocol.h :

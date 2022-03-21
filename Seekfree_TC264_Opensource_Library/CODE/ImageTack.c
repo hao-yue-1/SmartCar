@@ -135,7 +135,7 @@ float DifferentBias(int startline,int endline,int *CentreLine)
     }
 
     bias=bias/(startline-endline)/10;   //ÇóÆ«²î¾ùÖµ
-    lcd_showfloat(0, 1, bias, 3, 3);
+//    lcd_showfloat(0, 1, bias, 3, 3);
     if(bias<0.5&&bias>-0.5)
     {
         bias=bias*0.1;

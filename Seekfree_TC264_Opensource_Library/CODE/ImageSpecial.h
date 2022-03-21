@@ -24,7 +24,7 @@
 uint8 StartLineFlag(int *LeftLine,int *RightLine);      //起跑线识别
 
 /*环岛相关函数*/
-uint8 CircleIslandBegin(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CircleIslandBegin(int *LeftLine,int *RightLine);
 uint8 CircleIslandEnd(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
 uint8 CrossLoopEnd(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
 /*三岔相关函数*/

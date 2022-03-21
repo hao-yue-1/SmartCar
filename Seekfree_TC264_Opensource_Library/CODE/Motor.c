@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include "BluetoothSend.h"  //蓝牙调参
 #include "PID.h"            //PID
+#include "protocol.h"
 
 int16 speed_l,speed_r;  //电机左右速度目标值的全局变量
 
@@ -122,7 +123,9 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
     pwm_r=Speed_PI_Right(encoder_r,speed_r,MotorK);
     MotorSetPWM(pwm_l,pwm_r);                         //电机PWM赋值
 
-    BluetoothSendToApp(encoder_l,encoder_r);          //蓝牙调参
+//    BluetoothSendToApp(encoder_l,encoder_r);          //蓝牙调参
+    int32 encoder=encoder_l;
+    set_computer_value(SEND_FACT_CMD, CURVES_CH1, &encoder, 1);   //野火上位机给通道1发送实际值
 }
 
 /*

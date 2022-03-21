@@ -36,6 +36,7 @@
 #include "PID.h"            //PID
 #include "BluetoothSend.h"  //蓝牙发送信息给手机APP上位机
 #include "Filter.h"         //滤波头文件
+#include "protocol.h"
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -106,28 +107,24 @@ int core0_main(void)
 	    //图像处理模块
 	    if(mt9v03x_finish_flag)
 	    {
-	        ImageBinary();//图像二值化
-	        //SPI发送图像到1.8TFT
-	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
+	        ImageBinary();      //图像二值化
+	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
 
 	        /*扫线函数测试*/
 	        GetImagBasic(LeftLine,CentreLine,RightLine);
 
 	        /*路径检测*/
-	        GetDownInflection(100,40,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
-	        if(!CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint))    //十字
-	        {
-	            flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
-	        }
-
-	        //把中线画出来
+//	        GetDownInflection(100,40,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);    //获取下拐点
+//	        if(!CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint))        //十字
+//	        {
+//	            flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
+//	        }
+	        CircleIslandBegin(LeftLine,RightLine);
+	        //把三线画出来
             for(int i=MT9V03X_H;i>0;i--)
             {
-//                lcd_showint32(0, 0, LeftLine[i], 3);
-//                systick_delay_ms(STM0,100);
                 lcd_drawpoint(LeftLine[i],i,GREEN);
                 lcd_drawpoint(CentreLine[i],i,RED);
-//                BluetooothSendBias(LeftLine[i]);
                 lcd_drawpoint(RightLine[i],i,BLUE);
             }
 
@@ -144,9 +141,8 @@ int core0_main(void)
             {
                 Bias=DifferentBias(100,60,CentreLine);
             }
-            lcd_showfloat(0, 0, Bias, 3, 3);
-
-//	        BluetooothSendBias(Bias);//蓝牙发送
+//            lcd_showfloat(0, 0, Bias, 3, 3);  //LCD打印偏差
+//	        BluetooothSendBias(Bias);           //蓝牙发送偏差
 
 	        gpio_toggle(P20_8);//翻转IO：LED
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
@@ -154,18 +150,14 @@ int core0_main(void)
 
 	    /*开环转向环无元素测试*/
 	    StreePWM=Steer_Position_PID(Bias,SteerK);
-//	    printf("Bias=%f     StreePWM=%d\r\n",Bias,StreePWM);
 	    SteerCtrl(StreePWM);
+//	    printf("Bias=%f     StreePWM=%d\r\n",Bias,StreePWM);
 
-	    /*电机速度环测试*/
-//	    MotorEncoder(&encoder_l,&encoder_r);              //获取左右电机编码器
-//	    BluetoothSendToApp(encoder_l,encoder_r);
-//	    printf("encoder_l=%d      encoder_r=%d\r\n",encoder_l,encoder_r);
-//	    systick_delay_ms(STM0,100);
-//	    pwm_l=Speed_PI_Left(encoder_l,50,MotorK);    //左右电机PID
-//	    pwm_r=Speed_PI_Right(encoder_r,50,MotorK);
-//	    MotorSetPWM(pwm_l,pwm_r);                             //电机PWM赋值
+	    /*速度环调参*/
+//	    lcd_showfloat(0, 0, MotorK.P, 2, 2);
+//	    lcd_showfloat(0, 1, MotorK.I, 2, 2);
 
+//	    receiving_process();
 	}
 }
 

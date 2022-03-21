@@ -322,7 +322,7 @@ int8_t receiving_process(void)
         i_temp = *(float *)&temp1;
         d_temp = *(float *)&temp2;
         
-        PIDSet(p_temp, i_temp, d_temp);    // 设置 P I D     已做移植替换
+        MotorPIDSet(p_temp, i_temp, d_temp);    // 设置 P I D     已做移植替换
       }
       break;
 
@@ -389,9 +389,24 @@ void set_computer_value(uint8_t cmd, uint8_t ch, void *data, uint8_t num)
   sum = check_sum(0, (uint8_t *)&set_packet, sizeof(set_packet));       // 计算包头校验和
   sum = check_sum(sum, (uint8_t *)data, num);                           // 计算参数校验和
   
-  uart_putbuff(UART_2, (uint8_t *)&set_packet, sizeof(set_packet));    // 发送数据头  //需要修改
-  uart_putbuff(UART_2, (uint8_t *)data, num);                          // 发送参数   //需要修改
-  uart_putbuff(UART_2, (uint8_t *)&sum, sizeof(sum));                  // 发送校验和  //需要修改
+//  uart_putbuff(UART_2, (uint8_t *)&set_packet, sizeof(set_packet));    // 发送数据头  //需要修改
+//  uart_putbuff(UART_2, (uint8_t *)data, num);                          // 发送参数   //需要修改
+//  uart_putbuff(UART_2, (uint8_t *)&sum, sizeof(sum));                  // 发送校验和  //需要修改
+
+  uint32 my_head=FRAME_HEADER;
+  uint8 my_ch=ch;
+  uint32 my_len=0x0F;
+  uint8 my_cmd =cmd;
+//  uint32 my_data=*data;
+  uint8 my_sum=sum;
+
+  uart_putbuff(UART_2,(uint8 *)&my_head,4);     //包头
+  uart_putbuff(UART_2,&my_ch,1);                //通道选择
+  uart_putbuff(UART_2,(uint8 *)&my_len,4);      //长度
+  uart_putbuff(UART_2,(uint8 *)&my_cmd,1);      //命令
+  uart_putbuff(UART_2,(uint8 *)data,4);         //数据
+  uart_putbuff(UART_2,(uint8 *)&my_sum,1);      //校验和
+
 }
 
 /**********************************************************************************************/

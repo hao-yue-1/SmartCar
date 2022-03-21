@@ -22,7 +22,7 @@ MotorPID MotorK;    //电机PID参数
 void PID_init(SteerPID *SteerK,MotorPID *MotorK)
 {
     SteerK->P=30;SteerK->I=0;SteerK->D=20;    //初始化舵机的PID参数
-    MotorK->P=30;MotorK->I=2;MotorK->D=0;     //初始化电机的PID参数
+    MotorK->P=20;MotorK->I=5;MotorK->D=1;     //初始化电机的PID参数
 }
 
 /********************************************************************************************
@@ -31,7 +31,7 @@ void PID_init(SteerPID *SteerK,MotorPID *MotorK)
  ** 返 回 值: 无
  ** 作    者: WBN
  *********************************************************************************************/
-void PIDSet(float P, float I, float D)
+void MotorPIDSet(float P, float I, float D)
 {
     MotorK.P=P;
     MotorK.I=I;
@@ -95,11 +95,13 @@ uint32 Steer_Position_PID(float SlopeBias,SteerPID K)//舵机位置式PID控制，采用分
  */
 int Speed_PI_Left(int16 left_encoder,int16 left_target,MotorPID K)
 {
-    static int Bias,Last_Bias,PWM;                   //当前偏差，上一次偏差，输出的PWM
+    static int Bias,Last_Bias,Last_2_Bias,PWM;
 
-    Bias=left_target-left_encoder;                   //求出当前偏差，期望值-当前值
-    PWM+=(int)(K.P*(Bias-Last_Bias)+K.I*Bias);       //增量式PI，并把结果直接叠加在上一次的PWM上
-    Last_Bias=Bias;                                  //为下一次PID保存这一次偏差
+    Bias=left_target-left_encoder;              //求出当前偏差
+    PWM+=(int)(K.P*(Bias-Last_Bias)+K.I*Bias)+K.D*(Bias-2*Last_Bias+Last_2_Bias);  //增量式PID，并把结果直接叠加在上一次的PWM上
+
+    Last_2_Bias=Last_Bias;    //保存上一次的偏差
+    Last_Bias=Bias;           //保存这一次偏差
 
     return PWM;         //返回可以直接赋值给电机的PWM
 }
@@ -119,11 +121,13 @@ int Speed_PI_Left(int16 left_encoder,int16 left_target,MotorPID K)
  */
 int Speed_PI_Right(int16 right_encoder,int16 right_target,MotorPID K)
 {
-    static int Bias,Last_Bias,PWM;                  //当前偏差，上一次偏差，输出的PWM
+    static int Bias,Last_Bias,Last_2_Bias,PWM;
 
-    Bias=right_target-right_encoder;                //求出当前偏差，期望值-当前值
-    PWM+=(int)(K.P*(Bias-Last_Bias)+K.I*Bias);      //增量式PI，并把结果直接叠加在上一次的PWM上
-    Last_Bias=Bias;                                 //为下一次PID保存这一次偏差
+    Bias=right_target-right_encoder;                //求出当前偏差
+    PWM+=(int)(K.P*(Bias-Last_Bias)+K.I*Bias)+K.D*(Bias-2*Last_Bias+Last_2_Bias);  //增量式PID，并把结果直接叠加在上一次的PWM上
+
+    Last_2_Bias=Last_Bias;    //保存上一次的偏差
+    Last_Bias=Bias;           //保存这一次偏差
 
     return PWM;         //返回可以直接赋值给电机的PWM
 }

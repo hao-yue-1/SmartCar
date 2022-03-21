@@ -133,48 +133,64 @@ uint8 StartLineFlag(int *LeftLine,int *RightLine)
  ** 注    意：传入的拐点需确保：若该图不存在拐点则拐点的数据均为0
  ********************************************************************************************
  */
-uint8 CircleIslandBegin(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+uint8 CircleIslandBegin(int *LeftLine,int *RightLine)
 {
-    int row;            //行
-    Point Inflection;   //上拐点，用于补线
-
-    if(InflectionL.X!=0&&InflectionL.Y!=0)  //拐点（环岛）在左边
+    if(LostNum_LeftLine>30)   //左边丢线而右边不丢线：环岛入口在左边
     {
-        for(row=InflectionL.Y;row-1-C_BIAS>0;row--)      //从左拐点开始向前行扫线
+        gpio_toggle(P21_4);
+        for(int row=MT9V03X_H-1;row>0;row--)  //从下往上检查左边界线
         {
-//            if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE&&BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)  //直接使用二值化的图像去寻找上拐点
-            if(LeftLine[row]==0&&LeftLine[row-1]!=0)  //该行丢线而下一行不丢线
+            if(LeftLine[row]-LeftLine[row+1]>20)    //边界线存在一个跳跃，判定为环岛入口的位置
             {
-                //记录上拐点
-                Inflection.Y=row-1-C_BIAS;
-                Inflection.X=InflectionL.X+10;  //由于扫线的特性，这里的处理方法和环岛在右边不一样
-//                FillingLine(InflectionL,Inflection);                        //补线处理
-                //Debug：打印补线后的图像
-//                lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
-//                systick_delay_ms(STM0, 1000);
-
-                return 1;
+                gpio_toggle(P21_5);
+                Point StarPoint,EndPoint;   //定义补线的起点和终点
+                StarPoint.Y=row;            //起点赋值
+                StarPoint.X=LeftLine[row];
+                EndPoint.Y=120;               //终点赋值
+                EndPoint.X=MT9V03X_W-1;
+                FillingLine(LeftLine, CentreLine, RightLine,EndPoint,StarPoint);    //补线
+                /*Debug*/
+                //把三线画出来
+                for(int i=MT9V03X_H;i>0;i--)
+                {
+                    lcd_drawpoint(LeftLine[i],i,GREEN);
+                    lcd_drawpoint(CentreLine[i],i,RED);
+                    lcd_drawpoint(RightLine[i],i,BLUE);
+                }
+//                systick_delay_ms(STM0,1000);
             }
         }
     }
-    if(InflectionR.X!=0&&InflectionR.Y!=0)    //拐点（环岛）在右边
-    {
-        for(row=InflectionR.Y;row-1-C_BIAS>0;row--)      //从右拐点开始向前行扫线
-        {
-            if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)  //该行丢线而下一行不丢线
-            {
-                //记录上拐点
-                Inflection.Y=row-1-C_BIAS;
-                Inflection.X=RightLine[row-1-C_BIAS];
-//                FillingLine(InflectionR,Inflection);                        //补线处理
-                //Debug：打印补线后的图像
-//                lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //二值化后的图像
-//                systick_delay_ms(STM0, 1000);
 
-                return 2;
-            }
-        }
-    }
+//    if(InflectionL.X!=0&&InflectionL.Y!=0)  //拐点（环岛）在左边
+//    {
+//        for(row=InflectionL.Y;row-1-C_BIAS>0;row--)      //从左拐点开始向前行扫线
+//        {
+////            if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE&&BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)  //直接使用二值化的图像去寻找上拐点
+//            if(LeftLine[row]==0&&LeftLine[row-1]!=0)  //该行丢线而下一行不丢线
+//            {
+//                //记录上拐点
+//                Inflection.Y=row-1-C_BIAS;
+//                Inflection.X=InflectionL.X+10;  //由于扫线的特性，这里的处理方法和环岛在右边不一样
+//                /*在这里补线处理*/
+//                return 1;
+//            }
+//        }
+//    }
+//    if(InflectionR.X!=0&&InflectionR.Y!=0)    //拐点（环岛）在右边
+//    {
+//        for(row=InflectionR.Y;row-1-C_BIAS>0;row--)      //从右拐点开始向前行扫线
+//        {
+//            if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)  //该行丢线而下一行不丢线
+//            {
+//                //记录上拐点
+//                Inflection.Y=row-1-C_BIAS;
+//                Inflection.X=RightLine[row-1-C_BIAS];
+//                /*在这里补线处理*/
+//                return 2;
+//            }
+//        }
+//    }
     return 0;
 }
 

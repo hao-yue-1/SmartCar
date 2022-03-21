@@ -30,7 +30,7 @@ extern MotorPID MotorK;     //电机的全局变量
 
 //这里还要写个PID初始化的函数调参在这里进行
 void PID_init(SteerPID *SteerK,MotorPID *MotorK);                         //两个PID参数的赋值初始化
-void PIDSet(float P, float I, float D);                                   //电机速度环PID的赋值
+void MotorPIDSet(float P, float I, float D);                              //电机速度环PID的赋值
 uint32 Steer_Position_PID(float SlopeBias,SteerPID K);                    //舵机位置式PID控制，采用分段式PID控制
 int Speed_PI_Left(int16 left_encoder,int16 left_target,MotorPID K);       //电机增量式PI控制 //左电机
 int Speed_PI_Right(int16 right_encoder,int16 right_target,MotorPID K);    //电机增量式PI控制  //右电机
