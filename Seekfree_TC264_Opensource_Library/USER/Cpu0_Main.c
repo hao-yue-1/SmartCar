@@ -56,8 +56,7 @@ int core0_main(void)
 	Point CrossRoadUpLPoint,CrossRoadUpRPoint;
 	CrossRoadUpLPoint.X=0;CrossRoadUpLPoint.Y=0;CrossRoadUpRPoint.X=0;CrossRoadUpRPoint.Y=0;
 	float Bias=0;
-	uint32 StreePWM=STEER_MID;
-	int flag;//三岔识别的标志变量
+	int flag=0;//三岔识别的标志变量
 	int c_flag=0;   //环岛标志变量
 	//*****************************************************************
 
@@ -115,19 +114,19 @@ int core0_main(void)
 	        GetImagBasic(LeftLine,CentreLine,RightLine);
 
 	        /*路径检测*/
-//	        GetDownInflection(100,40,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);    //获取下拐点
-//	        if(!CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint))        //十字
-//	        {
-//	            flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
-//	        }
-	        if(c_flag==0)
+	        GetDownInflection(100,40,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);    //获取下拐点
+	        if(!CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint))        //十字
 	        {
-	            if(CircleIslandBegin(LeftLine,RightLine)==1)
-	                {
-	                    gpio_toggle(P21_4);
-	                    c_flag=1;
-	                }
+	            flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
 	        }
+//	        if(c_flag==0)
+//	        {
+//	            if(CircleIslandBegin(LeftLine,RightLine)==1)
+//                {
+//                    gpio_toggle(P21_4);
+//                    c_flag=1;
+//                }
+//	        }
 	        //把三线画出来
             for(int i=MT9V03X_H;i>0;i--)
             {
@@ -150,7 +149,7 @@ int core0_main(void)
                 Bias=DifferentBias(100,60,CentreLine);
             }
 //            lcd_showfloat(0, 0, Bias, 3, 3);  //LCD打印偏差
-//	        BluetooothSendBias(Bias);           //蓝牙发送偏差
+	        BluetooothSendBias(Bias);           //蓝牙发送偏差
 
 	        gpio_toggle(P20_8);//翻转IO：LED
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
@@ -158,7 +157,6 @@ int core0_main(void)
 
 	    /*开环转向环无元素测试*/
 	    StreePWM=Steer_Position_PID(Bias,SteerK);
-	    SteerCtrl(StreePWM);
 //	    printf("Bias=%f     StreePWM=%d\r\n",Bias,StreePWM);
 
 	    /*速度环调参*/

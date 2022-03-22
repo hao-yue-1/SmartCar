@@ -125,7 +125,7 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
 
 //    BluetoothSendToApp(encoder_l,encoder_r);          //蓝牙调参
     int32 encoder=encoder_l;
-    set_computer_value(SEND_FACT_CMD, CURVES_CH1, &encoder, 1);   //野火上位机给通道1发送实际值
+//    set_computer_value(SEND_FACT_CMD, CURVES_CH1, &encoder, 1);   //野火上位机给通道1发送实际值
 }
 
 /*

@@ -23,13 +23,16 @@
 #include "isr_config.h"
 #include "isr.h"
 #include "motor.h"
+#include "steer.h"
 #include "protocol.h"
 
 //PIT中断函数  示例
 IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 {
 	enableInterrupts();//开启中断嵌套
-
+	//舵机PID控制
+	SteerCtrl(StreePWM);
+	//电机PID控制
 	MotorCtrl(50,50);
 
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH0);

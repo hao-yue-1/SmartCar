@@ -399,7 +399,7 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
     Point UpInflectionL,UpInflectionR;//左右上拐点
     UpInflectionL.X=DownInflectionL.X+10;UpInflectionL.Y=0;//左上拐点置零
     UpInflectionR.X=DownInflectionR.X-10;UpInflectionR.Y=0;//右上拐点置零
-    if(LostNum_LeftLine>40 && LostNum_RightLine>40 && DownInflectionR.X!=0 && DownInflectionL.X!=0)//左右两边大量丢线，并且左右下拐点都存在
+    if(LostNum_LeftLine>40 && LostNum_RightLine>40 && DownInflectionR.X!=0 && DownInflectionL.X!=0 && LeftLine[DownInflectionL.X-5]==0 && RightLine[DownInflectionR.X-5]==MT9V03X_W-1)//左右两边大量丢线，并且左右下拐点都存在
     {
         GetCrossRoadsUpInflection(LeftLine, RightLine, DownInflectionL, DownInflectionR, &UpInflectionL, &UpInflectionR);
         FillingLine(LeftLine, CentreLine, RightLine, DownInflectionL, UpInflectionL);
