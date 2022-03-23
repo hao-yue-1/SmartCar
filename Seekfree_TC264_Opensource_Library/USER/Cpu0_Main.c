@@ -34,7 +34,6 @@
 #include "ImageSpecial.h"   //图像特殊元素处理
 #include "ImageTack.h"      //循迹误差计算
 #include "PID.h"            //PID
-#include "BluetoothSend.h"  //蓝牙发送信息给手机APP上位机
 #include "Filter.h"         //滤波头文件
 #include "protocol.h"
 
@@ -149,7 +148,6 @@ int core0_main(void)
                 Bias=DifferentBias(100,60,CentreLine);
             }
 //            lcd_showfloat(0, 0, Bias, 3, 3);  //LCD打印偏差
-	        BluetooothSendBias(Bias);           //蓝牙发送偏差
 
 	        gpio_toggle(P20_8);//翻转IO：LED
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像

@@ -30,7 +30,6 @@
 #include "zf_uart.h"
 #include "zf_assert.h"
 #include "SEEKFREE_BLUETOOTH_CH9141.h"
-#include "Cpu0_Main.h"      //存放PID全局变量的头文件
 
 uint8 uart_flag;
 uint8 uart_data;
@@ -45,8 +44,6 @@ uint8 mac_address[17];      //本机mac地址
 
 uint8   bluetooth_ch9141_rx_buffer;
 
-uint8 flag_head=0,flag_end=0;     //帧头帧尾flag
-uint8 i_blue=0;                   //数据包指针
 
 void bluetooth_ch9141_check_response(void);
 
@@ -57,55 +54,32 @@ void bluetooth_ch9141_check_response(void);
 //  @since      v1.0
 //  Sample usage:	
 //  @note       该函数在ISR文件 串口8中断程序被调用
-//  注 意：        - 帧头和帧尾的Flag如果是在回调函数里面初始化的时候，头flag被置为1之后会马上再变0，疑似退出再进行回调错过了0XA5
-//             - 所以这时候的数组0是在头字节的后一个才为0，所以校验包的以及前面两个字节需要i-1
-//             - 遗留问题：i和j记录数组和循环次数放为全局变量的时候，i马上从8到9就return了，消失在检测不到帧尾，i=0;j=8
 //-------------------------------------------------------------------------------------------------------------------
 void bluetooth_ch9141_uart_callback()
 {
-    //自己的代码部分
-    uint8 uart_rx_buf[12];                       //数据包
-    uint8 err;                                   //校验和
-
     while(uart_query(BLUETOOTH_CH9141_UART, &bluetooth_ch9141_rx_buffer))
     {
-        //逐飞的蓝牙模块代码，这里注释掉替换为JDY-31蓝牙模块自己编写的中断接收处理代码
-        if(bluetooth_ch9141_rx_buffer==0xA5&&i_blue==0)
+        if(1 == at_mode)
         {
-            flag_head=1;    //接收到帧头
+            //进入AT模式 接收应答信号 此处if语句内代码用户不要改动
+            at_mode_data[at_mode_num++] = bluetooth_ch9141_rx_buffer;
+            bluetooth_ch9141_check_response();
         }
-        if(flag_head==1)    //已经接收到帧头
+        else if(2 == at_mode)
         {
-            uart_rx_buf[i_blue++]=bluetooth_ch9141_rx_buffer;
-            if(i_blue==12)   //已经接收完整组数据包
-            {
-                //进行帧尾的判断
-                if(bluetooth_ch9141_rx_buffer!=0x5A)    //最后一帧不是帧尾
-                {
-                    flag_head=0;
-                    i_blue=0;
-                    return; //直接退出中断
-                }
-                else                                    //最后一帧是帧尾
-                {
-                    err = ((uint8)(uart_rx_buf[1]+uart_rx_buf[2]+uart_rx_buf[3]+uart_rx_buf[4]+uart_rx_buf[5]+uart_rx_buf[6]+uart_rx_buf[7]+uart_rx_buf[8]+uart_rx_buf[9])&0xFF);
-                    if(err!=uart_rx_buf[10])
-                    {
-                        flag_head=0;
-                        i_blue=0;
-                        return; //校验和错误，直接return
-                    }
-                    //校验和正确，赋值操作
-                    power_switch=(char)uart_rx_buf[1];
-                    MotorK.P=(int)uart_rx_buf[2];
-                    MotorK.I=(int)uart_rx_buf[6];
+            //模块正在复位中 此处if语句内代码用户不要改动
+            at_mode_num++;
+        }
+        else
+        {
+            //透传模式 用户在此处接收配对的蓝牙发送过来的额数据
+            //接到一个字节后单片机将会进入此处，通过在此处读取bluetooth_ch9141_rx_buffer可以取走数据
 
-                    flag_head=0;
-                    i_blue=0;
-                    return;
-                }
-            }
+            // 读取无线串口的数据 并且置位接收标志
+            uart_flag = 1;
+            uart_data = bluetooth_ch9141_rx_buffer;
         }
+        
     }
 }
 

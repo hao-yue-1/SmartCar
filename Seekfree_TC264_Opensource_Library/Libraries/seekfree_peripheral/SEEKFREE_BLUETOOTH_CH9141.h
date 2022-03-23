@@ -78,7 +78,6 @@ typedef enum
 
 extern uint8 uart_flag;
 extern uint8 uart_data;
-extern uint8 mac_address[17];      //±¾»úmacµØÖ·
 
 void bluetooth_ch9141_uart_callback(void);
 void bluetooth_ch9141_enter_at_mode(void);
