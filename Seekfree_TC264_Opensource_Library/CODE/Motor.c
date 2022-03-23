@@ -122,8 +122,8 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
     pwm_r=Speed_PI_Right(encoder_r,speed_r,MotorK);
     MotorSetPWM(pwm_l,pwm_r);                         //电机PWM赋值
 
-    int32 encoder=encoder_l;
-//    set_computer_value(SEND_FACT_CMD, CURVES_CH1, &encoder, 1);   //野火上位机给通道1发送实际值
+    int data=encoder_l;     //野火上位机只支持int型数据，这里必须做强制转换
+    set_computer_value(SEND_FACT_CMD, CURVES_CH1, &data, 1);   //野火上位机给通道1发送实际值
 }
 
 /*

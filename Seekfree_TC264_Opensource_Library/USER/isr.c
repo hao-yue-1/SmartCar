@@ -30,6 +30,7 @@
 IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 {
 	enableInterrupts();//开启中断嵌套
+
 	//舵机PID控制
 	SteerCtrl(StreePWM);
 	//电机PID控制
@@ -193,6 +194,8 @@ IFX_INTERRUPT(uart2_rx_isr, 0, UART2_RX_INT_PRIO)
 {
 	enableInterrupts();//开启中断嵌套
     IfxAsclin_Asc_isrReceive(&uart2_handle);
+
+    wireless_type=WIRELESS_CH9141;      //使用串口2作为蓝牙接口但不调用逐飞的初始化函数，所以在这里强行赋值为蓝牙模式
     switch(wireless_type)
     {
     	case WIRELESS_SI24R1:

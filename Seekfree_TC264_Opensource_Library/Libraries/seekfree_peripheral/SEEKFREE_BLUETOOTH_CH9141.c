@@ -57,29 +57,33 @@ void bluetooth_ch9141_check_response(void);
 //-------------------------------------------------------------------------------------------------------------------
 void bluetooth_ch9141_uart_callback()
 {
-    while(uart_query(BLUETOOTH_CH9141_UART, &bluetooth_ch9141_rx_buffer))
+    while(uart_query(BLUETOOTH_CH9141_UART, &bluetooth_ch9141_rx_buffer))   //接收不到数据就退出while
     {
-        if(1 == at_mode)
-        {
-            //进入AT模式 接收应答信号 此处if语句内代码用户不要改动
-            at_mode_data[at_mode_num++] = bluetooth_ch9141_rx_buffer;
-            bluetooth_ch9141_check_response();
-        }
-        else if(2 == at_mode)
-        {
-            //模块正在复位中 此处if语句内代码用户不要改动
-            at_mode_num++;
-        }
-        else
-        {
-            //透传模式 用户在此处接收配对的蓝牙发送过来的额数据
-            //接到一个字节后单片机将会进入此处，通过在此处读取bluetooth_ch9141_rx_buffer可以取走数据
+        protocol_data_recv(&bluetooth_ch9141_rx_buffer,1);  //将串口接收到的数据发送到野火上位机通信协议中处理
+        receiving_process();                                //接收数据处理
 
-            // 读取无线串口的数据 并且置位接收标志
-            uart_flag = 1;
-            uart_data = bluetooth_ch9141_rx_buffer;
-        }
-        
+//        //下面是逐飞对蓝牙模块中断回调的封装，由于包含了太多用不到的模式，这里注释掉自己重写一个在上面
+//        if(1 == at_mode)
+//        {
+//            //进入AT模式 接收应答信号 此处if语句内代码用户不要改动
+//            at_mode_data[at_mode_num++] = bluetooth_ch9141_rx_buffer;
+//            bluetooth_ch9141_check_response();
+//        }
+//        else if(2 == at_mode)
+//        {
+//            //模块正在复位中 此处if语句内代码用户不要改动
+//            at_mode_num++;
+//        }
+//        else
+//        {
+//            //透传模式 用户在此处接收配对的蓝牙发送过来的额数据
+//            //接到一个字节后单片机将会进入此处，通过在此处读取bluetooth_ch9141_rx_buffer可以取走数据
+//
+//            // 读取无线串口的数据 并且置位接收标志
+//            uart_flag = 1;
+//            uart_data = bluetooth_ch9141_rx_buffer;
+//        }
+//
     }
 }
 
