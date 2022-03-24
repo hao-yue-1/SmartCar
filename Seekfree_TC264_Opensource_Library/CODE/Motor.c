@@ -25,14 +25,14 @@ int16 speed_l,speed_r;  //电机左右速度目标值的全局变量
 void MotorSetPWM(int pwm_l,int pwm_r)
 {
     //限幅处理
-    if(pwm_l>GTM_ATOM0_PWM_DUTY_MAX)
-        pwm_l=GTM_ATOM0_PWM_DUTY_MAX;
-    else if(pwm_l<-GTM_ATOM0_PWM_DUTY_MAX)
-        pwm_l=-GTM_ATOM0_PWM_DUTY_MAX;
-    if(pwm_r>GTM_ATOM0_PWM_DUTY_MAX)
-        pwm_r=GTM_ATOM0_PWM_DUTY_MAX;
-    else if(pwm_r<-GTM_ATOM0_PWM_DUTY_MAX)
-        pwm_r=-GTM_ATOM0_PWM_DUTY_MAX;
+    if(pwm_l>MOTOR_PWM_MAX)
+        pwm_l=MOTOR_PWM_MAX;
+    else if(pwm_l<-MOTOR_PWM_MAX)
+        pwm_l=-MOTOR_PWM_MAX;
+    if(pwm_r>MOTOR_PWM_MAX)
+        pwm_r=MOTOR_PWM_MAX;
+    else if(pwm_r<-MOTOR_PWM_MAX)
+        pwm_r=-MOTOR_PWM_MAX;
     //判断电机的正反转并进行速度赋值
     if(pwm_l>=0)   //左电机正转
     {

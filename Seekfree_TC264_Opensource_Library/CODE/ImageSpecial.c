@@ -339,6 +339,17 @@ uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point 
             return 1;//三个拐点存在三岔成立
         }
     }
+    else if(DownInflectionL.X==0 && DownInflectionR.X==0 && LeftLine[MT9V03X_H]==0)//如果左右下拐点不存在并且最下一行就丢线的话的话,我们就去看存不存在正上的拐点
+    {
+        Point ImageDownPointL,ImageDownPointR;//以画面的左下角和右下角作为左右补线的点
+        ImageDownPointL.X=0,ImageDownPointL.Y=0,ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=0;
+        GetForkUpInflection(ImageDownPointL, ImageDownPointR, &UpInflectionC);
+        if(UpInflectionC.X!=0)
+        {
+            FillingLine(LeftLine, CentreLine, RightLine, DownInflectionL,UpInflectionC);//三岔成立了就在返回之前补线
+            return 1;//三个拐点存在三岔成立
+        }
+    }
     return 0;
 }
 

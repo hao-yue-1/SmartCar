@@ -12,6 +12,9 @@
 #include "zf_gpt12.h"
 #include "zf_gpio.h"
 
+//电机PWM限幅宏定义
+#define MOTOR_PWM_MAX   8300
+
 //定义控制电机的PWM引脚
 #define LEFT_MOTOR_PIN1     ATOM0_CH4_P02_4
 #define LEFT_MOTOR_PIN2     ATOM0_CH6_P02_6
