@@ -30,6 +30,7 @@
 #include "zf_uart.h"
 #include "zf_assert.h"
 #include "SEEKFREE_BLUETOOTH_CH9141.h"
+#include "protocol.h"   //野火上位机通信协议
 
 uint8 uart_flag;
 uint8 uart_data;
