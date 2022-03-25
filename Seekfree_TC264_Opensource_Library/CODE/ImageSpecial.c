@@ -8,7 +8,8 @@
 
 #include "ImageSpecial.h"
 #include <math.h>
-#include "zf_gpio.h"
+#include "zf_gpio.h"            //调试用的LED
+#include "Binarization.h"       //二值化之后的图像数组
 
 /*
  *******************************************************************************************
@@ -23,101 +24,60 @@
  **           2.由于没有实物图做参考，只能先假设一个理想状态：整条起跑线恰好布满整个图像
  ********************************************************************************************
  */
-uint8 StartLineFlag(int *LeftLine,int *RightLine)
+uint8 GarageIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    /*
-     ** 有起跑线的地方就有车库，由于赛道原因，车库有可能出现在车的左边或右边，这里也先对这两种情况进行判断并分别处理；
-     ** 以车库在左边为例，从拐点开始作为扫线的原点，从下往上，从左往右扫；
-     ** 固定一列，从下往上扫，找到一个黑点，固定该行，从左往右扫，记录连续出现的黑点个数（黑线的宽度），若该宽度大于阈值BLACK_WIDTH，可
-     ** 以确定这是一条黑线。继续扫这一列，若发现了足够多的这样的黑线（大于设定的阈值BLACK_NUM），则认为这一行符合斑马线。按照该理论回
-     ** 到起点继续行的扫描，若像这样的行数足够多（大于设定的阈值BLACK_TIMES），则认为这一幅图片中存在斑马线，即该路段是起跑线
-     **/
-
-    int row,cloum;          //行,列
-    int Black_width=0;      //固定行，横向扫线是记录每段黑点的个数（即一条黑线的宽度）
-    int Black_num=0;        //记录行黑线的数量，作为判断该行是否为斑马线的依据
-    int Black_times=0;      //记录满足斑马线的行数，并作为判断该路段是否为斑马线的依据
-
-    Point InflectionL, InflectionR; //下拐点
-    InflectionL.X=0;
-    InflectionL.Y=0;
-    InflectionR.X=0;
-    InflectionR.Y=0;
-    GetDownInflection(0,MT9V03X_H,LeftLine,RightLine,&InflectionL,&InflectionR);    //获取下拐点
-
-
-    if(InflectionL.X!=0&&InflectionL.Y!=0)    //拐点（车库）在左边
+    //车库在小车左侧
+    if(InflectionL.X!=0&&InflectionL.Y!=0)  //左拐点存在
     {
-        for(row=InflectionL.X,cloum=InflectionL.Y;row<MT9V03X_H;row++)        //从左拐点开始固定列，从下往上扫
+        float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
+        if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
         {
-            if(BinaryImage[row][cloum]==IMAGE_BLACK)    //找到了一个黑点
+            int row=0;          //固定列扫描的行数
+            int zebra_num=0;    //斑马线标志的数量
+            if(InflectionL.X-G_HIGH<0)  //防止行数越界
             {
-                for(;cloum<MT9V03X_W;cloum++)                                 //固定行，从左往右扫
-                {
-                    if(BinaryImage[row][cloum]==IMAGE_BLACK)    //扫到黑点
-                    {
-                        Black_width++;   //黑线宽度+1
-                    }
-                    else                                        //扫到白点
-                    {
-                        if(Black_width>=S_BLACK_WIDTH)    //判断黑线宽度是否满足阈值
-                        {
-                            Black_num++; //行黑线数量+1
-                        }
-                        Black_width=0;   //在一次白点判断后重置黑线宽度
-                    }
-                    if(Black_num>=S_BLACK_NUM)    //若满足斑马线的阈值（这一行）
-                    {
-                        Black_times++;  //满足斑马线的行数+1
-                        break;
-                    }
-                }
-                Black_num=0;    //这一行的扫线结束，重置行黑线数
+                return 0;   //如果存在越界那只能是某种不知名错误
             }
-            if(Black_times>=S_BLACK_TIMES)    //若满足斑马线路段的阈值
+            row=InflectionL.X-G_HIGH;
+            for(int column=RightLine[row];column-1>0;column--)    //固定行，从右到左列扫描
             {
-                return 1;
+                if(BinaryImage[row][column]!=BinaryImage[row][column-1])    //该点与下一个点不同颜色 //存在黑白跳变点
+                {
+                    zebra_num++;    //斑马线标志+1
+                }
+                if(zebra_num>G_ZEBRA_NUM)   //斑马线标志的数量高于阈值
+                {
+                    return 1;       //返回车库在左边
+                }
             }
         }
-        return 0;
     }
-
-    if(InflectionR.X!=0&&InflectionR.Y!=0)    //拐点（车库）在右边
+    //车库在小车右侧
+    if(InflectionR.X!=0&&InflectionR.Y!=0)  //右拐点存在（车库在右边）
     {
-        for(row=InflectionL.X,cloum=InflectionL.Y;row<MT9V03X_H;row++)        //从右拐点开始固定列，从下往上扫
+        float bias_left=Regression_Slope(119,0,LeftLine);   //求出右边界线斜率
+        if(fabsf(bias_left)<G_LINEBIAS)    //右边界为直道
         {
-            if(BinaryImage[row][cloum]==IMAGE_BLACK)    //找到了一个黑点
+            int row=0;          //固定列扫描的行数
+            int zebra_num=0;    //斑马线标志的数量
+            if(InflectionR.X-G_HIGH<0)  //防止行数越界
             {
-                for(;cloum>0;cloum--)                                         //固定行，从右往左扫
-                {
-                    if(BinaryImage[row][cloum]==IMAGE_BLACK)    //扫到黑点
-                    {
-                        Black_width++;   //黑线宽度+1
-                    }
-                    else                                        //扫到白点
-                    {
-                        if(Black_width>=S_BLACK_WIDTH)    //判断黑线宽度是否满足阈值
-                        {
-                            Black_num++; //行黑线数量+1
-                        }
-                        Black_width=0;   //在一次白点判断后重置黑线宽度
-                    }
-                    if(Black_num>=S_BLACK_NUM)    //若满足斑马线的阈值（这一行）
-                    {
-                        Black_times++;  //满足斑马线的行数+1
-                        break;
-                    }
-                }
-                Black_num=0;    //这一行的扫线结束，重置行黑线数
+                return 0;   //如果存在越界那只能是某种不知名错误
             }
-            if(Black_times>=S_BLACK_TIMES)    //若满足斑马线路段的阈值
+            row=InflectionR.X-G_HIGH;
+            for(int column=LeftLine[row];column-1>0;column--)    //固定行，从右到左列扫描
             {
-                return 2;
+                if(BinaryImage[row][column]!=BinaryImage[row][column-1])    //该点与下一个点不同颜色 //存在黑白跳变点
+                {
+                    zebra_num++;    //斑马线标志+1
+                }
+                if(zebra_num>G_ZEBRA_NUM)   //斑马线标志的数量高于阈值
+                {
+                    return 2;       //返回车库在右边
+                }
             }
         }
-        return 0;
     }
-
     return 0;
 }
 
@@ -142,7 +102,7 @@ uint8 CircleIslandBegin(int *LeftLine,int *RightLine)
             if(LeftLine[row]==0&&LeftLine[row-1]!=0&&row>C_INROW)    //该行丢线而下一行不丢线且该行不会太远   //C_INROW用于防止误判急拐弯的情况
             {
                 float bias_rightline=Regression_Slope(row,20,RightLine);   //求出右边界线的斜率
-                if(fabs(bias_rightline)<C_LINEBIAS)
+                if(fabsf(bias_rightline)<C_LINEBIAS)    //右边界为直道
                 {
                     Point StarPoint,EndPoint;   //定义补线的起点和终点
                     EndPoint.Y=row;             //终点赋值

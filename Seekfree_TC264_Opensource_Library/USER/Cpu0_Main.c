@@ -120,7 +120,7 @@ int core0_main(void)
 	        }
 	        lcd_showint8(0, 0, flag);
 	        systick_delay_ms(STM0,500);
-//	        if(c_flag==0)
+//	        if(c_flag==0)       //环岛，只识别一次
 //	        {
 //	            if(CircleIslandBegin(LeftLine,RightLine)==1)
 //                {
