@@ -113,11 +113,13 @@ int core0_main(void)
 	        GetImagBasic(LeftLine,CentreLine,RightLine);
 
 	        /*路径检测*/
-	        GetDownInflection(100,40,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);    //获取下拐点
+	        GetDownInflection(100,60,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);    //获取下拐点
 	        if(!CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint))        //十字
 	        {
 	            flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
 	        }
+	        lcd_showint8(0, 0, flag);
+	        systick_delay_ms(STM0,500);
 //	        if(c_flag==0)
 //	        {
 //	            if(CircleIslandBegin(LeftLine,RightLine)==1)
