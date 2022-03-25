@@ -249,8 +249,6 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
     //从下往上找到那个跳变的点即为上拐点
     for(i=starline;i>1;i--)
     {
-//        lcd_showint32(0, 3, i, 3);
-//        systick_delay_ms(STM0,300);
         //图像数组是[高][宽]
         if(BinaryImage[i][UpInflectionC->X]==IMAGE_WHITE && BinaryImage[i-1][UpInflectionC->X]==IMAGE_BLACK)
         {
@@ -259,20 +257,14 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
                 if(BinaryImage[i-1][cloumnL]==IMAGE_WHITE)
                     break;
                 if(cloumnL==11)
-                {
-                    lcd_showint32(0, 4, 99, 3);
                     return;//遍历完了都没有找到白的即不是三岔，退出判断
-                }
             }
-            for(cloumnR=UpInflectionC->X;cloumnR<MT9V03X_H-10;cloumnR++)
+            for(cloumnR=UpInflectionC->X;cloumnR<MT9V03X_W-10;cloumnR++)
             {
                 if(BinaryImage[i-1][cloumnR]==IMAGE_WHITE)
                     break;
-                if(cloumnR==MT9V03X_H-11)
-                {
-                    lcd_showint32(0, 5, 99, 3);
+                if(cloumnR==MT9V03X_W-11)
                     return;//遍历完了都没有找到白的即不是三岔，退出判断
-                }
             }
             UpInflectionC->Y=i;//Y坐标是行数
             return;
@@ -304,19 +296,17 @@ uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point 
         if(UpInflectionC.X!=0 && UpInflectionC.Y!=0)
         {
             FillingLine(LeftLine, CentreLine, RightLine, DownInflectionL,UpInflectionC);//三岔成立了就在返回之前补线
-            lcd_drawpoint(UpInflectionC.X,UpInflectionC.Y,RED);//打印上拐点
             return 1;//三个拐点存在三岔成立
         }
     }
-    else if(DownInflectionL.X==0 && DownInflectionR.X==0 && LeftLine[MT9V03X_H-10]==0 && RightLine[MT9V03X_H-10]==MT9V03X_W-1)//如果左右下拐点不存在并且下面一段出现就丢线的话的话,我们就去看存不存在正上的拐点
+    else if(DownInflectionL.X==0 && DownInflectionR.X==0 && LeftLine[MT9V03X_H-20]==0 && RightLine[MT9V03X_H-20]==MT9V03X_W-1)//如果左右下拐点不存在并且下面一段出现就丢线的话的话,我们就去看存不存在正上的拐点
     {
         Point ImageDownPointL,ImageDownPointR;//以画面的左下角和右下角作为左右补线的点
-        ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H-10,ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H-10;
+        ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H-20,ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H-20;
         GetForkUpInflection(ImageDownPointL, ImageDownPointR, &UpInflectionC);
         if(UpInflectionC.X!=0 && UpInflectionC.Y!=0)
         {
-            FillingLine(LeftLine, CentreLine, RightLine, DownInflectionL,UpInflectionC);//三岔成立了就在返回之前补线
-            lcd_drawpoint(UpInflectionC.X,UpInflectionC.Y,GREEN);//打印上拐点
+            FillingLine(LeftLine, CentreLine, RightLine, ImageDownPointL,UpInflectionC);//三岔成立了就在返回之前补线
             return 1;//三个拐点存在三岔成立
         }
     }

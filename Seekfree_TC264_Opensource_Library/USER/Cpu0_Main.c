@@ -118,8 +118,6 @@ int core0_main(void)
 	        {
 	            flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
 	        }
-	        lcd_showint8(0, 0, flag);
-	        systick_delay_ms(STM0,500);
 //	        if(c_flag==0)       //环岛，只识别一次
 //	        {
 //	            if(CircleIslandBegin(LeftLine,RightLine)==1)
