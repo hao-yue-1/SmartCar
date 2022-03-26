@@ -27,8 +27,10 @@
 uint8 GarageIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);      //起跑线识别
 
 /*环岛相关函数*/
-uint8 CircleIslandBegin(int *LeftLine,int *RightLine);
-uint8 CircleIslandEnd(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //识别环岛
+uint8 CircleIslandBegin(int *LeftLine,int *RightLine);      //识别环岛入口
+uint8 CircleIslandEnd(Point InflectionL,Point InflectionR); //识别环岛出口
+/*十字回环相关函数*/
 uint8 CrossLoopEnd(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
 /*三岔相关函数*/
 void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC);//搜寻出三岔上拐点

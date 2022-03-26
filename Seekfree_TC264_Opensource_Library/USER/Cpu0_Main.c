@@ -42,6 +42,7 @@
 //定义变量
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 char power_switch=1;//电源总开关
+float Bias=0;       //偏差
 
 int core0_main(void)
 {
@@ -54,7 +55,6 @@ int core0_main(void)
 	ForkUpPoint.X=0;ForkUpPoint.Y=0;
 	Point CrossRoadUpLPoint,CrossRoadUpRPoint;
 	CrossRoadUpLPoint.X=0;CrossRoadUpLPoint.Y=0;CrossRoadUpRPoint.X=0;CrossRoadUpRPoint.Y=0;
-	float Bias=0;
 	int flag=0;//三岔识别的标志变量
 	int c_flag=0;   //环岛标志变量
 	//*****************************************************************
