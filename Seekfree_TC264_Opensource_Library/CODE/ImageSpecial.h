@@ -20,10 +20,10 @@
 //环岛判定误差
 #define C_BIAS      2       //消除小毛刺的影响，补线更加丝滑
 #define C_LOSTLINE  35      //触发环岛入口判断的丢线数         //越大条件越严谨
-#define C_INROW     60      //判定环岛入口有效的行数           //越大条件越严谨 //60：几乎只有一帧可以识别
+#define C_INROW     40      //判定环岛入口有效的行数           //越大条件越严谨 //60：几乎只有一帧可以识别
 #define C_LINEBIAS  0.8     //判定环岛入口另一边的直道斜率   //越小条件越严谨
 
-#define C_NUM       1       //判定环岛过程的中帧数越界阈值
+#define C_NUM       5       //判定环岛过程的中帧数越界阈值
 
 /*起跑线相关函数*/
 uint8 GarageIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);      //起跑线识别

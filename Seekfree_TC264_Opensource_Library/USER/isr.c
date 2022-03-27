@@ -25,6 +25,8 @@
 #include "motor.h"
 #include "steer.h"
 #include "protocol.h"
+#include "PID.h"
+#include "ImageTack.h"
 
 //PIT中断函数  示例
 IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
@@ -32,6 +34,8 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	enableInterrupts();//开启中断嵌套
 
 	//舵机PID控制
+	uint32 StreePWM=0;
+	StreePWM=Steer_Position_PID(Bias,SteerK);
 	SteerCtrl(StreePWM);
 	//电机PID控制
 	MotorCtrl(50,50);

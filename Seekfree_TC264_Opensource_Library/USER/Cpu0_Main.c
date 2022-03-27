@@ -113,11 +113,12 @@ int core0_main(void)
 	        GetImagBasic(LeftLine,CentreLine,RightLine);
 
 	        /*路径检测*/
-	        GetDownInflection(100,60,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);    //获取下拐点
-	        if(!CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint))        //十字
-	        {
-	            flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
-	        }
+	        GetDownInflection(110,10,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);    //获取下拐点
+//	        if(!CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint))        //十字
+//	        {
+//	            flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
+//	        }
+	        CircleIslandIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);       //环岛判断
 //	        if(c_flag==0)       //环岛，只识别一次
 //	        {
 //	            if(CircleIslandBegin(LeftLine,RightLine)==1)
@@ -140,7 +141,7 @@ int core0_main(void)
             if(flag==1)
             {
                 Bias=DifferentBias(110,90,CentreLine);
-                gpio_toggle(P21_4);
+//                gpio_toggle(P21_4);
                 flag=0;
             }
             else
@@ -154,7 +155,7 @@ int core0_main(void)
 	    }
 
 	    /*开环转向环无元素测试*/
-	    StreePWM=Steer_Position_PID(Bias,SteerK);
+//	    StreePWM=Steer_Position_PID(Bias,SteerK);
 //	    printf("Bias=%f     StreePWM=%d\r\n",Bias,StreePWM);
 
 	    /*速度环调参*/

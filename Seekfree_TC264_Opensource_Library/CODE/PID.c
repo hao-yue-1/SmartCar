@@ -22,7 +22,8 @@ MotorPID MotorK;    //电机PID参数
 void PID_init(SteerPID *SteerK,MotorPID *MotorK)
 {
     SteerK->P=20;SteerK->I=0;SteerK->D=1;    //初始化舵机的PID参数
-    MotorK->P=20;MotorK->I=5;MotorK->D=1;     //初始化电机的PID参数
+    MotorK->P=20;MotorK->I=5;MotorK->D=0;     //初始化电机的PID参数 //20,5,1
+
 }
 
 /********************************************************************************************
