@@ -119,14 +119,8 @@ int core0_main(void)
 //	            flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
 //	        }
 	        CircleIslandIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);       //环岛判断
-//	        if(c_flag==0)       //环岛，只识别一次
-//	        {
-//	            if(CircleIslandBegin(LeftLine,RightLine)==1)
-//                {
-//                    gpio_toggle(P21_4);
-//                    c_flag=1;
-//                }
-//	        }
+//	        if(CircleIsFlag_2(LeftLine, RightLine,LeftDownPoint,RightDownPoint)==1)
+//	            gpio_toggle(P20_9);
 	        //把三线画出来
             for(int i=MT9V03X_H;i>0;i--)
             {
