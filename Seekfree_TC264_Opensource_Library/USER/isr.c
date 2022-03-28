@@ -38,7 +38,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	StreePWM=Steer_Position_PID(Bias,SteerK);
 	SteerCtrl(StreePWM);
 	//µç»úPID¿ØÖÆ
-	MotorCtrl(50,50);
+	MotorCtrl(60,60);
 
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH0);
 }

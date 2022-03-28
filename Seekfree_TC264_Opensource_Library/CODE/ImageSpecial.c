@@ -191,10 +191,18 @@ uint8 CircleIsFlag_1(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
 uint8 CircleIsFlag_2(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
     float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
-    if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
+    if(fabsf(bias_right)<G_LINEBIAS&&LostNum_LeftLine<20)    //右边界为直道且左边丢线小于35
     {
         if(BinaryImage[80][10]==IMAGE_BLACK)    //经验位置为黑
         {
+            //下面这个for防止在环岛出口时误判为环岛中部
+            for(int row=80;row+1<MT9V03X_H-1;row++) //向下扫
+            {
+                if(LeftLine[row]==0&&LeftLine[row+1]!=0)    //丢线-不丢线
+                {
+                    return 0;
+                }
+            }
             for(int row=80;row-1>0;row--)  //向上扫
             {
                 if(LeftLine[row]!=0&&LeftLine[row-1]==0)    //不丢线-丢线
@@ -308,7 +316,7 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
             }
             if(CircleIsFlag_3(LeftLine, RightLine)==1)      //识别到已经进入环岛
             {
-                if(circle_island_num_2>C_NUM_2) //确保识别到
+                if(circle_island_num_2>4) //确保识别到
                 {
                     circle_island_flag=3;   //跳转到下个状态
                     circle_island_num_1=0;

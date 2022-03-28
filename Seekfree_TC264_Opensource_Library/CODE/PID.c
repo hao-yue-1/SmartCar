@@ -22,7 +22,7 @@ MotorPID MotorK;    //电机PID参数
 void PID_init(SteerPID *SteerK,MotorPID *MotorK)
 {
     SteerK->P=20;SteerK->I=0;SteerK->D=1;    //初始化舵机的PID参数
-    MotorK->P=20;MotorK->I=5;MotorK->D=0;     //初始化电机的PID参数 //20,5,1
+    MotorK->P=15;MotorK->I=1.2;MotorK->D=0;  //初始化电机的PID参数 3.28晚更新
 
 }
 
@@ -60,26 +60,6 @@ uint32 Steer_Position_PID(float SlopeBias,SteerPID K)//舵机位置式PID控制，采用分
     LastSlopeBias=SlopeBias;
     return STEER_MID+PWM;//假设斜率的范围为[-5,5]，而舵机打角PWM的范围为[850,680]，减去中值之后就能映射到[-85,85]，于此对应，所以返回值应该负号再加中值，KP先猜测为17
 }
-
-///*
-// *******************************************************************************************
-// ** 函数功能: 根据偏差来求舵机PWM
-// ** 参    数: bias：距离中线的偏差（已经在该函数外部求出来的偏差）
-// **           K：舵机的PID参数
-// ** 返 回 值: 给舵机的PWM
-// ** 作    者: WBN
-// ********************************************************************************************
-// */
-//uint32 Steer_Position_PID(float bias,SteerPID K)//舵机位置式PID控制，采用分段式PID控制
-//{
-//    static float last_bias,last2_bias;  //上一次偏差，上上次偏差
-//    int PWM=0;  //输出舵机的偏差PWM
-//
-//    bias=FirstOrderLagFilter(bias);     //一阶滞后滤波算法更新bias
-//    PWM=K.P*(bias-last_bias)+K.I*bias+K.D*(bias-2*last_bias+last2_bias);    //PID计算
-//
-//    return STEER_MID+PWM;   //返回最终输出到舵机上的PWM
-//}
 
 /*
  *******************************************************************************************

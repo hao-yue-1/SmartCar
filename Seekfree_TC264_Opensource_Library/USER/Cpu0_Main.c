@@ -89,7 +89,7 @@ int core0_main(void)
 	/**********************PID初始化***********************************************/
 	PID_init(&SteerK,&MotorK);
 	/**********************定时器中断初始化**************************/
-	pit_interrupt_ms(CCU6_0,PIT_CH0,5);
+	pit_interrupt_ms(CCU6_0,PIT_CH0,6);
 	/**************************************************************/
 
     //等待所有核心初始化完毕
@@ -127,6 +127,7 @@ int core0_main(void)
                 lcd_drawpoint(LeftLine[i],i,GREEN);
                 lcd_drawpoint(CentreLine[i],i,RED);
                 lcd_drawpoint(RightLine[i],i,BLUE);
+//                lcd_showint16(0, 0, LostNum_LeftLine);
             }
 
 	        /*斜率函数测试*/

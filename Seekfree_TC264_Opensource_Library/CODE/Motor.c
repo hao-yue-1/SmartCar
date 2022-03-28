@@ -118,12 +118,22 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
     int pwm_l=0,pwm_r=0;             //左右电机PWM
 
     MotorEncoder(&encoder_l,&encoder_r);              //获取左右电机编码器
+    encoder_l=SecondOrderLagFilter_L(encoder_l);      //二阶低通滤波
+    encoder_r=SecondOrderLagFilter_R(encoder_r);
     pwm_l=Speed_PI_Left(encoder_l,speed_l,MotorK);    //左右电机PID
     pwm_r=Speed_PI_Right(encoder_r,speed_r,MotorK);
     MotorSetPWM(pwm_l,pwm_r);                         //电机PWM赋值
 
-    int data=encoder_l;     //野火上位机只支持int型数据，这里必须做强制转换
-    set_computer_value(SEND_FACT_CMD, CURVES_CH1, &data, 1);   //野火上位机给通道1发送实际值
+    //野火上位机调试
+    int target_l=speed_l,target_r=speed_r;
+    int data_l=encoder_l,data_r=encoder_r;     //野火上位机只支持int型数据，这里必须做强制转换
+    //发送编码器数值
+    set_computer_value(SEND_TARGET_CMD,CURVES_CH1,&target_l,1);
+    set_computer_value(SEND_FACT_CMD, CURVES_CH1, &data_l, 1);      //发送左编码器
+    set_computer_value(SEND_TARGET_CMD,CURVES_CH2,&target_r,1);
+    set_computer_value(SEND_FACT_CMD, CURVES_CH2, &data_r, 1);      //发送右编码器
+
+//    printf("l:%d    r:%d\r\n",data_l,data_r);
 }
 
 /*
