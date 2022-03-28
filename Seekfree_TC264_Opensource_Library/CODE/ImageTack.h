@@ -15,7 +15,7 @@
 extern float Bias;  //偏差
 
 float Regression_Slope(int startline,int endline,int *CentreLine);//求中线数组点拟合出来的回归方程
-void FillingLine(int *LeftLine, int *CentreLine, int *RightLine, Point StarPoint,Point EndPoint);//根据两点进行补线
+void FillingLine(char Choose, Point StarPoint,Point EndPoint);//根据两点进行补线
 float DifferentBias(int startline,int endline,int *CentreLine);
 
 

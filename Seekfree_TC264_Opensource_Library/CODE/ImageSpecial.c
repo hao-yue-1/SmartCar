@@ -118,7 +118,7 @@ uint8 CircleIslandBegin(int *LeftLine,int *RightLine)
                             EndPoint.X=LeftLine[row];
                             StarPoint.Y=MT9V03X_H-1;    //起点赋值
                             StarPoint.X=MT9V03X_W-1;
-                            FillingLine(LeftLine, CentreLine, RightLine,StarPoint,EndPoint);    //补线
+                            FillingLine('R',StarPoint,EndPoint);    //补线
                             return 1;
                         }
                     }
@@ -177,7 +177,7 @@ uint8 CircleIsFlag_1(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
                             Point end;
                             end.Y=row-1;
                             end.X=column;
-                            FillingLine(LeftLine, CentreLine, RightLine, InflectionL, end);   //补线
+                            FillingLine('L', InflectionL, end);   //补线
                             return 1;
                         }
                     }
@@ -462,7 +462,7 @@ uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point 
         GetForkUpInflection(DownInflectionL, DownInflectionR, &UpInflectionC);//去搜索上拐点
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
-            FillingLine(LeftLine, CentreLine, RightLine, DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
+            FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
             Bias=DifferentBias(100,60,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
             return 1;//三个拐点存在三岔成立
         }
@@ -474,7 +474,7 @@ uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point 
         GetForkUpInflection(ImageDownPointL, ImageDownPointR, &UpInflectionC);
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
-            FillingLine(LeftLine, CentreLine, RightLine, ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
+            FillingLine('R',ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
             Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
             return 1;//三个拐点存在三岔成立
         }
@@ -542,8 +542,8 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
     if(LostNum_LeftLine>40 && LostNum_RightLine>40 && DownInflectionR.X!=0 && DownInflectionL.X!=0 && LeftLine[DownInflectionL.X-5]==0 && RightLine[DownInflectionR.X-5]==MT9V03X_W-1)//左右两边大量丢线，并且左右下拐点都存在
     {
         GetCrossRoadsUpInflection(LeftLine, RightLine, DownInflectionL, DownInflectionR, &UpInflectionL, &UpInflectionR);
-        FillingLine(LeftLine, CentreLine, RightLine, DownInflectionL, UpInflectionL);
-        FillingLine(LeftLine, CentreLine, RightLine, DownInflectionR, UpInflectionR);
+        FillingLine('L', DownInflectionL, UpInflectionL);
+        FillingLine('R', DownInflectionR, UpInflectionR);
         return 1;//正入十字
     }
     else if(LostNum_LeftLine>60 && DownInflectionR.X!=0 && LeftLine[DownInflectionR.Y-5]==0)//左边丢线超过一半，并且右拐点上面一段对应的左边丢线
@@ -553,7 +553,7 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
             if(BinaryImage[row][UpInflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionR.X]==IMAGE_BLACK)  //由白到黑跳变
             {
                 UpInflectionR.Y=row-1;//记录上拐点
-                FillingLine(LeftLine, CentreLine, RightLine, DownInflectionR, UpInflectionR);
+                FillingLine('R', DownInflectionR, UpInflectionR);
                 break;//记录完之后就退出循环
             }
         }
@@ -566,7 +566,7 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
             if(BinaryImage[row][UpInflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionL.X]==IMAGE_BLACK)  //由白到黑跳变
             {
                 UpInflectionL.Y=row-1;//记录上拐点
-                FillingLine(LeftLine, CentreLine, RightLine, DownInflectionL, UpInflectionL);
+                FillingLine('L', DownInflectionL, UpInflectionL);
                 break;//记录完之后就退出循环
             }
         }
