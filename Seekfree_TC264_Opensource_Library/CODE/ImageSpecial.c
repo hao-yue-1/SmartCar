@@ -351,9 +351,10 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
             circle_island_flag=0;   //重置状态
             circle_island_num_1=0;
             circle_island_num_2=0;
-            break;
+            return 1;
         }
     }
+    return 0;
 }
 
 /*
@@ -459,20 +460,22 @@ uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point 
     if(DownInflectionL.X!=0 && DownInflectionR.X!=0 && LeftLine[DownInflectionL.Y-5]!=0 && RightLine[DownInflectionR.Y-5]!=MT9V03X_W-1)//当左右拐点存在,且左右拐点不会太快出现丢线情况
     {
         GetForkUpInflection(DownInflectionL, DownInflectionR, &UpInflectionC);//去搜索上拐点
-        if(UpInflectionC.X!=0 && UpInflectionC.Y!=0)
+        if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
-            FillingLine(LeftLine, CentreLine, RightLine, DownInflectionL,UpInflectionC);//三岔成立了就在返回之前补线
+            FillingLine(LeftLine, CentreLine, RightLine, DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
+            Bias=DifferentBias(100,60,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
             return 1;//三个拐点存在三岔成立
         }
     }
-    else if(DownInflectionL.X==0 && DownInflectionR.X==0 && LeftLine[MT9V03X_H-20]==0 && RightLine[MT9V03X_H-20]==MT9V03X_W-1)//如果左右下拐点不存在并且下面一段出现就丢线的话的话,我们就去看存不存在正上的拐点
+    else if(DownInflectionL.X==0 && DownInflectionR.X==0 && LeftLine[MT9V03X_H-10]==0 && RightLine[MT9V03X_H-10]==MT9V03X_W-1)//如果左右下拐点不存在并且下面一段出现就丢线的话的话,我们就去看存不存在正上的拐点
     {
         Point ImageDownPointL,ImageDownPointR;//以画面的左下角和右下角作为左右补线的点
-        ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H-20,ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H-20;
+        ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H-10,ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H-10;
         GetForkUpInflection(ImageDownPointL, ImageDownPointR, &UpInflectionC);
-        if(UpInflectionC.X!=0 && UpInflectionC.Y!=0)
+        if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
-            FillingLine(LeftLine, CentreLine, RightLine, ImageDownPointL,UpInflectionC);//三岔成立了就在返回之前补线
+            FillingLine(LeftLine, CentreLine, RightLine, ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
+            Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
             return 1;//三个拐点存在三岔成立
         }
     }

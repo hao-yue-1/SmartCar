@@ -135,7 +135,6 @@ int core0_main(void)
 //	        Bias=DifferentBias(100,40,CentreLine);
             if(flag==1)
             {
-                Bias=DifferentBias(110,90,CentreLine);
 //                gpio_toggle(P21_4);
                 flag=0;
             }
