@@ -1,6 +1,7 @@
 #include "ImageBasic.h"
 
 //变量定义
+int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 int Mid=MT9V03X_W/2;                        //初始化扫线的中点为图像中点
 int Lost_CentreLine=0;                      //中线丢失的行坐标(扫线到赛道外)
 int LostNum_LeftLine=0,LostNum_RightLine=0; //记录左右边界丢线数

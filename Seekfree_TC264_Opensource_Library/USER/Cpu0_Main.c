@@ -39,11 +39,6 @@
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
-//定义变量
-int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
-char power_switch=1;//电源总开关
-float Bias=0;       //偏差
-
 int core0_main(void)
 {
 	get_clk();//获取时钟频率  务必保留
@@ -55,7 +50,7 @@ int core0_main(void)
 	ForkUpPoint.X=0;ForkUpPoint.Y=0;
 	Point CrossRoadUpLPoint,CrossRoadUpRPoint;
 	CrossRoadUpLPoint.X=0;CrossRoadUpLPoint.Y=0;CrossRoadUpRPoint.X=0;CrossRoadUpRPoint.Y=0;
-	int flag=0;//三岔识别的标志变量
+	int Fork_flag=0;//三岔识别的标志变量
 	int c_flag=0;   //环岛标志变量
 	//*****************************************************************
 
@@ -133,10 +128,10 @@ int core0_main(void)
 	        /*斜率函数测试*/
 //	        Bias=Regression_Slope(100,40,CentreLine);
 //	        Bias=DifferentBias(100,40,CentreLine);
-            if(flag==1)
+            if(Fork_flag==1)
             {
 //                gpio_toggle(P21_4);
-                flag=0;
+                Fork_flag=0;
             }
             else
             {
