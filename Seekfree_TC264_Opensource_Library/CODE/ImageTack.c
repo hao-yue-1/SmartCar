@@ -86,31 +86,20 @@ void FillingLine(char Choose, Point StarPoint,Point EndPoint)
     for(Y=StarPoint.Y;Y>EndPoint.Y;Y--)
     {
         X=(int)((-Y-B)/K);          //强制类型转化：指针索引的时候只能是整数
+
+        //判断X会不会越界
+        if(X<0)                X=0;
+        else if(X>MT9V03X_W-1) X=MT9V03X_W-1;
+
         switch(Choose)
         {
             case 'L':
-                if(X<0)//防止画线的时候越界
-                {
-                    LeftLine[Y]=0;
-                    CentreLine[Y]=(0+RightLine[Y])/2;
-                }
-                else
-                {
-                    LeftLine[Y]=X;
-                    CentreLine[Y]=(X+RightLine[Y])/2;
-                }
+                LeftLine[Y]=X;
+                CentreLine[Y]=(X+RightLine[Y])/2;
                 break;
             case 'R':
-                if(X>MT9V03X_W-1)//防止画线的时候越界
-                {
-                    RightLine[Y]=MT9V03X_W-1;
-                    CentreLine[Y]=(LeftLine[Y]+MT9V03X_W-1)/2;
-                }
-                else
-                {
-                    RightLine[Y]=X;
-                    CentreLine[Y]=(LeftLine[Y]+X)/2;//在里面进行中线的修改，因为不会出现补两边的情况，正入十字就直接冲，斜入就补一边而已
-                }
+                RightLine[Y]=X;
+                CentreLine[Y]=(LeftLine[Y]+X)/2;//在里面进行中线的修改，因为不会出现补两边的情况，正入十字就直接冲，斜入就补一边而已
                 break;
             default:break;
         }
