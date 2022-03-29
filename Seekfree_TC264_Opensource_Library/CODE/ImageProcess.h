@@ -13,6 +13,6 @@
 #include "ImageTack.h"      //计算偏差、补线
 #include "ImageSpecial.h"   //元素识别
 
-void ImageProcess();//图像处理逻辑函数
+void ImageProcess(void);//图像处理逻辑函数
 
 #endif /* CODE_IMAGEPROCESS_H_ */

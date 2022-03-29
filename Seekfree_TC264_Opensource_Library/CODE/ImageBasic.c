@@ -21,7 +21,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
     uint8 flag_l=0,flag_r=0;    //记录是否丢线flag，flag=0：丢线
     LostNum_LeftLine=0;LostNum_RightLine=0; //把丢线的计数变量清零
     //开始扫线(从下往上,从中间往两边),为了扫线的严谨性,我们做BORDER_BIAS的误差处理，即扫线范围会小于图像大小
-    for(row=MT9V03X_H;row>0;row--) //图像的原点在左上角
+    for(row=MT9V03X_H-1;row>0;row--) //图像的原点在左上角
     {
         //下面这个if是为了解决扫线一开始就在赛道外的问题，帮助重新找回赛道
         if(BinaryImage[row][Mid]==IMAGE_BLACK)  //扫线中点是黑色的（中点在赛道外）
