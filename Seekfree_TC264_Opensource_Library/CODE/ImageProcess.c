@@ -6,6 +6,7 @@
  * Effect: Image element processing logic
  */
 #include "ImageProcess.h"
+#include "zf_gpio.h"
 
 /********************************************************************************************
  ** 函数功能: 对图像的各个元素之间的逻辑处理函数，最终目的是为了得出Bias给中断去控制
@@ -34,8 +35,15 @@ void ImageProcess()
     if(!CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint))        //十字
     {
         Fork_flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
-        CircleIslandIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint); //环岛
     }
+    CircleIslandIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint); //环岛
+
+//    CircleIsFlag_2(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    CircleIslandBegin(LeftLine, RightLine);
+
+//    CircleIsFlag_3(LeftLine, RightLine);
+//    CircleIsFlag_2(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+
     /***************************偏差计算**************************/
     if(Fork_flag!=0)  //在识别函数里面已经计算了Bias
     {

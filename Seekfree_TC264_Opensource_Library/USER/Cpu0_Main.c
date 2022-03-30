@@ -44,15 +44,6 @@ int core0_main(void)
 {
 	get_clk();//获取时钟频率  务必保留
 	//用户在此处调用各种初始化函数等
-	//***************************变量定义**************************
-//	Point LeftDownPoint,RightDownPoint;     //左右下拐点
-//	LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;
-//	Point ForkUpPoint;
-//	ForkUpPoint.X=0;ForkUpPoint.Y=0;
-//	Point CrossRoadUpLPoint,CrossRoadUpRPoint;
-//	CrossRoadUpLPoint.X=0;CrossRoadUpLPoint.Y=0;CrossRoadUpRPoint.X=0;CrossRoadUpRPoint.Y=0;
-//	int Fork_flag=0;//三岔识别的标志变量
-//	int c_flag=0;   //环岛标志变量
 	//*****************************************************************
 
 	//***************************交互的初始化**************************
@@ -105,29 +96,7 @@ int core0_main(void)
 	        ImageBinary();      //图像二值化
 	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
 
-//	        /*扫线函数测试*/
-//	        GetImagBasic(LeftLine,CentreLine,RightLine);
-//
-//	        /*路径检测*/
-//	        GetDownInflection(110,10,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);    //获取下拐点
-////	        if(!CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint))        //十字
-////	        {
-////	            flag=ForkIdentify(100,40,LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
-////	        }
-//	        CircleIslandIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);       //环岛判断
-//
-//	        /*斜率函数测试*/
-//            if(Fork_flag==1)
-//            {
-////                gpio_toggle(P21_4);
-//                Fork_flag=0;
-//            }
-//            else
-//            {
-//                Bias=DifferentBias(100,60,CentreLine);
-//            }
-
-	        ImageProcess();
+	        ImageProcess();     //图像处理、元素识别
 
             //把三线画出来
             for(int i=MT9V03X_H-1;i>0;i--)
