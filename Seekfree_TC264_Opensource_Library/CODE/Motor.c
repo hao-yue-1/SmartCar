@@ -124,14 +124,14 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
     pwm_r=Speed_PI_Right(encoder_r,speed_r,MotorK);
     MotorSetPWM(pwm_l,pwm_r);                         //电机PWM赋值
 
-    //野火上位机调试
-    int target_l=speed_l,target_r=speed_r;
-    int data_l=encoder_l,data_r=encoder_r;     //野火上位机只支持int型数据，这里必须做强制转换
-    //发送编码器数值
-    set_computer_value(SEND_TARGET_CMD,CURVES_CH1,&target_l,1);
-    set_computer_value(SEND_FACT_CMD, CURVES_CH1, &data_l, 1);      //发送左编码器
-    set_computer_value(SEND_TARGET_CMD,CURVES_CH2,&target_r,1);
-    set_computer_value(SEND_FACT_CMD, CURVES_CH2, &data_r, 1);      //发送右编码器
+//    //野火上位机调试
+//    int target_l=speed_l,target_r=speed_r;
+//    int data_l=encoder_l,data_r=encoder_r;     //野火上位机只支持int型数据，这里必须做强制转换
+//    //发送编码器数值
+//    set_computer_value(SEND_TARGET_CMD,CURVES_CH1,&target_l,1);
+//    set_computer_value(SEND_FACT_CMD, CURVES_CH1, &data_l, 1);      //发送左编码器
+//    set_computer_value(SEND_TARGET_CMD,CURVES_CH2,&target_r,1);
+//    set_computer_value(SEND_FACT_CMD, CURVES_CH2, &data_r, 1);      //发送右编码器
 
 //    printf("l:%d    r:%d\r\n",data_l,data_r);
 }

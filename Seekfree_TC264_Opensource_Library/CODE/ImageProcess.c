@@ -30,7 +30,7 @@ void ImageProcess()
     /******************************扫线***************************/
     GetImagBasic(LeftLine,CentreLine,RightLine);
     /*************************搜寻左右下拐点***********************/
-    GetDownInflection(110,10,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
+    GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*****************************特殊元素判断********************************/
     if(!CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint))        //十字
     {

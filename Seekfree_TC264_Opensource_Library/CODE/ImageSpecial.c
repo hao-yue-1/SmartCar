@@ -168,6 +168,13 @@ uint8 CircleIslandEnd()
 //判断条件一是否成立，成立返回1，不成立返回0
 uint8 CircleIsFlag_1(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
+    if(InflectionR.X!=0&&InflectionR.Y!=0)     //防止误判三岔
+    {
+//        lcd_showchar(0, 0, 'A');
+//        lcd_showint16(0, 0, InflectionR.Y);
+//        lcd_showint16(0, 1, InflectionR.X);
+        return 0;
+    }
     if(InflectionL.X!=0&&InflectionL.Y!=0)  //判断条件一：是否存在左拐点与右侧直道
     {
         float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
@@ -268,11 +275,11 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
-            gpio_set(P21_4, 1);
-            gpio_set(P21_5, 1);
-            gpio_toggle(P20_9);
             if(CircleIsFlag_1(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
             {
+                gpio_set(P21_4, 1);
+                gpio_set(P21_5, 1);
+                gpio_toggle(P20_9);
                 circle_island_num_2++;
             }
             if(CircleIsFlag_2(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别到环岛中部，进行状态转移
@@ -458,7 +465,7 @@ uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point 
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
             FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
-            Bias=DifferentBias(100,60,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
+            Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
             return 1;//三个拐点存在三岔成立
         }
     }
@@ -467,7 +474,7 @@ uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point 
         Point ImageDownPointL,ImageDownPointR;//以画面的左下角和右下角作为左右补线的点
         ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H-10,ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H-10;
         GetForkUpInflection(ImageDownPointL, ImageDownPointR, &UpInflectionC);
-        if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
+        if(UpInflectionC.Y!=0 && UpInflectionC.Y>40)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
             FillingLine('R',ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
             Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
@@ -534,7 +541,7 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
     Point UpInflectionL,UpInflectionR;//左右上拐点
     UpInflectionL.X=DownInflectionL.X+10;UpInflectionL.Y=0;//左上拐点置零
     UpInflectionR.X=DownInflectionR.X-10;UpInflectionR.Y=0;//右上拐点置零
-    if(LostNum_LeftLine>40 && LostNum_RightLine>40 && DownInflectionR.X!=0 && DownInflectionL.X!=0 && LeftLine[DownInflectionL.Y-5]==0 && RightLine[DownInflectionR.Y-5]==MT9V03X_W-1)//左右两边大量丢线，并且左右下拐点都存在
+    if(LostNum_LeftLine>40 && LostNum_RightLine>40 && DownInflectionR.X!=0 && DownInflectionL.X!=0 && LeftLine[DownInflectionL.Y-5]==0 && RightLine[DownInflectionR.Y-5]==MT9V03X_W-1 && BinaryImage[50][MT9V03X_W/2]==WHITE)//左右两边大量丢线，并且左右下拐点都存在
     {
         GetCrossRoadsUpInflection(LeftLine, RightLine, DownInflectionL, DownInflectionR, &UpInflectionL, &UpInflectionR);
         FillingLine('L', DownInflectionL, UpInflectionL);
