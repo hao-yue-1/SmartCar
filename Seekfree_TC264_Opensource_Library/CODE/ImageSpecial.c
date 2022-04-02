@@ -12,6 +12,7 @@
 #include "Binarization.h"       //二值化之后的图像数组
 #include "SEEKFREE_18TFT.h"
 #include "Steer.h"
+#include <stdlib.h>             //abs函数，fabs在math.h
 
 uint8 circle_island_flag=0;   //环岛判断条件标志变量    //由于环岛的判断不是一帧图片，所以需要全局变量以保留上一帧图片的信息
 uint8 circle_island_num_1=0;    //环岛判断条件的计数值    //防止距离过远的几帧图片联合形成误判
@@ -456,18 +457,23 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
  ** 注    意：1 . 目前仅仅是正入三岔的时候的函数，因为三岔前面都会有个弯道所以会出现车身斜的情况，此时的左右拐点并不一定都存在
  **           2.这个是进三岔的函数，出三岔时候应该重写一个，并在进入三岔后再开启出三岔的判断
  *********************************************************************************************/
-uint8 ForkIdentify(int startline,int endline,int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR)
+uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR)
 {
     Point UpInflectionC;
     if(DownInflectionL.X!=0 && DownInflectionR.X!=0 && LeftLine[DownInflectionL.Y-5]!=0 && RightLine[DownInflectionR.Y-5]!=MT9V03X_W-1)//当左右拐点存在,且左右拐点不会太快出现丢线情况
     {
-        GetForkUpInflection(DownInflectionL, DownInflectionR, &UpInflectionC);//去搜索上拐点
-        if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
+        if(abs((DownInflectionL.Y-DownInflectionR.Y))<30)//左右两个拐点的行数小于30，才进行判断
         {
-            FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
-            Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
-            return 1;//三个拐点存在三岔成立
+            GetForkUpInflection(DownInflectionL, DownInflectionR, &UpInflectionC);//去搜索上拐点
+            if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
+            {
+                FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
+                Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
+                return 1;//三个拐点存在三岔成立
+            }
         }
+        else
+            return 0;
     }
     else if(DownInflectionL.X==0 && DownInflectionR.X==0 && LeftLine[MT9V03X_H-10]==0 && RightLine[MT9V03X_H-10]==MT9V03X_W-1)//如果左右下拐点不存在并且下面一段出现就丢线的话的话,我们就去看存不存在正上的拐点
     {
@@ -541,14 +547,14 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
     Point UpInflectionL,UpInflectionR;//左右上拐点
     UpInflectionL.X=DownInflectionL.X+10;UpInflectionL.Y=0;//左上拐点置零
     UpInflectionR.X=DownInflectionR.X-10;UpInflectionR.Y=0;//右上拐点置零
-    if(LostNum_LeftLine>40 && LostNum_RightLine>40 && DownInflectionR.X!=0 && DownInflectionL.X!=0 && LeftLine[DownInflectionL.Y-5]==0 && RightLine[DownInflectionR.Y-5]==MT9V03X_W-1 && BinaryImage[50][MT9V03X_W/2]==WHITE)//左右两边大量丢线，并且左右下拐点都存在
+    if(LostNum_LeftLine>40 && LostNum_RightLine>40 && DownInflectionR.X!=0 && DownInflectionL.X!=0 && LeftLine[DownInflectionL.Y-5]==0 && RightLine[DownInflectionR.Y-5]==MT9V03X_W-1 && BinaryImage[50][MT9V03X_W/2]==IMAGE_WHITE)//左右两边大量丢线，并且左右下拐点都存在
     {
         GetCrossRoadsUpInflection(LeftLine, RightLine, DownInflectionL, DownInflectionR, &UpInflectionL, &UpInflectionR);
         FillingLine('L', DownInflectionL, UpInflectionL);
         FillingLine('R', DownInflectionR, UpInflectionR);
         return 1;//正入十字
     }
-    else if(LostNum_LeftLine>60 && DownInflectionR.X!=0 && LeftLine[DownInflectionR.Y-5]==0)//左边丢线超过一半，并且右拐点上面一段对应的左边丢线
+    else if(LostNum_LeftLine>70 && DownInflectionR.X!=0 && LeftLine[DownInflectionR.Y-5]==0)//左边丢线超过一半，并且右拐点上面一段对应的左边丢线
     {
         for(row=DownInflectionR.Y;row>1;row--)//直接右下拐点往上冲找到上拐点
         {
@@ -561,7 +567,7 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
         }
         return 2;//向右斜入十字
     }
-    else if(LostNum_RightLine>60 && DownInflectionL.X!=0 && RightLine[DownInflectionL.Y-5]==MT9V03X_W-1)//右边丢线超过一半，并且左拐点上面一段对应的左边丢线
+    else if(LostNum_RightLine>70 && DownInflectionL.X!=0 && RightLine[DownInflectionL.Y-5]==MT9V03X_W-1)//右边丢线超过一半，并且左拐点上面一段对应的左边丢线
     {
         for(row=DownInflectionL.Y;row>1;row--)
         {
