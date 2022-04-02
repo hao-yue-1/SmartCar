@@ -19,9 +19,12 @@
 
 #include "headfile.h"
 #pragma section all "cpu1_dsram"
+
+#include "Binarization.h"   //二值化处理
+#include "Steer.h"          //舵机控制
+#include "ImageProcess.h"
+
 //将本语句与#pragma section all restore语句之间的全局变量都放在CPU1的RAM中
-
-
 
 void core1_main(void)
 {
@@ -29,9 +32,7 @@ void core1_main(void)
     IfxScuWdt_disableCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
     //用户在此处调用各种初始化函数等
 
-
-
-
+    /*各个模块的初始化在CPU0中完成*/
 
 	//等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
@@ -39,8 +40,22 @@ void core1_main(void)
     enableInterrupts();
     while (TRUE)
     {
-		//用户在此处编写任务代码
-
+        //图像处理模块
+        if(mt9v03x_finish_flag)
+        {
+            ImageBinary();      //图像二值化
+            lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
+            ImageProcess();     //图像处理、元素识别
+            //把三线画出来
+            for(int i=MT9V03X_H-1;i>0;i--)
+            {
+                lcd_drawpoint(LeftLine[i],i,GREEN);
+                lcd_drawpoint(CentreLine[i],i,RED);
+                lcd_drawpoint(RightLine[i],i,BLUE);
+            }
+            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
+        }
+        gpio_set(P20_8,1);
     }
 }
 

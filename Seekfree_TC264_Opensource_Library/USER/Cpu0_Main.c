@@ -27,88 +27,50 @@
 
 //头文件引用
 #include "headfile.h"       //逐飞的封装库
-#include "Binarization.h"   //二值化处理
 #include "Steer.h"          //舵机控制
 #include "Motor.h"          //电机控制
-#include "ImageBasic.h"     //图像的基础处理
-#include "ImageSpecial.h"   //图像特殊元素处理
-#include "ImageTack.h"      //循迹误差计算
 #include "PID.h"            //PID
-#include "Filter.h"         //滤波头文件
-#include "protocol.h"
-#include "ImageProcess.h"
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
 int core0_main(void)
 {
 	get_clk();//获取时钟频率  务必保留
-	//用户在此处调用各种初始化函数等
-	//*****************************************************************
 
-	//***************************交互的初始化**************************
-	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);      //初始化串口0与电脑上位机通讯
+	/***************************交互的初始化**************************/
+//	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);      //初始化串口0与电脑上位机通讯
 	uart_init(BLUETOOTH_CH9141_UART, BLUETOOTH_CH9141_UART_BAUD, BLUETOOTH_CH9141_UART_TX, BLUETOOTH_CH9141_UART_RX);//初始化蓝牙模块所用的串口
 	lcd_init();                                                     //初始化TFT屏幕
-	gpio_init(P20_8, GPO, 1, PUSHPULL);                             //初始化LED：设置P20_8为输出
+	gpio_init(P20_8, GPO, 1, PUSHPULL);                             //初始化LED
 	gpio_init(P20_9, GPO, 1, PUSHPULL);
     gpio_init(P21_4, GPO, 1, PUSHPULL);
     gpio_init(P21_5, GPO, 1, PUSHPULL);
-    //*****************************************************************
-
-    //**************************传感器模块初始化**************************
-	mt9v03x_init(); //初始化摄像头
-	//********************************************************************
-
-	//**************************驱动模块初始化**************************
-	gtm_pwm_init(STEER_PIN, 50, STEER_MID);                         //初始化舵机
-	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);                        //初始化左电机
+    /**************************传感器模块初始化**********************/
+	mt9v03x_init();     //初始化摄像头
+	/***************************驱动模块初始化***********************/
+	gtm_pwm_init(STEER_PIN, 50, STEER_MID);       //初始化舵机
+	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);      //初始化左电机
 	gpio_init(P02_6, GPO, 1, PUSHPULL);
 //	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);
-	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);                       //初始化右电机
+	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);     //初始化右电机
 	gpio_init(P02_7, GPO, 1, PUSHPULL);
 //	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);
-
 	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
 	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
-	//********************************************************************
-
 	/**********************PID初始化***********************************************/
-	PID_init(&SteerK,&MotorK);
-	/**********************定时器中断初始化**************************/
-	pit_interrupt_ms(CCU6_0,PIT_CH0,6);
-	/**************************************************************/
-
+	PID_init(&SteerK,&MotorK);          //初始化PID参数
+	/********************定时器中断初始化****************************/
+	pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化定时器中断
+	/****************************************************************/
     //等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
 	enableInterrupts();
 
-	/*电机驱动测试*/
-//	MotorSetPWM(1000,1000);
-
 	while (TRUE)
 	{
-	    /*初始化参数*/
-	    //图像处理模块
-	    if(mt9v03x_finish_flag)
-	    {
-	        ImageBinary();      //图像二值化
-	        lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
-
-	        ImageProcess();     //图像处理、元素识别
-
-            //把三线画出来
-            for(int i=MT9V03X_H-1;i>0;i--)
-            {
-                lcd_drawpoint(LeftLine[i],i,GREEN);
-                lcd_drawpoint(CentreLine[i],i,RED);
-                lcd_drawpoint(RightLine[i],i,BLUE);
-            }
-
-	        gpio_toggle(P20_8);//翻转IO：LED
-            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
-	    }
+	    /*图像处理在CPU1中以轮询的方式执行*/
+	    /*控制处理在CPU0中以定时器中断的方式执行*/
 	}
 }
 

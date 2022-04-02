@@ -27,23 +27,21 @@ void ImageProcess()
     uint8 CrossRoads_flag=0;        //十字标志变量
     uint8 Fork_flag=0;              //三岔识别的标志变量
     uint8 CircleIsland_flag=0;      //环岛标志变量
-    /******************************扫线***************************/
+    /*****************************扫线*****************************/
     GetImagBasic(LeftLine,CentreLine,RightLine);
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
-    /*****************************特殊元素判断********************************/
+    /*************************特殊元素判断*************************/
     Fork_flag=ForkIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
     if(Fork_flag==0)
     {
         CrossRoads_flag=CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint);//十字
+        if(CrossRoads_flag==0)
+        {
+            CircleIsland_flag=CircleIslandIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint); //环岛
+        }
     }
-    CircleIslandIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint); //环岛
-
-//    CircleIsFlag_2(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-//    CircleIslandBegin(LeftLine, RightLine);
-
-//    CircleIsFlag_3(LeftLine, RightLine);
-//    CircleIsFlag_2(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    CircleIslandIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint); //环岛
 
     /***************************偏差计算**************************/
     if(Fork_flag!=0)  //在识别函数里面已经计算了Bias

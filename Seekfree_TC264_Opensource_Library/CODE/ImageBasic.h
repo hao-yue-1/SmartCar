@@ -17,7 +17,7 @@
 #define BORDER_BIAS 1   //扫线误差
 #define INFLECTION_WIDTH  10    //拐点赛道宽度
 //全局变量
-extern int Lost_CentreLine;                    //中线丢失的行坐标(扫线到赛道外)
+extern int Lost_Row;                    //中线丢失的行坐标(扫线到赛道外)
 extern int LostNum_LeftLine,LostNum_RightLine; //记录左右边界丢线数
 extern int LeftLine[MT9V03X_H], CentreLine[MT9V03X_H], RightLine[MT9V03X_H];   //扫线处理左中右三线
 //结构体

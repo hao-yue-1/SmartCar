@@ -13,6 +13,7 @@
 #include "SEEKFREE_18TFT.h"
 #include "Steer.h"
 #include <stdlib.h>             //abs函数，fabs在math.h
+#include "SEEKFREE_MT9V03X.h"
 
 uint8 circle_island_flag=0;   //环岛判断条件标志变量    //由于环岛的判断不是一帧图片，所以需要全局变量以保留上一帧图片的信息
 uint8 circle_island_num_1=0;    //环岛判断条件的计数值    //防止距离过远的几帧图片联合形成误判
@@ -158,7 +159,7 @@ uint8 CircleIslandEnd()
         {
             /*在这里将舵机打死，考虑要不要加延时*/
             Bias=100;
-            systick_delay_ms(STM0,500);
+            systick_delay_ms(STM0,300);
             return 1;
         }
     }
@@ -171,9 +172,6 @@ uint8 CircleIsFlag_1(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
 {
     if(InflectionR.X!=0&&InflectionR.Y!=0)     //防止误判三岔
     {
-//        lcd_showchar(0, 0, 'A');
-//        lcd_showint16(0, 0, InflectionR.Y);
-//        lcd_showint16(0, 1, InflectionR.X);
         return 0;
     }
     if(InflectionL.X!=0&&InflectionL.Y!=0)  //判断条件一：是否存在左拐点与右侧直道
@@ -204,7 +202,7 @@ uint8 CircleIsFlag_1(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
     return 0;
 }
 //判断条件二是否成立，成立返回1，不成立返回0
-uint8 CircleIsFlag_2(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+uint8 CircleIsFlag_2(int *LeftLine,int *RightLine)
 {
     if(LostNum_RightLine>55)   //防止误判十字入口
     {
@@ -276,18 +274,34 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
+            //在这里num_1的作用是确保在跳转到状态一的时候，识别到环岛中部且在此之前的10帧图片中有一帧识别到了环岛出口
             if(CircleIsFlag_1(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
             {
                 gpio_set(P21_4, 1);
                 gpio_set(P21_5, 1);
                 gpio_toggle(P20_9);
-                circle_island_num_2++;
+                circle_island_num_1++;  //识别到环岛入口标记+1
+                circle_island_num_2=0;  //识别不到环岛入口标记=0，以保证else中对帧数的判断是连续的
+                if(circle_island_num_1>10)  //num_1限幅
+                {
+                    circle_island_num_1=10;
+                }
             }
-            if(CircleIsFlag_2(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别到环岛中部，进行状态转移
+            else    //没有识别到环岛出口
             {
-                if(circle_island_num_2>4) //在此之前有识别到环岛出口
+                circle_island_num_2++;  //识别不到环岛入口标记+1
+                if(circle_island_num_2>=8)  //连续超过8帧没有识别到环岛出口，重置之前识别到的环岛入口
+                {
+                    circle_island_num_1=0;
+                    circle_island_num_2=8;  //num_2限幅
+                }
+            }
+            if(CircleIsFlag_2(LeftLine, RightLine)==1)    //识别到环岛中部，进行状态转移
+            {
+                if(circle_island_num_1>0)  //且之前判断到过环岛入口
                 {
                     circle_island_flag=1;   //跳转到下个状态
+                    circle_island_num_1=0;
                     circle_island_num_2=0;
                 }
             }
@@ -298,7 +312,7 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
             gpio_set(P21_4, 0);
             gpio_set(P21_5, 1);
             circle_island_num_1++;
-            if(circle_island_num_1>15) //通过帧数强行关联状态一
+            if(circle_island_num_1>8) //通过帧数强行关联状态一
             {
                 circle_island_flag=0;
                 circle_island_num_1=0;
@@ -311,7 +325,7 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
             }
             if(CircleIsFlag_3(LeftLine, RightLine)==1)      //识别到已经进入环岛
             {
-                if(circle_island_num_2>4) //确保识别到
+                if(circle_island_num_2>0) //确保识别到
                 {
                     circle_island_flag=2;   //跳转到下个状态
                     circle_island_num_1=0;
@@ -324,33 +338,19 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
         {
             gpio_set(P21_4, 1);
             gpio_set(P21_5, 0);
-            int num=0;
+            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
             while(CircleIslandEnd()==0)  //识别到环岛出口跳出循环
             {
                 if(mt9v03x_finish_flag)
                 {
                     ImageBinary();                                  //图像二值化
-                    lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
+//                    lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
                     GetImagBasic(LeftLine,CentreLine,RightLine);    //基本扫线
-                    //把三线画出来
-                    for(int i=MT9V03X_H-1;i>0;i--)
-                    {
-                        lcd_drawpoint(LeftLine[i],i,GREEN);
-                        lcd_drawpoint(CentreLine[i],i,RED);
-                        lcd_drawpoint(RightLine[i],i,BLUE);
-                    }
                     Bias=DifferentBias(110,60,CentreLine);          //计算偏差，此时在环岛中取特殊前瞻
-
-                    num++;
-                    if(num<10)
-                    {
-                        Bias+=1;
-                    }
-
-                    lcd_showfloat(0, 0, Bias, 2, 3);
                     mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
                 }
             }
+            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
             circle_island_flag=0;   //重置状态
             circle_island_num_1=0;
             circle_island_num_2=0;

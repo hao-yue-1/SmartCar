@@ -1,9 +1,11 @@
 #include "ImageBasic.h"
+#include <math.h>
+#include <stdlib.h>
 
 //变量定义
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 int Mid=MT9V03X_W/2;                        //初始化扫线的中点为图像中点
-int Lost_CentreLine=0;                      //中线丢失的行坐标(扫线到赛道外)
+int Lost_Row=0;                             //中线丢失的行坐标(扫线到赛道外)
 int LostNum_LeftLine=0,LostNum_RightLine=0; //记录左右边界丢线数
 
 /*
@@ -19,6 +21,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
 {
     int row,cloum;              //行,列
     uint8 flag_l=0,flag_r=0;    //记录是否丢线flag，flag=0：丢线
+    uint8 num=0;                //记录中线连续丢失的次数
     LostNum_LeftLine=0;LostNum_RightLine=0; //把丢线的计数变量清零
     //开始扫线(从下往上,从中间往两边),为了扫线的严谨性,我们做BORDER_BIAS的误差处理，即扫线范围会小于图像大小
     for(row=MT9V03X_H-1;row>0;row--) //图像的原点在左上角
@@ -26,6 +29,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
         //下面这个if是为了解决扫线一开始就在赛道外的问题，帮助重新找回赛道
         if(BinaryImage[row][Mid]==IMAGE_BLACK)  //扫线中点是黑色的（中点在赛道外）
         {
+            num++;    //中线丢失次数+1
             //先向左边扫线，寻找右边界点
             for(cloum=Mid;(cloum-BORDER_BIAS)>0;cloum--)    //向左边扫线
             {
@@ -78,6 +82,7 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
         //在赛道中上，正常扫线
         else
         {
+            num=0;  //中线丢失次数=0
             //左边扫线
             for(cloum=Mid;(cloum-BORDER_BIAS)>0;cloum--)
             {
@@ -112,17 +117,21 @@ void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine)
         }
         CentreLine[row]=(LeftLine[row]+RightLine[row])/2;   //记录中线点
 
-//        //防止扫线到赛道外，这个方案不行
-//        if(BinaryImage[row][CentreLine[row]]==IMAGE_BLACK && BinaryImage[row+BORDER_BIAS][CentreLine[row]]==IMAGE_BLACK)    //row行的中线是黑，扫到了赛道外
-//        {
-//            Lost_CentreLine=row;    //记录中线点丢失的行坐标
-//            if(row>20)              //对前20行不做处理
-//                break;              //若已经在20行后发现扫描到了赛道外,直接break跳出该图的扫线处理
-//        }
-
         Mid=CentreLine[row];    //以上一次的中线值为下一次扫线的中间点，若上一次的中线值刚好在边缘上，下一次的扫线会出现中线全跑到中线的情况
         flag_l=0;               //左边界丢线flag置0
         flag_r=0;               //右边界丢线flag置0
+        //在这里加一个扫线到赛道外的判断，前30行不做处理，只保留该行坐标而不做特殊处理
+//        if(row<90&&num!=0)  //这一行的起点是在赛道外
+//        {
+//            if(abs(CentreLine[row]-CentreLine[row+1])>60)  //上下两个中线点偏差过大
+//            {
+//                Lost_Row=row;
+//            }
+//        }
+//        if(row<90&&num>=5)   //中线连续丢失5次则判定为扫线已经到了赛道外，终止扫线
+//        {
+//            Lost_Row=row;
+//        }
     }
 }
 
