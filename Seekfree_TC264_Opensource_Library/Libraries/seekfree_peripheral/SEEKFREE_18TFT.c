@@ -51,14 +51,14 @@
 void  lcd_writeIndex(uint8 dat)			//写命令
 {	
     DC(0);
-    spi_mosi(TFT_SPIN,TFT_CS,&dat,&dat,1,1);		
+    spi_mosi(TFT_SPIN,TFT_CS,&dat,NULL,1,1);
 
 }
 
 void lcd_writeData(uint8 dat)			//写数据
 {
     DC(1);
-    spi_mosi(TFT_SPIN,TFT_CS,&dat,&dat,1,1);
+    spi_mosi(TFT_SPIN,TFT_CS,&dat,NULL,1,1);
 }
 
 void lcd_writedata_16bit(uint16 dat)	//向液晶屏写一个16位数据
@@ -68,7 +68,7 @@ void lcd_writedata_16bit(uint16 dat)	//向液晶屏写一个16位数据
     dat1[1] = (uint8)dat;
     
     DC(1);
-    spi_mosi(TFT_SPIN,TFT_CS,dat1,dat1,2,1); 	//写入数据  高位在前  低位在后
+    spi_mosi(TFT_SPIN,TFT_CS,dat1,NULL,2,1); 	//写入数据  高位在前  低位在后
 }
 
 //-------------------------------------------------------------------------------------------------------------------

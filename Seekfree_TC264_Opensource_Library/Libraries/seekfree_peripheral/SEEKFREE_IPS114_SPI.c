@@ -52,7 +52,7 @@
 void ips114_writeIndex(uint8 dat)			//写命令
 {	
     IPS114_DC(0);
-    spi_mosi(IPS114_SPIN_PIN,IPS114_CS_PIN,&dat,&dat,1,1);		
+    spi_mosi(IPS114_SPIN_PIN,IPS114_CS_PIN,&dat,NULL,1,1);
 
 }
 
@@ -66,7 +66,7 @@ void ips114_writeIndex(uint8 dat)			//写命令
 void ips114_writeData(uint8 dat)			//写数据
 {
     IPS114_DC(1);
-    spi_mosi(IPS114_SPIN_PIN,IPS114_CS_PIN,&dat,&dat,1,1);
+    spi_mosi(IPS114_SPIN_PIN,IPS114_CS_PIN,&dat,NULL,1,1);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ void ips114_writedata_16bit(uint16 dat)	//向液晶屏写一个16位数据
     dat1[1] = (uint8)dat;
     
     IPS114_DC(1);
-    spi_mosi(IPS114_SPIN_PIN,IPS114_CS_PIN,dat1,dat1,2,1); 	//写入数据  高位在前  低位在后
+    spi_mosi(IPS114_SPIN_PIN,IPS114_CS_PIN,dat1,NULL,2,1); 	//写入数据  高位在前  低位在后
 }
 
 //-------------------------------------------------------------------------------------------------------------------

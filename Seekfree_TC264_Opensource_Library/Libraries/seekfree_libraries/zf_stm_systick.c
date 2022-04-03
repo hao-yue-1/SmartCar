@@ -26,18 +26,24 @@ static uint32 systick_count[2];
 
 //-------------------------------------------------------------------------------------------------------------------
 //  @brief      systick延时函数
-//  @param      time            需要延时的时间
+//  @param      stmn            选择使用的模块
+//  @param      time            延时一轮的时间（单位为纳秒，可设置范围0-20000000）
+//  @param      num             延时多少轮
 //  @return     void
 //  Sample usage:               无需用户调用，用户请使用h文件中的宏定义
 //-------------------------------------------------------------------------------------------------------------------
-void systick_delay(STMN_enum stmn, uint32 time)
+void systick_delay(STMN_enum stmn, uint32 time, uint32 num)
 {
 	uint32 stm_clk;
+	uint32 delay_time;
 	stm_clk = IfxStm_getFrequency(IfxStm_getAddress((IfxStm_Index)stmn));
+	delay_time = (uint32)(stm_clk/1000000*time/1000);
 
-	IfxStm_waitTicks(IfxStm_getAddress((IfxStm_Index)stmn), (uint32)((uint64)stm_clk*time/1000000000));
+	while(num--)
+	{
+	    IfxStm_waitTicks(IfxStm_getAddress((IfxStm_Index)stmn), delay_time);
+	}
 }
-
 
 //-------------------------------------------------------------------------------------------------------------------
 //  @brief      systick定时器启动

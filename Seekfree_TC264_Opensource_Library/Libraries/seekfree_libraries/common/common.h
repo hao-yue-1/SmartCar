@@ -119,6 +119,11 @@ typedef enum //无线模块
     WIRELESS_CH9141,        //蓝牙转串口
 }WIRELESS_TYPE_enum;
 
+typedef enum //无线模块
+{
+    GPS_TAU1201 = 1,    	//华大北斗GPS模块
+}GPS_TYPE_enum;
+
 #include <math.h>
 #include <string.h>
 #include "IfxCpu.h"
@@ -127,7 +132,7 @@ extern CAMERA_TYPE_enum camera_type;	//摄像头型号
 extern uint8 *camera_buffer_addr;      //摄像头数组地址
 
 extern WIRELESS_TYPE_enum wireless_type;
-
+extern GPS_TYPE_enum gps_type;
 extern IfxCpu_syncEvent g_cpuSyncEvent;
 
 void get_clk(void);

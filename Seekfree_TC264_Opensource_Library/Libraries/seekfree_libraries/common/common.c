@@ -28,6 +28,7 @@ CAMERA_TYPE_enum camera_type;	//摄像头型号
 uint8 *camera_buffer_addr;      //摄像头数组地址
 
 WIRELESS_TYPE_enum wireless_type;//无线转串口类型
+GPS_TYPE_enum gps_type;			 //gps类型
 
 IFX_ALIGN(4) IfxCpu_syncEvent g_cpuSyncEvent = 0;//事件同步变量
 

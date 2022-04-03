@@ -31,62 +31,58 @@
 
 #include "common.h"
 
-
-#define BLUETOOTH_CH9141_UART           UART_2         //无线转串口模块 所使用到的串口
-#define BLUETOOTH_CH9141_UART_TX        UART2_TX_P10_5    //蓝牙的RX连接单片机的D16引脚
-#define BLUETOOTH_CH9141_UART_RX        UART2_RX_P10_6    //蓝牙的TX连接单片机的D17引脚
-#define BLUETOOTH_CH9141_UART_BAUD      115200
-
-#define BLUETOOTH_CH9141_RTS_PIN        P10_2             //定义流控位引脚  指示当前模块是否可以接受数据  0可以继续接收  1不可以继续接收
-
+typedef struct
+{
+    uint8     *buffer;                                                          // 缓存指针
+    uint32    head;                                                             // 缓存头指针 总是指向空的缓存
+    uint32    end;                                                              // 缓存尾指针 总是指向非空缓存（缓存全空除外）
+    uint32    size;                                                             // 缓存剩余大小
+    uint32    max;                                                              // 缓存总大小
+}fifo_struct;
 
 typedef enum
 {
-    TX_POWER_0DB = 0,   //0DB
-    TX_POWER_1DB,       //1DB
-    TX_POWER_2DB,       //2DB
-    TX_POWER_3DB,       //3DB
-    TX_POWER_4DB,       //4DB
-    TX_POWER_MINUS_8DB, //-8DB
-    TX_POWER_MINUS_14DB,//-14DB
-    TX_POWER_MINUS_20DB,//-20DB
-}CH9141_TX_POWEER_enum; 
+    FIFO_SUCCESS,
+
+    FIFO_BUFFER_NULL,
+    FIFO_SPACE_NO_ENOUGH,
+    FIFO_DATA_NO_ENOUGH,
+}fifo_state_enum;
 
 typedef enum
 {
-    MASTER_NO_INIT = 0,        //主机未初始化
-    MASTER_SCANNING,           //主机扫描中
-    MASTER_CONNECTING,         //主机连接中
-    MASTER_CONNECTED,          //主机已连接
-    MASTER_DISCONNECTED,       //主机连接断开
-    
-    SLAVE_NO_INIT,         //从机未初始化
-    SLAVE_OK_INIT,         //从机完成初始化
-    SLAVE_BROADCAST,       //从机广播中
-    SLAVE_BROADCAST_READY, //从机准备广播
-    SLAVE_CONNECT_TIMEOUT, //从机连接超时
-    SLAVE_CONNECTED,       //从机已连接
-    SLAVE_ERROR,           //从机出现错误
-}CH9141_STATUS_enum; 
+    FIFO_READ_AND_CLEAN,
+    FIFO_READ_ONLY,
+}fifo_operation_enum;
 
-typedef enum
-{
-    BROADCAST_MODE = 0, //广播模式
-    MASTER_MODE,       //主机模式
-    SLAVE_MODE,    //从机模式
-}CH9141_MODE_enum; 
+fifo_state_enum fifo_init           (fifo_struct *fifo, uint8 *buffer_addr, uint32 size);
+void            fifo_head_offset    (fifo_struct *fifo, uint32 offset);
+void            fifo_end_offset     (fifo_struct *fifo, uint32 offset);
+void            fifo_clear          (fifo_struct *fifo);
+uint32          fifo_used           (fifo_struct *fifo);
 
-extern uint8 uart_flag;
-extern uint8 uart_data;
+fifo_state_enum fifo_read_buffer    (fifo_struct *fifo, uint8 *dat, uint32 *length, fifo_operation_enum flag);
+fifo_state_enum fifo_write_buffer   (fifo_struct *fifo, uint8 *dat, uint32 length);
 
-void bluetooth_ch9141_uart_callback(void);
-void bluetooth_ch9141_enter_at_mode(void);
-void bluetooth_ch9141_exit_at_mode(void);
-void bluetooth_ch9141_reset(void);
-void bluetooth_ch9141_get_mac_address(void);
-int16 bluetooth_ch9141_get_rssi(void);
-uint32 bluetooth_ch9141_send_buff(uint8 *buff, uint32 len);
-void bluetooth_ch9141_init(CH9141_MODE_enum mode, int8 *salve_mac_password);
+
+
+#define BLUETOOTH_CH9141_INDEX              UART_2                              // 蓝牙模块 1 对应使用的串口号
+#define BLUETOOTH_CH9141_BUAD_RATE          115200                              // 蓝牙模块 1 对应使用的串口波特率
+#define BLUETOOTH_CH9141_TX_PIN             UART2_RX_P10_6                         // 蓝牙模块 1 对应模块的 TX 要接到单片机的 RX
+#define BLUETOOTH_CH9141_RX_PIN             UART2_TX_P10_5                        // 蓝牙模块 1 对应模块的 RX 要接到单片机的 TX
+#define BLUETOOTH_CH9141_RTS_PIN            P10_2                                 // 蓝牙模块 1 对应模块的 RTS 引脚
+
+#define BLUETOOTH_CH9141_BUFFER_SIZE        64
+#define BLUETOOTH_CH9141_TIMEOUT_COUNT      500
+
+
+
+void        bluetooth_ch9141_uart_callback      (void);
+
+uint8       bluetooth_ch9141_init               (void);
+
+uint32      bluetooth_ch9141_send_buff          (uint8 *buff, uint32 len);
+uint32      bluetooth_ch9141_read_buff          (uint8 *buff, uint32 len);
 
 
 

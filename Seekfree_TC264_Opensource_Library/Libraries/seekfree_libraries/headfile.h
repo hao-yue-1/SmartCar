@@ -66,6 +66,7 @@
 #include "SEEKFREE_RDA5807.h"
 #include "SEEKFREE_7725_UART.h"
 #include "SEEKFREE_BLUETOOTH_CH9141.h"
+#include "SEEKFREE_GPS_TAU1201.h"
 
 #endif
 

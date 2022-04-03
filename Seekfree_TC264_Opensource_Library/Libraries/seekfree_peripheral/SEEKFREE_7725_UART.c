@@ -260,7 +260,8 @@ void ov7725_uart_init(void)
 	restoreInterrupts(interrupt_state);
 }
 
-
+uint8 ov7725_uart_finish_flag = 0;
+uint8 ov7725_uart_dma_init_flag;	//重新初始化DMA的标志位
 //-------------------------------------------------------------------------------------------------------------------
 //  @brief      小钻风摄像头场中断
 //  @param      NULL
@@ -271,16 +272,20 @@ void ov7725_uart_init(void)
 void ov7725_uart_vsync(void) 
 {
 	CLEAR_GPIO_FLAG(OV7725_UART_VSYNC_PIN);
-
-	if(!ov7725_uart_finish_flag)//查看图像数组是否使用完毕，如果未使用完毕则不开始采集，避免出现访问冲突
+	if(ov7725_uart_dma_init_flag)
+	{
+		ov7725_uart_dma_init_flag = 0;
+		IfxDma_resetChannel(&MODULE_DMA, OV7725_UART_DMA_CH);
+		eru_dma_init(OV7725_UART_DMA_CH, GET_PORT_IN_ADDR(OV7725_UART_DATA_PIN), camera_buffer_addr, OV7725_UART_PCLK_PIN, FALLING, OV7725_UART_DMA_NUM);
+		dma_start(OV7725_UART_DMA_CH);
+	}
+	else
 	{
 		DMA_SET_DESTINATION(OV7725_UART_DMA_CH, camera_buffer_addr);
 		dma_start(OV7725_UART_DMA_CH);
 	}
 }
 
-
-uint8 ov7725_uart_finish_flag = 0;
 //-------------------------------------------------------------------------------------------------------------------
 //  @brief      小钻风摄像头DMA完成中断
 //  @param      NULL
@@ -291,8 +296,18 @@ uint8 ov7725_uart_finish_flag = 0;
 void ov7725_uart_dma(void)
 {
     CLEAR_DMA_FLAG(OV7725_UART_DMA_CH);
-	ov7725_uart_finish_flag = 1;
-	dma_stop(OV7725_UART_DMA_CH);
+	if(IfxDma_getChannelTransactionRequestLost(&MODULE_DMA, OV7725_UART_DMA_CH))
+	{//图像有错位
+		ov7725_uart_finish_flag = 0;
+		dma_stop(OV7725_UART_DMA_CH);
+		IfxDma_clearChannelTransactionRequestLost(&MODULE_DMA, OV7725_UART_DMA_CH);
+		ov7725_uart_dma_init_flag = 1;
+	}
+	else
+	{
+		ov7725_uart_finish_flag = 1;
+		dma_stop(OV7725_UART_DMA_CH);
+	}
 }       
 
 

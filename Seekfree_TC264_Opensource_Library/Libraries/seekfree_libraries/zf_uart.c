@@ -244,8 +244,7 @@ void uart_mux(UARTN_enum uartn, UART_PIN_enum tx_pin, UART_PIN_enum rx_pin, uint
 //-------------------------------------------------------------------------------------------------------------------
 void uart_init(UARTN_enum uartn, uint32 baud, UART_PIN_enum tx_pin, UART_PIN_enum rx_pin)
 {
-	//boolean interrupt_state = disableInterrupts();
-	boolean interrupt_state = TRUE;//开启串口中断用于蓝牙调参接收
+	boolean interrupt_state = disableInterrupts();
 
 	volatile Ifx_ASCLIN *moudle = IfxAsclin_getAddress((IfxAsclin_Index)uartn);
 
