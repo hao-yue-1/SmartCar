@@ -22,7 +22,9 @@
 
 #include "Binarization.h"   //二值化处理
 #include "Steer.h"          //舵机控制
-#include "ImageProcess.h"
+#include "ImageProcess.h"   //图像处理集合
+#include "PID.h"            //PID
+#include <string.h>
 
 //将本语句与#pragma section all restore语句之间的全局变量都放在CPU1的RAM中
 
@@ -55,6 +57,8 @@ void core1_main(void)
             }
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
         }
+
+        //调试
         gpio_set(P20_8,1);
     }
 }

@@ -207,20 +207,22 @@ IFX_INTERRUPT(uart2_rx_isr, 0, UART2_RX_INT_PRIO)
 	enableInterrupts();//开启中断嵌套
     IfxAsclin_Asc_isrReceive(&uart2_handle);
 
-    wireless_type=WIRELESS_CH9141;      //使用串口2作为蓝牙接口但不调用逐飞的初始化函数，所以在这里强行赋值为蓝牙模式
-    switch(wireless_type)
-    {
-    	case WIRELESS_SI24R1:
-    	{
-    		wireless_uart_callback();
-    	}break;
+    //下面是逐飞用来选择串口2连接不同模块的
+//    switch(wireless_type)
+//    {
+//    	case WIRELESS_SI24R1:
+//    	{
+//    		wireless_uart_callback();
+//    	}break;
+//
+//    	case WIRELESS_CH9141:
+//		{
+//		    bluetooth_ch9141_uart_callback();
+//		}break;
+//    	default:break;
+//    }
 
-    	case WIRELESS_CH9141:
-		{
-		    bluetooth_ch9141_uart_callback();
-		}break;
-    	default:break;
-    }
+    bluetooth_ch9141_uart_callback();   //直接调用蓝牙模块的回调函数
 
 }
 IFX_INTERRUPT(uart2_er_isr, 0, UART2_ER_INT_PRIO)

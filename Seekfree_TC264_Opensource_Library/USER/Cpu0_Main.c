@@ -30,6 +30,7 @@
 #include "Steer.h"          //舵机控制
 #include "Motor.h"          //电机控制
 #include "PID.h"            //PID
+#include "protocol.h"       //野火上位机协议
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -69,6 +70,7 @@ int core0_main(void)
 
 	while (TRUE)
 	{
+//	    receiving_process();    //接收野火上位机下发的数据
 	    /*图像处理在CPU1中以轮询的方式执行*/
 	    /*控制处理在CPU0中以定时器中断的方式执行*/
 	}

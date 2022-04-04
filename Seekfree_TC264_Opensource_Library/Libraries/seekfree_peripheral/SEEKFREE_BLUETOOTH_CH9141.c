@@ -30,6 +30,7 @@
 #include "zf_uart.h"
 #include "zf_assert.h"
 #include "SEEKFREE_BLUETOOTH_CH9141.h"
+#include "protocol.h"
 
 static  fifo_struct     bluetooth_ch9141_fifo;
 static  uint8           bluetooth_ch9141_buffer[BLUETOOTH_CH9141_BUFFER_SIZE];  // 数据存放数组
@@ -208,7 +209,8 @@ void bluetooth_ch9141_uart_callback (void)
 {
     // 读取无线串口的数据 并且置位接收标志
     uart_query(BLUETOOTH_CH9141_INDEX, &bluetooth_ch9141_data);
-    fifo_write_buffer(&bluetooth_ch9141_fifo, &bluetooth_ch9141_data, 1);       // 存入 FIFO
+//    fifo_write_buffer(&bluetooth_ch9141_fifo, &bluetooth_ch9141_data, 1);       // 存入 FIFO  //这是逐飞蓝牙的FIFO，这里我们不使用
+    protocol_data_recv(&bluetooth_ch9141_data, 1);  //野火上位机调试数据接收函数，将数据存入野火的FIFO
 }
 
 //-------------------------------------------------------------------------------------------------------------------

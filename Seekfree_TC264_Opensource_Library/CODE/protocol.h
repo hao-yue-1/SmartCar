@@ -31,6 +31,8 @@ extern "C" {
 /* 校验数据的长度 */
 #define PROT_FRAME_LEN_CHECKSUM    1
 
+//这里野火有一个问题：由于字节对齐的原因，当使用sizeof计算该结构体大小时，会=12，而实际上我们需要的应该是=10
+//而且该结构体以指针的形式索引数据时，会出现两个字节的空缺位置，导致发送的数据格式出错
 /* 数据头结构体 */
 //typedef __packed struct
 typedef struct

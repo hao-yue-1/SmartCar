@@ -159,7 +159,11 @@ static void recvbuf_put_data(uint8_t *buf, uint16_t ring_buf_len, uint16_t w_oft
         memcpy(buf, data + data_len_part, data_len - data_len_part);      // 写入缓冲区头
     }
     else
-        memcpy(buf + w_oft, data, data_len);    // 数据写入缓冲区
+    {
+        gpio_toggle(P21_4);
+        memcpy(buf + w_oft, data, data_len);    // 数据写入缓冲区  //4.4晚调试发现，上位机发送PID触发串口中断后会卡在这个函数里面出不来
+        gpio_toggle(P21_5);
+    }
 }
 
 /**
@@ -300,6 +304,7 @@ int8_t receiving_process(void)
   while(1)
   {
     cmd_type = protocol_frame_parse(frame_data, &frame_len);
+    lcd_showuint8(0, 5, cmd_type);
     switch (cmd_type)
     {
       case CMD_NONE:
@@ -339,7 +344,7 @@ int8_t receiving_process(void)
       
       case STOP_CMD:
       {
-          MotorSetTarget(0,0);              //停止电机
+          MotorSetTarget(0,0);              //停止电机      已做移植替换
 //        set_motor_disable();              // 停止电机      暂时可以不使用
       }
       break;
@@ -386,7 +391,7 @@ void set_computer_value(uint8_t cmd, uint8_t ch, void *data, uint8_t num)
   sum = check_sum(0, (uint8_t *)&set_packet, sizeof(set_packet));       // 计算包头校验和
   sum = check_sum(sum, (uint8_t *)data, num);                           // 计算参数校验和
 
-  //由于移植过来英飞凌单片机后在发送数据的格式上出现了不太清楚的问题，在这里重写数据发送部分
+  //由于移植过来英飞凌单片机后在发送数据的格式上出现的问题，在下面重写数据发送部分
 //  uart_putbuff(UART_2, (uint8_t *)&set_packet, sizeof(set_packet));    // 发送数据头
 //  uart_putbuff(UART_2, (uint8_t *)data, num);                          // 发送参数
 //  uart_putbuff(UART_2, (uint8_t *)&sum, sizeof(sum));                  // 发送校验和
@@ -402,7 +407,7 @@ void set_computer_value(uint8_t cmd, uint8_t ch, void *data, uint8_t num)
   uart_putbuff(UART_2,&my_ch,1);                //通道选择
   uart_putbuff(UART_2,(uint8 *)&my_len,4);      //长度
   uart_putbuff(UART_2,(uint8 *)&my_cmd,1);      //命令
-  uart_putbuff(UART_2,(uint8 *)data,4);         //数据
+  uart_putbuff(UART_2,(uint8 *)data,num);     //数据
   uart_putbuff(UART_2,(uint8 *)&my_sum,1);      //校验和
 }
 
