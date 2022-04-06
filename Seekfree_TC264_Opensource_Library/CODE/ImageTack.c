@@ -120,13 +120,18 @@ void FillingLine(char Choose, Point StarPoint,Point EndPoint)
 float DifferentBias(int startline,int endline,int *CentreLine)
 {
     float bias=0;
+    int rownum=0;//用于计数求了多少行的偏差
 
     for(int i=startline;i>endline;i--)
     {
-        bias+=(float)(MT9V03X_W/2-CentreLine[i]);  //累积偏差
+        if(BinaryImage[i][CentreLine[i]]==IMAGE_WHITE)
+        {
+            bias+=(float)(MT9V03X_W/2-CentreLine[i]);  //累积偏差
+            rownum++;
+        }
     }
 
-    bias=bias/(startline-endline)/10;   //求偏差均值
+    bias=bias/rownum/10;   //求偏差均值
 //    lcd_showfloat(0, 1, bias, 3, 3);
     if(bias<0.5&&bias>-0.5)
     {

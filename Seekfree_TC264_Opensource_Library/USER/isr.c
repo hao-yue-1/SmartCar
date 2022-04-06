@@ -39,7 +39,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	StreePWM=Steer_Position_PID(Bias,SteerK);
 	SteerCtrl(StreePWM);
 	//电机PID控制
-	MotorCtrl(80,80);
+	MotorCtrl(100,100);
 	//串口调试
 //	int Bias_UART=Bias*100;
 //	int PWM_UART=StreePWM;
