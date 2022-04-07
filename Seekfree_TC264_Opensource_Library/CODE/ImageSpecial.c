@@ -30,54 +30,70 @@
  */
 uint8 GarageIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    //车库在小车左侧
-    if(InflectionL.X!=0&&InflectionL.Y!=0)  //左拐点存在
-    {
-        float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
-        if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
-        {
-            int row=0;          //固定列扫描的行数
-            int zebra_num=0;    //斑马线标志的数量
-            if(InflectionL.X-G_HIGH<0)  //防止行数越界
-            {
-                return 0;   //如果存在越界那只能是某种不知名错误
-            }
-            row=InflectionL.X-G_HIGH;
-            for(int column=RightLine[row];column-1>0;column--)    //固定行，从右到左列扫描
-            {
-                if(BinaryImage[row][column]!=BinaryImage[row][column-1])    //该点与下一个点不同颜色 //存在黑白跳变点
-                {
-                    zebra_num++;    //斑马线标志+1
-                }
-                if(zebra_num>G_ZEBRA_NUM)   //斑马线标志的数量高于阈值
-                {
-                    return 1;       //返回车库在左边
-                }
-            }
-        }
-    }
+//    //车库在小车左侧
+//    if(InflectionL.X!=0&&InflectionL.Y!=0)  //左拐点存在
+//    {
+//        float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
+//        if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
+//        {
+//            int row=0;          //固定列扫描的行数
+//            int zebra_num=0;    //斑马线标志的数量
+//            if(InflectionL.X-G_HIGH<0)  //防止行数越界
+//            {
+//                return 0;   //如果存在越界那只能是某种不知名错误
+//            }
+//            row=InflectionL.X-G_HIGH;
+//            for(int column=RightLine[row];column-1>0;column--)    //固定行，从右到左列扫描
+//            {
+//                if(BinaryImage[row][column]!=BinaryImage[row][column-1])    //该点与下一个点不同颜色 //存在黑白跳变点
+//                {
+//                    zebra_num++;    //斑马线标志+1
+//                }
+//                if(zebra_num>G_ZEBRA_NUM)   //斑马线标志的数量高于阈值
+//                {
+//                    return 1;       //返回车库在左边
+//                }
+//            }
+//        }
+//    }
     //车库在小车右侧
     if(InflectionR.X!=0&&InflectionR.Y!=0)  //右拐点存在（车库在右边）
     {
-        float bias_left=Regression_Slope(119,0,LeftLine);   //求出右边界线斜率
-        if(fabsf(bias_left)<G_LINEBIAS)    //右边界为直道
+        printf("**********ENTER***********\r\n");
+        lcd_showchar(0, 0, '0');
+        float bias_left=Regression_Slope(119,20,LeftLine);   //求出左边界线斜率
+        if(fabsf(bias_left)<G_LINEBIAS)    //左边界为直道
         {
-            int row=0;          //固定列扫描的行数
+            lcd_showchar(10, 1, '1');
+            int row=InflectionR.Y;          //固定列扫描的行数
             int zebra_num=0;    //斑马线标志的数量
-            if(InflectionR.X-G_HIGH<0)  //防止行数越界
+            for(int column=InflectionR.X;row-1>0;row--) //从下拐点开始往上扫
             {
-                return 0;   //如果存在越界那只能是某种不知名错误
+                if(BinaryImage[row][column]!=BinaryImage[row-1][column])    //找到上拐点Y坐标
+                {
+                    row=(row+InflectionR.Y)/2+5;  //取上下拐点中间的Y坐标固定行
+                    break;
+                }
             }
-            row=InflectionR.X-G_HIGH;
-            for(int column=LeftLine[row];column-1>0;column--)    //固定行，从右到左列扫描
+            for(int i=0;i<MT9V03X_W-1;i++)
             {
-                if(BinaryImage[row][column]!=BinaryImage[row][column-1])    //该点与下一个点不同颜色 //存在黑白跳变点
+                lcd_drawpoint(i, row, RED);
+            }
+            for(int i=0;i<MT9V03X_H-1;i++)
+            {
+                lcd_drawpoint(LeftLine[row], i, RED);
+            }
+            for(int column=LeftLine[row];column+1<MT9V03X_W-1;column++)    //固定行，向右扫
+            {
+                printf("row=%d   column=%d   num=%d\r\n",row,column,zebra_num);
+                if(BinaryImage[row][column]!=BinaryImage[row][column+1])    //该点与下一个点不同颜色 //存在黑白跳变点
                 {
                     zebra_num++;    //斑马线标志+1
                 }
-                if(zebra_num>G_ZEBRA_NUM)   //斑马线标志的数量高于阈值
+                if(zebra_num>=G_ZEBRA_NUM)   //斑马线标志的数量高于阈值
                 {
-                    return 2;       //返回车库在右边
+                    lcd_showchar(30, 3, '3');
+//                    return 2;       //返回车库在右边
                 }
             }
         }
