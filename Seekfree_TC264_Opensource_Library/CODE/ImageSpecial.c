@@ -15,9 +15,6 @@
 #include <stdlib.h>             //abs函数，fabs在math.h
 #include "SEEKFREE_MT9V03X.h"
 
-uint8 circle_island_flag=0;   //环岛判断条件标志变量    //由于环岛的判断不是一帧图片，所以需要全局变量以保留上一帧图片的信息
-uint8 circle_island_num_1=0;    //环岛判断条件的计数值    //防止距离过远的几帧图片联合形成误判
-uint8 circle_island_num_2=0;    //环岛判断条件的计数值    //防止连续复杂地形造成误判
 /*
  *******************************************************************************************
  ** 函数功能: 识别起跑线
@@ -146,9 +143,6 @@ uint8 CircleIslandBegin(int *LeftLine,int *RightLine)
  */
 uint8 CircleIslandEnd()
 {
-//    lcd_showint16(0, 0, LostNum_LeftLine);
-//    lcd_showint16(0, 1, LostNum_RightLine);
-//    lcd_showfloat(0, 2, Bias, 2, 3);
     if(LostNum_LeftLine>110)    //防止还未出环岛的误判
     {
         return 0;
@@ -253,6 +247,10 @@ uint8 CircleIsFlag_3(int *LeftLine,int *RightLine)
     return 0;
 }
 
+uint8 circle_island_flag=0;     //环岛判断条件标志变量    //由于环岛的判断不是一帧图片，所以需要全局变量以保留上一帧图片的信息
+uint8 circle_island_num_1=0;    //环岛判断条件的计数值    //防止距离过远的几帧图片联合形成误判
+uint8 circle_island_num_2=0;    //环岛判断条件的计数值    //防止连续复杂地形造成误判
+
 /*
  *******************************************************************************************
  ** 函数功能: 识别环岛
@@ -260,9 +258,9 @@ uint8 CircleIsFlag_3(int *LeftLine,int *RightLine)
  **           RightLine：右线数组
  **           InflectionL：左下拐点
  **           InflectionR：右下拐点
- ** 返 回 值: 0：未开始识别环岛
- **           1：开始识别环岛入口
- **           2：成功出环岛
+ ** 返 回 值: 0：下一个状态：未开始识别环岛
+ **           1：下一个状态：开始识别环岛入口
+ **           2：下一个状态：成功出环岛
  ** 作    者: WBN
  ** 注    意：这里只有环岛在小车左边的情况
  ********************************************************************************************
@@ -274,12 +272,10 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
+            gpio_set(P21_4, 1);
             //在这里num_1的作用是确保在跳转到状态一的时候，识别到环岛中部且在此之前的10帧图片中有一帧识别到了环岛出口
             if(CircleIsFlag_1(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
             {
-                gpio_set(P21_4, 1);
-                gpio_set(P21_5, 1);
-                gpio_toggle(P20_9);
                 circle_island_num_1++;  //识别到环岛入口标记+1
                 circle_island_num_2=0;  //识别不到环岛入口标记=0，以保证else中对帧数的判断是连续的
                 if(circle_island_num_1>10)  //num_1限幅
@@ -303,14 +299,14 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
                     circle_island_flag=1;   //跳转到下个状态
                     circle_island_num_1=0;
                     circle_island_num_2=0;
+                    return 1;
                 }
             }
             return 0;
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
-            gpio_set(P21_4, 0);
-            gpio_set(P21_5, 1);
+            gpio_set(P21_4, 1);
             circle_island_num_1++;
             if(circle_island_num_1>8) //通过帧数强行关联状态一
             {
@@ -325,19 +321,19 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
             }
             if(CircleIsFlag_3(LeftLine, RightLine)==1)      //识别到已经进入环岛
             {
-                if(circle_island_num_2>0) //确保识别到
+                if(circle_island_num_2>0) //确保识别到环岛入口
                 {
                     circle_island_flag=2;   //跳转到下个状态
                     circle_island_num_1=0;
                     circle_island_num_2=0;
+                    return 2;
                 }
             }
             return 1;
         }
         case 2: //此时小车已经在环岛中，开始判断环岛出口
         {
-            gpio_set(P21_4, 1);
-            gpio_set(P21_5, 0);
+            gpio_set(P21_4, 0);
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
             while(CircleIslandEnd()==0)  //识别到环岛出口跳出循环
             {
@@ -354,7 +350,8 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
             circle_island_flag=0;   //重置状态
             circle_island_num_1=0;
             circle_island_num_2=0;
-            return 2;
+            gpio_set(P21_4, 1);
+            return 0;
         }
     }
     return 0;

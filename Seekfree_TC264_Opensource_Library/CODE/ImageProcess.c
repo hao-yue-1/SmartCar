@@ -26,7 +26,7 @@ void ImageProcess()
     CrossRoadUpLPoint.X=0;CrossRoadUpLPoint.Y=0;CrossRoadUpRPoint.X=0;CrossRoadUpRPoint.Y=0;
     uint8 CrossRoads_flag=0;        //十字标志变量
     uint8 Fork_flag=0;              //三岔识别的标志变量
-    uint8 CircleIsland_flag=0;      //环岛标志变量
+    static uint8 CircleIsland_flag=0;      //环岛标志变量
     /*****************************扫线*****************************/
     GetImagBasic(LeftLine,CentreLine,RightLine);
     /*************************搜寻左右下拐点***********************/
@@ -36,12 +36,16 @@ void ImageProcess()
     if(Fork_flag==0)
     {
         CrossRoads_flag=CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint);//十字
-        if(CrossRoads_flag==0)
+        if(CrossRoads_flag==0||CircleIsland_flag!=0)    //识别不到十字或环岛不处于状态0
         {
+            gpio_set(P20_9,0);
             CircleIsland_flag=CircleIslandIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint); //环岛
         }
+        else
+        {
+            gpio_set(P20_9,1);
+        }
     }
-//    CircleIslandIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint); //环岛
 
     /***************************偏差计算**************************/
     if(Fork_flag!=0)  //在识别函数里面已经计算了Bias

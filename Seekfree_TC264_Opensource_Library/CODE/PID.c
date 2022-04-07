@@ -53,10 +53,9 @@ void MotorPIDSet(float P, float I, float D)
  */
 uint32 Steer_Position_PID(float SlopeBias,SteerPID K)//舵机位置式PID控制，采用分段式PID控制
 {
-    static float LastSlopeBias,Integral;
+    static float LastSlopeBias;
     int PWM;
-    Integral+=SlopeBias;
-    PWM=(int)(K.P*SlopeBias+K.I*Integral+K.D*(SlopeBias-LastSlopeBias));
+    PWM=(int)(K.P*SlopeBias+K.D*(SlopeBias-LastSlopeBias));
     LastSlopeBias=SlopeBias;
     return STEER_MID+PWM;//假设斜率的范围为[-5,5]，而舵机打角PWM的范围为[850,680]，减去中值之后就能映射到[-85,85]，于此对应，所以返回值应该负号再加中值，KP先猜测为17
 }
@@ -76,12 +75,11 @@ uint32 Steer_Position_PID(float SlopeBias,SteerPID K)//舵机位置式PID控制，采用分
  */
 int Speed_PI_Left(int16 left_encoder,int16 left_target,MotorPID K)
 {
-    static int Bias,Last_Bias,Last_2_Bias,PWM;
+    static int Bias,Last_Bias,PWM;
 
     Bias=left_target-left_encoder;              //求出当前偏差
-    PWM+=(int)(K.P*(Bias-Last_Bias)+K.I*Bias+K.D*(Bias-2*Last_Bias+Last_2_Bias));  //增量式PID，并把结果直接叠加在上一次的PWM上
+    PWM+=(int)(K.P*(Bias-Last_Bias)+K.I*Bias);  //增量式PID，并把结果直接叠加在上一次的PWM上
 
-    Last_2_Bias=Last_Bias;    //保存上一次的偏差
     Last_Bias=Bias;           //保存这一次偏差
 
     return PWM;         //返回可以直接赋值给电机的PWM
@@ -102,12 +100,11 @@ int Speed_PI_Left(int16 left_encoder,int16 left_target,MotorPID K)
  */
 int Speed_PI_Right(int16 right_encoder,int16 right_target,MotorPID K)
 {
-    static int Bias,Last_Bias,Last_2_Bias,PWM;
+    static int Bias,Last_Bias,PWM;
 
     Bias=right_target-right_encoder;                //求出当前偏差
-    PWM+=(int)(K.P*(Bias-Last_Bias)+K.I*Bias+K.D*(Bias-2*Last_Bias+Last_2_Bias));  //增量式PID，并把结果直接叠加在上一次的PWM上
+    PWM+=(int)(K.P*(Bias-Last_Bias)+K.I*Bias);  //增量式PID，并把结果直接叠加在上一次的PWM上
 
-    Last_2_Bias=Last_Bias;    //保存上一次的偏差
     Last_Bias=Bias;           //保存这一次偏差
 
     return PWM;         //返回可以直接赋值给电机的PWM

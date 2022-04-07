@@ -119,6 +119,7 @@ void FillingLine(char Choose, Point StarPoint,Point EndPoint)
  */
 float DifferentBias(int startline,int endline,int *CentreLine)
 {
+    static float last_bias;
     float bias=0;
     int rownum=0;//用于计数求了多少行的偏差
 
@@ -132,11 +133,18 @@ float DifferentBias(int startline,int endline,int *CentreLine)
     }
 
     bias=bias/rownum/10;   //求偏差均值
-//    lcd_showfloat(0, 1, bias, 3, 3);
-    if(bias<0.5&&bias>-0.5)
+    if(bias<0.5&&bias>-0.5) //分段加权
     {
         bias=bias*0.1;
     }
 
-    return bias;    //返回偏差的均值
+    if(bias==bias)  //bias是真值
+    {
+        last_bias=bias;
+        return bias;
+    }
+    else
+    {
+        return last_bias;   //计算错误，忽略此次计算，返回上一次的值
+    }
 }
