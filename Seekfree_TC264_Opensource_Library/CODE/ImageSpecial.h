@@ -15,7 +15,7 @@
 
 //起跑线识别
 #define G_LINEBIAS  0.8     //判定车库另一边的直道斜率
-#define G_ZEBRA_NUM 14      //斑马线标志数量阈值 //若共有n条黑线，则G_ZEBRA_NUM=2*n
+#define G_ZEBRA_NUM 14      //斑马线标志数量阈值 //若共有n条黑线，则G_ZEBRA_NUM=2*n，现赛道有9条黑线，取偏小值
 //环岛判定误差
 #define C_BIAS      2       //消除小毛刺的影响，补线更加丝滑
 #define C_LOSTLINE  35      //触发环岛入口判断的丢线数         //越大条件越严谨
