@@ -282,7 +282,8 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
-            gpio_set(P21_4, 1);
+//            gpio_set(P21_4, 1);
+            gpio_toggle(P21_5);
             circle_island_num_1++;
             if(circle_island_num_1>8) //通过帧数强行关联状态一
             {
@@ -529,32 +530,32 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
         return 1;//正入十字
     }
     //左边丢线超过一半，并且右拐点上面一段对应的左边丢线，并且右拐点不能在最左边附近
-    else if(LostNum_LeftLine>70 && DownInflectionR.X!=0 && DownInflectionR.X>10 && LeftLine[DownInflectionR.Y-5]==0)
-    {
-        for(row=DownInflectionR.Y;row>1;row--)//直接右下拐点往上冲找到上拐点
-        {
-            if(BinaryImage[row][UpInflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionR.X]==IMAGE_BLACK)  //由白到黑跳变
-            {
-                UpInflectionR.Y=row-1;//记录上拐点
-                FillingLine('R', DownInflectionR, UpInflectionR);
-                break;//记录完之后就退出循环
-            }
-        }
-        return 2;//向右斜入十字
-    }
+//    else if(LostNum_LeftLine>70 && DownInflectionR.X!=0 && DownInflectionR.X>10 && LeftLine[DownInflectionR.Y-5]==0)
+//    {
+//        for(row=DownInflectionR.Y;row>1;row--)//直接右下拐点往上冲找到上拐点
+//        {
+//            if(BinaryImage[row][UpInflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionR.X]==IMAGE_BLACK)  //由白到黑跳变
+//            {
+//                UpInflectionR.Y=row-1;//记录上拐点
+//                FillingLine('R', DownInflectionR, UpInflectionR);
+//                break;//记录完之后就退出循环
+//            }
+//        }
+//        return 2;//向右斜入十字
+//    }
     //右边丢线超过一半，并且左拐点上面一段对应的右边丢线,并且左拐点不能在最右边
-    else if(LostNum_RightLine>70 && DownInflectionL.X!=0 && DownInflectionL.X<MT9V03X_W-10 && RightLine[DownInflectionL.Y-5]==MT9V03X_W-1)
-    {
-        for(row=DownInflectionL.Y;row>1;row--)
-        {
-            if(BinaryImage[row][UpInflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionL.X]==IMAGE_BLACK)  //由白到黑跳变
-            {
-                UpInflectionL.Y=row-1;//记录上拐点
-                FillingLine('L', DownInflectionL, UpInflectionL);
-                break;//记录完之后就退出循环
-            }
-        }
-        return 3;//向左斜入十字
-    }
+//    else if(LostNum_RightLine>70 && DownInflectionL.X!=0 && DownInflectionL.X<MT9V03X_W-10 && RightLine[DownInflectionL.Y-5]==MT9V03X_W-1)
+//    {
+//        for(row=DownInflectionL.Y;row>1;row--)
+//        {
+//            if(BinaryImage[row][UpInflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionL.X]==IMAGE_BLACK)  //由白到黑跳变
+//            {
+//                UpInflectionL.Y=row-1;//记录上拐点
+//                FillingLine('L', DownInflectionL, UpInflectionL);
+//                break;//记录完之后就退出循环
+//            }
+//        }
+//        return 3;//向左斜入十字
+//    }
     else return 0;
 }

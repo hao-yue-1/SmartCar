@@ -125,7 +125,11 @@ float DifferentBias(int startline,int endline,int *CentreLine)
 
     for(int i=startline;i>endline;i--)
     {
-        if(BinaryImage[i][CentreLine[i]]==IMAGE_WHITE)
+        if(BinaryImage[i][CentreLine[i]]==IMAGE_BLACK)
+        {
+            break;
+        }
+        else
         {
             bias+=(float)(MT9V03X_W/2-CentreLine[i]);  //ÀÛ»ýÆ«²î
             rownum++;

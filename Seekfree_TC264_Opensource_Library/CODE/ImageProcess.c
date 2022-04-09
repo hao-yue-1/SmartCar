@@ -32,22 +32,22 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-//    Fork_flag=ForkIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
-//    if(Fork_flag==0)
-//    {
-//        CrossRoads_flag=CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint);//十字
-//        if(CrossRoads_flag==0||CircleIsland_flag!=0)    //识别不到十字或环岛不处于状态0
-//        {
-//            gpio_set(P20_9,0);
-//            CircleIsland_flag=CircleIslandIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint); //环岛
-//        }
-//        else
-//        {
-//            gpio_set(P20_9,1);
-//        }
-//    }
+    Fork_flag=ForkIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint);  //三岔
+    if(Fork_flag==0)
+    {
+        CrossRoads_flag=CrossRoadsIdentify(LeftLine,RightLine,LeftDownPoint,RightDownPoint);//十字
+        if(CrossRoads_flag==0||CircleIsland_flag!=0)    //识别不到十字或环岛不处于状态0
+        {
+            gpio_set(P20_9,0);
+            CircleIsland_flag=CircleIslandIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint); //环岛
+        }
+        else
+        {
+            gpio_set(P20_9,1);
+        }
+    }
 
-    GarageIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    GarageIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
 
     /***************************偏差计算**************************/
     if(Fork_flag!=0)  //在识别函数里面已经计算了Bias
