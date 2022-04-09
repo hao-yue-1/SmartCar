@@ -520,14 +520,16 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
     Point UpInflectionL,UpInflectionR;//左右上拐点
     UpInflectionL.X=DownInflectionL.X+10;UpInflectionL.Y=0;//左上拐点置零
     UpInflectionR.X=DownInflectionR.X-10;UpInflectionR.Y=0;//右上拐点置零
-    if(LostNum_LeftLine>40 && LostNum_RightLine>40 && DownInflectionR.X!=0 && DownInflectionL.X!=0 && LeftLine[DownInflectionL.Y-5]==0 && RightLine[DownInflectionR.Y-5]==MT9V03X_W-1 && BinaryImage[50][MT9V03X_W/2]==IMAGE_WHITE)//左右两边大量丢线，并且左右下拐点都存在
+    //左右两边大量丢线，并且左右下拐点都存在,并且中上是白点
+    if(LostNum_LeftLine>40 && LostNum_RightLine>40 && DownInflectionR.X!=0 && DownInflectionL.X!=0 && LeftLine[DownInflectionL.Y-5]==0 && RightLine[DownInflectionR.Y-5]==MT9V03X_W-1 && BinaryImage[50][MT9V03X_W/2]==IMAGE_WHITE)
     {
         GetCrossRoadsUpInflection(LeftLine, RightLine, DownInflectionL, DownInflectionR, &UpInflectionL, &UpInflectionR);
         FillingLine('L', DownInflectionL, UpInflectionL);
         FillingLine('R', DownInflectionR, UpInflectionR);
         return 1;//正入十字
     }
-    else if(LostNum_LeftLine>70 && DownInflectionR.X!=0 && LeftLine[DownInflectionR.Y-5]==0)//左边丢线超过一半，并且右拐点上面一段对应的左边丢线
+    //左边丢线超过一半，并且右拐点上面一段对应的左边丢线，并且右拐点不能在最左边附近
+    else if(LostNum_LeftLine>70 && DownInflectionR.X!=0 && DownInflectionR.X>10 && LeftLine[DownInflectionR.Y-5]==0)
     {
         for(row=DownInflectionR.Y;row>1;row--)//直接右下拐点往上冲找到上拐点
         {
@@ -540,7 +542,8 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
         }
         return 2;//向右斜入十字
     }
-    else if(LostNum_RightLine>70 && DownInflectionL.X!=0 && RightLine[DownInflectionL.Y-5]==MT9V03X_W-1)//右边丢线超过一半，并且左拐点上面一段对应的左边丢线
+    //右边丢线超过一半，并且左拐点上面一段对应的右边丢线,并且左拐点不能在最右边
+    else if(LostNum_RightLine>70 && DownInflectionL.X!=0 && DownInflectionL.X<MT9V03X_W-10 && RightLine[DownInflectionL.Y-5]==MT9V03X_W-1)
     {
         for(row=DownInflectionL.Y;row>1;row--)
         {
