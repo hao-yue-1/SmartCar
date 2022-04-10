@@ -13,6 +13,10 @@
 #include "ImageTack.h"      //计算偏差、补线
 #include "ImageSpecial.h"   //元素识别
 
+extern uint8 CrossRoads_flag;        //十字标志变量
+extern uint8 Fork_flag;              //三岔识别的标志变量
+extern uint8 CircleIsland_flag;      //环岛标志变量
+
 void ImageProcess(void);//图像处理逻辑函数
 
 #endif /* CODE_IMAGEPROCESS_H_ */

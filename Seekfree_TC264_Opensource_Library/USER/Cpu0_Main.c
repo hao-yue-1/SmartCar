@@ -31,6 +31,7 @@
 #include "Motor.h"          //电机控制
 #include "PID.h"            //PID
 #include "protocol.h"       //野火上位机协议
+#include "ImageProcess.h"   //图像处理
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -70,6 +71,7 @@ int core0_main(void)
 
 	while (TRUE)
 	{
+//	    printf("%d  %d  %d\r\n",Fork_flag,CrossRoads_flag,CircleIsland_flag);   //打印flag
 //	    receiving_process();    //接收野火上位机下发的数据
 	    /*图像处理在CPU1中以轮询的方式执行*/
 	    /*控制处理在CPU0中以定时器中断的方式执行*/

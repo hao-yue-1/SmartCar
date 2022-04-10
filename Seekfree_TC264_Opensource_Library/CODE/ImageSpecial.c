@@ -41,15 +41,22 @@ uint8 GarageIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
             {
                 if(BinaryImage[row][column]!=BinaryImage[row-1][column])    //找到上拐点Y坐标
                 {
-                    row=(row+InflectionR.Y)/2+5;  //取上下拐点中间的Y坐标固定行
+                    row=(row+InflectionR.Y)/2;  //取上下拐点中间的Y坐标固定行
+                    for(int i=0;i<MT9V03X_W-1;i++)
+                    {
+                        lcd_drawpoint(i, row, RED);
+                    }
                     break;
                 }
             }
             for(int column=InflectionR.X,zebra_num=0;column-1>0;column--)    //固定行，向左扫
             {
+//                lcd_showuint8(0, 0, row);
+//                lcd_showuint8(0, 1, column);
                 if(BinaryImage[row][column]!=BinaryImage[row][column-1])    //该点与下一个点不同颜色 //存在黑白跳变点
                 {
                     zebra_num++;    //斑马线标志+1
+                    lcd_showint16(0, 3, zebra_num);
                 }
                 if(zebra_num>=G_ZEBRA_NUM)   //斑马线标志的数量达到阈值
                 {
@@ -530,7 +537,7 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
         return 1;//正入十字
     }
     //左边丢线超过一半，并且右拐点上面一段对应的左边丢线，并且右拐点不能在最左边附近
-    else if(LostNum_LeftLine>70 && DownInflectionR.X!=0 && DownInflectionR.X>10 && LeftLine[DownInflectionR.Y-5]==0)
+    else if(LostNum_LeftLine>70 && DownInflectionR.X!=0 && DownInflectionR.X>50 && LeftLine[DownInflectionR.Y-5]==0)
     {
 //        for(row=DownInflectionR.Y;row>1;row--)//直接右下拐点往上冲找到上拐点
 //        {
@@ -543,8 +550,8 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
 //        }
         return 2;//向右斜入十字
     }
-    //右边丢线超过一半，并且左拐点上面一段对应的右边丢线,并且左拐点不能在最右边
-    else if(LostNum_RightLine>70 && DownInflectionL.X!=0 && DownInflectionL.X<MT9V03X_W-10 && RightLine[DownInflectionL.Y-5]==MT9V03X_W-1)
+    //右边丢线超过一半,并且左拐点上面一段对应的右边丢线,并且左拐点不能在最右边
+    else if(LostNum_RightLine>70 && DownInflectionL.X!=0 && DownInflectionL.X<MT9V03X_W-50)
     {
 //        for(row=DownInflectionL.Y;row>1;row--)
 //        {

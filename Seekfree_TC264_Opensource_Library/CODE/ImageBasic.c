@@ -182,3 +182,30 @@ void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Po
 //        systick_delay_ms(STM0, 800);
     }
 }
+
+/*---------------------------------------------------------------
+ 【函    数】Bin_Image_Filter
+ 【功    能】过滤噪点
+ 【参    数】无
+ 【返 回 值】无
+ 【注意事项】
+ ----------------------------------------------------------------*/
+void Bin_Image_Filter(void)
+{
+    for (int nr=1; nr < MT9V03X_H-1; nr++)
+    {
+        for (int nc=1; nc < MT9V03X_W-1; nc++)
+        {
+            if ((BinaryImage[nr][nc] == IMAGE_BLACK)
+                    &&(BinaryImage[nr-1][nc]+BinaryImage[nr+1][nc]+BinaryImage[nr][nc+1]+BinaryImage[nr][nc-1]>510))
+            {
+                BinaryImage[nr][nc] = IMAGE_WHITE;
+            }
+            else if ((BinaryImage[nr][nc] == IMAGE_WHITE)
+                    && (BinaryImage[nr-1][nc]+BinaryImage[nr+1][nc]+BinaryImage[nr][nc+1]+BinaryImage[nr][nc-1]<510))
+            {
+                BinaryImage[nr][nc] = IMAGE_BLACK;
+            }
+        }
+    }
+}
