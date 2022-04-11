@@ -34,50 +34,51 @@ void MotorSetPWM(int pwm_l,int pwm_r)
     else if(pwm_r<-MOTOR_PWM_MAX)
         pwm_r=-MOTOR_PWM_MAX;
     //判断电机的正反转并进行速度赋值
-    if(pwm_l>=0)   //左电机正转
-    {
-        gpio_set(P02_6,0);
-        pwm_duty(LEFT_MOTOR_PIN1,pwm_l);
-    }
-    else                //左电机反转
-    {
-        gpio_set(P02_6,1);
-        pwm_duty(LEFT_MOTOR_PIN1,-pwm_l);
-    }
-    if(pwm_r>=0)  //右电机正转
-    {
-        gpio_set(P02_7,0);
-        pwm_duty(RIGHT_MOTOR_PIN1,pwm_r);
-    }
-    else                //右电机反转
-    {
-        gpio_set(P02_7,1);
-        pwm_duty(RIGHT_MOTOR_PIN1,-pwm_r);
-    }
+    //下面是逐飞驱动板，使用一个IO口控制正反转，一个IO口输出PWM的控制方式
+//    if(pwm_l>=0)   //左电机正转
+//    {
+//        gpio_set(P02_6,0);
+//        pwm_duty(LEFT_MOTOR_PIN1,pwm_l);
+//    }
+//    else                //左电机反转
+//    {
+//        gpio_set(P02_6,1);
+//        pwm_duty(LEFT_MOTOR_PIN1,-pwm_l);
+//    }
+//    if(pwm_r>=0)  //右电机正转
+//    {
+//        gpio_set(P02_7,0);
+//        pwm_duty(RIGHT_MOTOR_PIN1,pwm_r);
+//    }
+//    else                //右电机反转
+//    {
+//        gpio_set(P02_7,1);
+//        pwm_duty(RIGHT_MOTOR_PIN1,-pwm_r);
+//    }
 
-    //下面注释的是使用两个PWM信号驱动一个电机的驱动方法
-//    //左电机
-//    if(left_speed>=0)   //正转
-//    {
-//        pwm_duty(LEFT_MOTOR_PIN1,0);
-//        pwm_duty(LEFT_MOTOR_PIN2,left_speed);
-//    }
-//    else                //反转
-//    {
-//        pwm_duty(LEFT_MOTOR_PIN1,-left_speed);
-//        pwm_duty(LEFT_MOTOR_PIN2,0);
-//    }
-//    //右电机
-//    if(right_speed>=0)  //正转
-//    {
-//        pwm_duty(RIGHT_MOTOR_PIN1,right_speed);
-//        pwm_duty(RIGHT_MOTOR_PIN2,0);
-//    }
-//    else                //反转
-//    {
-//        pwm_duty(RIGHT_MOTOR_PIN1,0);
-//        pwm_duty(RIGHT_MOTOR_PIN2,-right_speed);
-//    }
+    //下面是自制驱动板，使用两个PWM信号驱动一个电机的驱动方法
+    //左电机
+    if(pwm_l>=0)   //正转
+    {
+        pwm_duty(LEFT_MOTOR_PIN1,pwm_l);
+        pwm_duty(LEFT_MOTOR_PIN2,0);
+    }
+    else                //反转
+    {
+        pwm_duty(LEFT_MOTOR_PIN1,0);
+        pwm_duty(LEFT_MOTOR_PIN2,-pwm_l);
+    }
+    //右电机
+    if(pwm_r>=0)  //正转
+    {
+        pwm_duty(RIGHT_MOTOR_PIN1,0);
+        pwm_duty(RIGHT_MOTOR_PIN2,pwm_r);
+    }
+    else                //反转
+    {
+        pwm_duty(RIGHT_MOTOR_PIN1,-pwm_r);
+        pwm_duty(RIGHT_MOTOR_PIN2,0);
+    }
 }
 
 /*
