@@ -74,9 +74,9 @@ void ImageProcess()
 
 //    GarageIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
 
-    int64 Sobel=SobelTest();
+//    int64 Sobel=SobelTest();
 //    lcd_showint32(0, 0, Sobel, 5);
-    printf("%d\r\n",Sobel);
+//    printf("%d\r\n",Sobel);
 
     /***************************偏差计算**************************/
     if(Fork_flag!=0)  //在识别函数里面已经计算了Bias

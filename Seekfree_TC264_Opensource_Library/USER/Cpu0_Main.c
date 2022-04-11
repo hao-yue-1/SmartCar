@@ -51,11 +51,11 @@ int core0_main(void)
 	/***************************驱动模块初始化***********************/
 	gtm_pwm_init(STEER_PIN, 50, STEER_MID);       //初始化舵机
 	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);      //初始化左电机
-//	gpio_init(P02_6, GPO, 1, PUSHPULL);           //逐飞驱动
-	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);      //自制驱动
-	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);     //初始化右电机
-//	gpio_init(P02_7, GPO, 1, PUSHPULL);           //逐飞驱动
-	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);     //自制驱动
+//	gpio_init(P02_6, GPO, 1, PUSHPULL);           //逐飞驱动：左电机
+	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);      //自制驱动：左电机
+	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);     //初始化：右电机
+//	gpio_init(P02_7, GPO, 1, PUSHPULL);           //逐飞驱动：右电机
+	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);     //自制驱动：右电机
 	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
 	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
 	/**********************PID初始化***********************************************/
@@ -67,6 +67,7 @@ int core0_main(void)
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
 	enableInterrupts();
+
 	while (TRUE)
 	{
 	    printf("%d  %d  %d\r\n",Fork_flag,CrossRoads_flag,CircleIsland_flag);   //打印flag

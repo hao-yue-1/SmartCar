@@ -40,6 +40,7 @@ void core1_main(void)
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
     enableInterrupts();
+
     while (TRUE)
     {
         //图像处理模块
@@ -58,7 +59,6 @@ void core1_main(void)
             }
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
         }
-
         //调试
         gpio_set(P20_8,1);
     }
