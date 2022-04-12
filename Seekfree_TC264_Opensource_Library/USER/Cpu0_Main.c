@@ -32,6 +32,7 @@
 #include "PID.h"            //PID
 #include "protocol.h"       //野火上位机协议
 #include "ImageProcess.h"   //图像处理
+#include "Key.h"            //按键处理
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -41,11 +42,16 @@ int core0_main(void)
 	/***************************交互的初始化**************************/
 //	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);      //初始化串口0与电脑上位机通讯
 	uart_init(UART_2, 115200, UART2_TX_P10_5, UART2_RX_P10_6);      //初始化蓝牙模块所用的串口2
-	lcd_init();                          //初始化TFT屏幕
-	gpio_init(P20_8, GPO, 1, PUSHPULL);  //初始化LED
+	lcd_init();     //初始化TFT屏幕
+	gpio_init(P20_8, GPO, 1, PUSHPULL);     //初始化LED
 	gpio_init(P20_9, GPO, 1, PUSHPULL);
     gpio_init(P21_4, GPO, 1, PUSHPULL);
     gpio_init(P21_5, GPO, 1, PUSHPULL);
+    gpio_init(P33_10, GPI, 0, PULLDOWN);    //初始化按键
+    gpio_init(P33_11, GPI, 0, PULLDOWN);
+    gpio_init(P33_12, GPI, 0, PULLDOWN);
+    gpio_init(P33_13, GPI, 0, PULLDOWN);
+    gpio_init(P32_4, GPI, 0, PULLDOWN);
     /**************************传感器模块初始化**********************/
 	mt9v03x_init();     //初始化摄像头
 	/***************************驱动模块初始化***********************/
@@ -71,9 +77,31 @@ int core0_main(void)
 	while (TRUE)
 	{
 	    printf("%d  %d  %d\r\n",Fork_flag,CrossRoads_flag,CircleIsland_flag);   //打印flag
+	    switch(KeyScan())       //按键处理
+	    {
+	        case 1: //按键S1
+	        {
+	            break;
+	        }
+	        case 2: //按键S2
+	        {
+	            break;
+	        }
+	        case 3: //按键S3
+	        {
+	            break;
+	        }
+	        case 4: //按键S4
+            {
+                break;
+            }
+            case 5: //按键S5
+            {
+                break;
+            }
+            default:break;
+	    }
 //	    receiving_process();    //接收野火上位机下发的数据
-	    /*图像处理在CPU1中以轮询的方式执行*/
-	    /*控制处理在CPU0中以定时器中断的方式执行*/
 	}
 }
 
