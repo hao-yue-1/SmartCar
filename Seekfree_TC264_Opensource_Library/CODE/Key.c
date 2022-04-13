@@ -19,7 +19,7 @@ uint8 KeyScan()
     static uint8 key_up=1;     //按键松开标志
     if(key_up&&(KEY_S1==1||KEY_S2==1||KEY_S3==1||KEY_S4==1||KEY_S5==1))
     {
-        systick_delay_ms(STM0,10);
+        systick_delay_ms(STM0,50);
         key_up=0;
         if(KEY_S1==1)       return KEY_S1_PRES;
         else if(KEY_S2==1)  return KEY_S2_PRES;

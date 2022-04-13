@@ -8,30 +8,6 @@
 #include "ImageProcess.h"
 #include "zf_gpio.h"
 
-#define FastABS(x) (x > 0 ? x : x * -1.0f)
-#define BinaryImage(i, j)    BinaryImage[i][j]
-
-int64 SobelTest()
-{
-    int64 Sobel = 0;
-    int64 temp = 0;
-    for (uint8 i = MT9V03X_H-1-20; i > 20 ; i--)
-    {
-        for (uint8 j = 20; j < MT9V03X_W-1-20; j++)
-        {
-            int64 Gx = 0, Gy = 0;
-            Gx = (-1*BinaryImage(i-1, j-1) + BinaryImage(i-1, j+1) - 2*BinaryImage(i, j-1)
-                  + 2*BinaryImage(i, j+1) - BinaryImage(i+1, j-1) + BinaryImage(i+1, j+1));
-            Gy = (-1 * BinaryImage(i-1, j-1) - 2 * BinaryImage(i-1, j) - BinaryImage(i-1, j+1)
-                  + BinaryImage(i+1, j+1) + 2 * BinaryImage(i+1, j) + BinaryImage(i+1, j+1));
-            temp += FastABS(Gx) + FastABS(Gy);
-            Sobel += temp / 255;
-            temp = 0;
-        }
-    }
-    return Sobel;
-}
-
 uint8 CrossRoads_flag=0;        //十字标志变量
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 CircleIsland_flag=0;      //环岛标志变量
@@ -71,12 +47,15 @@ void ImageProcess()
             gpio_set(P20_9,1);
         }
     }
-
-//    GarageIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-
+//    gpio_set(P21_5, 1);
 //    int64 Sobel=SobelTest();
-//    lcd_showint32(0, 0, Sobel, 5);
-//    printf("%d\r\n",Sobel);
+//    if(Sobel>3900)  //识别到车库
+//    {
+//        //这里将舵机右打死完成入库
+////        Bias=-100;
+////        systick_delay_ms(STM0,500);
+//        gpio_set(P21_5, 0);
+//    }
 
     /***************************偏差计算**************************/
     if(Fork_flag!=0)  //在识别函数里面已经计算了Bias

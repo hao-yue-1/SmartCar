@@ -21,9 +21,13 @@
 #define C_LOSTLINE  35      //触发环岛入口判断的丢线数         //越大条件越严谨
 #define C_LINEBIAS  0.8     //判定环岛入口另一边的直道斜率     //越小条件越严谨
 #define C_LOSTNUM   50      //判定环岛出口的丢线数
+//Sobel算子检测
+#define FastABS(x) (x > 0 ? x : x * -1.0f)
+#define BinaryImage(i, j)    BinaryImage[i][j]
 
 /*起跑线相关函数*/
 uint8 GarageIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);      //起跑线识别
+int64 SobelTest();      //Sobel算子检测起跑线
 /*环岛相关函数*/
 uint8 CircleIslandBegin(int *LeftLine,int *RightLine);      //识别环岛入口
 uint8 CircleIslandEnd(); //识别环岛出口

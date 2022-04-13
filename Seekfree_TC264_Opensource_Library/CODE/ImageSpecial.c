@@ -51,8 +51,6 @@ uint8 GarageIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
             }
             for(int column=InflectionR.X,zebra_num=0;column-1>0;column--)    //固定行，向左扫
             {
-//                lcd_showuint8(0, 0, row);
-//                lcd_showuint8(0, 1, column);
                 if(BinaryImage[row][column]!=BinaryImage[row][column-1])    //该点与下一个点不同颜色 //存在黑白跳变点
                 {
                     zebra_num++;    //斑马线标志+1
@@ -289,8 +287,7 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
-//            gpio_set(P21_4, 1);
-            gpio_toggle(P21_5);
+            gpio_set(P21_4, 1);
             circle_island_num_1++;
             if(circle_island_num_1>8) //通过帧数强行关联状态一
             {
@@ -565,4 +562,32 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
         return 3;//向左斜入十字
     }
     else return 0;
+}
+
+/********************************************************************************************
+ ** 函数功能: Sobel算子检测起跑线
+ ** 参    数: 无
+ ** 返 回 值: Sobel阈值
+ ** 作    者: 师兄
+ *********************************************************************************************/
+int64 SobelTest()
+{
+    int64 Sobel = 0;
+    int64 temp = 0;
+
+    for (uint8 i = MT9V03X_H-1-20; i > 20 ; i--)
+    {
+        for (uint8 j = 20; j < MT9V03X_W-1-20; j++)
+        {
+            int64 Gx = 0, Gy = 0;
+            Gx = (-1*BinaryImage(i-1, j-1) + BinaryImage(i-1, j+1) - 2*BinaryImage(i, j-1)
+                  + 2*BinaryImage(i, j+1) - BinaryImage(i+1, j-1) + BinaryImage(i+1, j+1));
+            Gy = (-1 * BinaryImage(i-1, j-1) - 2 * BinaryImage(i-1, j) - BinaryImage(i-1, j+1)
+                  + BinaryImage(i+1, j+1) + 2 * BinaryImage(i+1, j) + BinaryImage(i+1, j+1));
+            temp += FastABS(Gx) + FastABS(Gy);
+            Sobel += temp / 255;
+            temp = 0;
+        }
+    }
+    return Sobel;
 }
