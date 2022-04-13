@@ -21,7 +21,7 @@ MotorPID MotorK;    //电机PID参数
  *********************************************************************************************/
 void PID_init(SteerPID *SteerK,MotorPID *MotorK)
 {
-    SteerK->P=19.3;SteerK->I=0;SteerK->D=0.1;    //初始化舵机的PID参数
+    SteerK->P=19.3;SteerK->I=0;SteerK->D=3;    //初始化舵机的PID参数
     MotorK->P=15;MotorK->I=1.2;MotorK->D=0;      //初始化电机的PID参数 3.28晚更新
 }
 
@@ -55,7 +55,7 @@ uint32 Steer_Position_PID(float SlopeBias,SteerPID K)//舵机位置式PID控制，采用分
     static float LastSlopeBias;
     int PWM;
     PWM=(int)(K.P*SlopeBias+K.D*(SlopeBias-LastSlopeBias));
-    LastSlopeBias=SlopeBias;
+    LastSlopeBias=FirstOrderLagFilter(SlopeBias);
     return STEER_MID+PWM;//假设斜率的范围为[-5,5]，而舵机打角PWM的范围为[850,680]，减去中值之后就能映射到[-85,85]，于此对应，所以返回值应该负号再加中值，KP先猜测为17
 }
 
