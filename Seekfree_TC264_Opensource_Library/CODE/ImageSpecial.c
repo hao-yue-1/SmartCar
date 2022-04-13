@@ -338,47 +338,6 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
     return 0;
 }
 
-/*
- *******************************************************************************************
- ** 函数功能: 识别十字回环出口
- ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
- **           InflectionL：左拐点
- **           InflectionR：右拐点
- ** 返 回 值: 0：没有识别十字回环出口
- **           1：识别到十字回环出口
- ** 作    者: WBN
- ** 注    意：传入的拐点需确保：若该图不存在拐点则拐点的数据均为0
- ********************************************************************************************
- */
-uint8 CrossLoopEnd(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
-{
-    int row;  //行
-
-    if(InflectionL.X!=0&&InflectionL.Y!=0)  //拐点在左边
-    {
-        for(row=InflectionL.Y;row>0;row--)
-        {
-            if(LeftLine[row]==0&&LeftLine[row-1]!=0)  //该行丢线而下一行不丢线
-            {
-                return 1;
-            }
-        }
-    }
-    if(InflectionR.X!=0&&InflectionR.Y!=0)  //拐点在右边
-    {
-        for(row=InflectionR.Y;row>0;row--)
-        {
-            if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)  //该行丢线而下一行不丢线
-            {
-                return 1;
-            }
-        }
-    }
-
-    return 0;
-}
-
 /*********************************************************************************
  ** 函数功能: 根据左右下拐点搜寻出三岔上拐点
  ** 参    数: Point InflectionL: 左边拐点

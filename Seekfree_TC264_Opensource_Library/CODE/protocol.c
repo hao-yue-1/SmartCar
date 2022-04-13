@@ -160,9 +160,7 @@ static void recvbuf_put_data(uint8_t *buf, uint16_t ring_buf_len, uint16_t w_oft
     }
     else
     {
-        gpio_toggle(P21_4);
         memcpy(buf + w_oft, data, data_len);    // 数据写入缓冲区  //4.4晚调试发现，上位机发送PID触发串口中断后会卡在这个函数里面出不来
-        gpio_toggle(P21_5);
     }
 }
 
