@@ -42,10 +42,6 @@ uint8 GarageIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
                 if(BinaryImage[row][column]!=BinaryImage[row-1][column])    //找到上拐点Y坐标
                 {
                     row=(row+InflectionR.Y)/2;  //取上下拐点中间的Y坐标固定行
-                    for(int i=0;i<MT9V03X_W-1;i++)
-                    {
-                        lcd_drawpoint(i, row, RED);
-                    }
                     break;
                 }
             }
@@ -54,7 +50,6 @@ uint8 GarageIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
                 if(BinaryImage[row][column]!=BinaryImage[row][column-1])    //该点与下一个点不同颜色 //存在黑白跳变点
                 {
                     zebra_num++;    //斑马线标志+1
-                    lcd_showint16(0, 3, zebra_num);
                 }
                 if(zebra_num>=G_ZEBRA_NUM)   //斑马线标志的数量达到阈值
                 {
@@ -68,16 +63,15 @@ uint8 GarageIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
 
 /*
  *******************************************************************************************
- ** 函数功能: 识别环岛入口
+ ** 函数功能: 识别环岛入口，左侧
  ** 参    数: LeftLine：左线数组
  **           RightLine：右线数组
  ** 返 回 值: 0：没有识别到环岛
  **           1：识别到环岛且在车身左侧
- **           2：识别到环岛且在车身右侧
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIslandBegin(int *LeftLine,int *RightLine)
+uint8 CircleIslandBegin_L(int *LeftLine,int *RightLine)
 {
     if(BinaryImage[115][5]==IMAGE_BLACK)    //防止提前拐入环岛
     {
@@ -91,7 +85,7 @@ uint8 CircleIslandBegin(int *LeftLine,int *RightLine)
             if(LeftLine[row]==0&&LeftLine[row-1]!=0)    //该行丢线而下一行不丢线
             {
                 //下面这个防止进入环岛后误判
-                for(int column=0;column+1<MT9V03X_W-1;column++)
+                for(int column=0;column+1<MT9V03X_W-1;column++) //向右扫
                 {
                     if(BinaryImage[10][column]!=BinaryImage[10][column+1])
                     {
@@ -112,17 +106,16 @@ uint8 CircleIslandBegin(int *LeftLine,int *RightLine)
 
 /*
  *******************************************************************************************
- ** 函数功能: 识别环岛出口
+ ** 函数功能: 识别环岛出口，左侧
  ** 参    数: InflectionL：左下拐点
  **           InflectionR：右下拐点
  ** 返 回 值: 0：没有识别到环岛
  **           1：识别到环岛出口且在车身左侧
- **           2：识别到环岛出口且在车身右侧
  ** 作    者: WBN
  ** 注    意：该函数调用时应确保小车已在环岛中
  ********************************************************************************************
  */
-uint8 CircleIslandEnd()
+uint8 CircleIslandEnd_L()
 {
     if(LostNum_LeftLine>110)    //防止还未出环岛的误判
     {
@@ -133,7 +126,7 @@ uint8 CircleIslandEnd()
         if(fabsf(Bias)<1.5)
         {
             /*在这里将舵机打死，考虑要不要加延时*/
-            Bias=100;
+            Bias=10;
             systick_delay_ms(STM0,300);
             return 1;
         }
@@ -141,14 +134,20 @@ uint8 CircleIslandEnd()
     return 0;
 }
 
-/*下面三个函数是判断环岛整个过程的三个状态转移函数*/
-//判断条件一是否成立，成立返回1，不成立返回0
-uint8 CircleIsFlag_1(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+/*
+ *******************************************************************************************
+ ** 函数功能: 判断环岛Flag1是否成立，左侧
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ **           InflectionL：左下拐点
+ **           InflectionR：右下拐点
+ ** 返 回 值: 0：Flag1不成立
+ **           1：Flag1成立且在左侧
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CircleIsFlag_1_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    if(InflectionR.X!=0&&InflectionR.Y!=0)     //防止误判三岔
-    {
-        return 0;
-    }
     if(InflectionL.X!=0&&InflectionL.Y!=0)  //判断条件一：是否存在左拐点与右侧直道
     {
         float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
@@ -158,7 +157,7 @@ uint8 CircleIsFlag_1(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
             {
                 if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE&&BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)
                 {
-                    for(int column=InflectionL.X;column<MT9V03X_W-1;column++)   //左向右扫
+                    for(int column=InflectionL.X;column<MT9V03X_W-1;column++)   //向右扫
                     {
                         if(BinaryImage[row-1][column]==IMAGE_WHITE)
                         {
@@ -176,8 +175,17 @@ uint8 CircleIsFlag_1(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
     }
     return 0;
 }
-//判断条件二是否成立，成立返回1，不成立返回0
-uint8 CircleIsFlag_2(int *LeftLine,int *RightLine)
+/*
+ *******************************************************************************************
+ ** 函数功能: 判断环岛Flag2是否成立，左侧
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ ** 返 回 值: 0：Flag2不成立
+ **           1：Flag2成立且在左侧
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CircleIsFlag_2_L(int *LeftLine,int *RightLine)
 {
     if(LostNum_RightLine>55)   //防止误判十字入口
     {
@@ -200,7 +208,7 @@ uint8 CircleIsFlag_2(int *LeftLine,int *RightLine)
             {
                 if(LeftLine[row]!=0&&LeftLine[row-1]==0)    //不丢线-丢线
                 {
-                    for(;row-1>0;row--)    //向下扫
+                    for(;row-1>0;row--)    //继续向上扫
                     {
                         if(LeftLine[row]==0&&LeftLine[row-1]!=0)    //丢线-不丢线
                         {
@@ -214,8 +222,17 @@ uint8 CircleIsFlag_2(int *LeftLine,int *RightLine)
     }
     return 0;
 }
-//判断条件三是否成立，成立返回1，不成立返回0
-uint8 CircleIsFlag_3(int *LeftLine,int *RightLine)
+/*
+ *******************************************************************************************
+ ** 函数功能: 判断环岛Flag3是否成立，左侧
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ ** 返 回 值: 0：Flag3不成立
+ **           1：Flag3成立且在左侧
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CircleIsFlag_3_L(int *LeftLine,int *RightLine)
 {
     if(LostNum_LeftLine>100)    //左边接近全丢线
     {
@@ -246,7 +263,7 @@ uint8 circle_island_num_2=0;    //环岛判断条件的计数值    //防止连续复杂地形造成
  ** 注    意：这里只有环岛在小车左边的情况
  ********************************************************************************************
  */
-uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
     //使用switch实现简单的状态机机制
     switch(circle_island_flag)
@@ -255,7 +272,7 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
         {
             gpio_set(P21_4, 1);
             //在这里num_1的作用是确保在跳转到状态一的时候，识别到环岛中部且在此之前的10帧图片中有一帧识别到了环岛出口
-            if(CircleIsFlag_1(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
+            if(CircleIsFlag_1_L(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
             {
                 circle_island_num_1++;  //识别到环岛入口标记+1
                 circle_island_num_2=0;  //识别不到环岛入口标记=0，以保证else中对帧数的判断是连续的
@@ -273,7 +290,7 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
                     circle_island_num_2=8;  //num_2限幅
                 }
             }
-            if(CircleIsFlag_2(LeftLine, RightLine)==1)    //识别到环岛中部，进行状态转移
+            if(CircleIsFlag_2_L(LeftLine, RightLine)==1)    //识别到环岛中部，进行状态转移
             {
                 if(circle_island_num_1>0)  //且之前判断到过环岛入口
                 {
@@ -295,12 +312,12 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
                 circle_island_num_1=0;
                 circle_island_num_2=0;
             }
-            if(CircleIslandBegin(LeftLine, RightLine)==1)   //识别到环岛入口，进行补线
+            if(CircleIslandBegin_L(LeftLine, RightLine)==1)   //识别到环岛入口，进行补线
             {
                 circle_island_num_2++;
                 circle_island_num_1=0;  //识别到环岛重置num1
             }
-            if(CircleIsFlag_3(LeftLine, RightLine)==1)      //识别到已经进入环岛
+            if(CircleIsFlag_3_L(LeftLine, RightLine)==1)      //识别到已经进入环岛
             {
                 if(circle_island_num_2>0) //确保识别到环岛入口
                 {
@@ -316,7 +333,7 @@ uint8 CircleIslandIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point 
         {
             gpio_set(P21_4, 0);
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
-            while(CircleIslandEnd()==0)  //识别到环岛出口跳出循环
+            while(CircleIslandEnd_L()==0)  //识别到环岛出口跳出循环
             {
                 if(mt9v03x_finish_flag)
                 {
@@ -549,4 +566,336 @@ int64 SobelTest()
         }
     }
     return Sobel;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 识别环岛入口，右侧
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ ** 返 回 值: 0：没有识别到环岛
+ **           1：识别到环岛且在车身右侧
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CircleIslandBegin_R(int *LeftLine,int *RightLine)
+{
+    if(BinaryImage[115][154]==IMAGE_BLACK)    //防止提前拐入环岛
+    {
+        return 0;
+    }
+    for(uint8 row=60;row-1>0;row--)          //防止在Flag1处误判
+    {
+        if(BinaryImage[row][150]==IMAGE_BLACK&&BinaryImage[row-1][150]==IMAGE_WHITE) //黑跳白
+        {
+            return 0;
+        }
+    }
+    //环岛入口在右边
+    if(LostNum_RightLine>C_LOSTLINE)   //右边丢线：环岛入口在右边
+    {
+        for(int row=MT9V03X_H;row-1>0;row--)  //从下往上检查右边界线
+        {
+            if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)    //该行丢线而下一行不丢线
+            {
+                //下面这个防止进入环岛后误判
+                for(int column=MT9V03X_W-1;column-1>0;column--) //向左扫
+                {
+                    if(BinaryImage[30][column]!=BinaryImage[30][column-1])
+                    {
+                        Point StarPoint,EndPoint;   //定义补线的起点和终点
+                        EndPoint.Y=row;             //终点赋值
+                        EndPoint.X=RightLine[row];
+                        StarPoint.Y=MT9V03X_H-1;    //起点赋值
+                        StarPoint.X=0;
+                        FillingLine('L',StarPoint,EndPoint);    //补线
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 识别环岛出口，右侧
+ ** 参    数: InflectionL：左下拐点
+ **           InflectionR：右下拐点
+ ** 返 回 值: 0：没有识别到环岛
+ **           1：识别到环岛出口且在车身右侧
+ ** 作    者: WBN
+ ** 注    意：该函数调用时应确保小车已在环岛中
+ ********************************************************************************************
+ */
+uint8 CircleIslandEnd_R()
+{
+    if(LostNum_RightLine>110)    //防止还未出环岛的误判
+    {
+        return 0;
+    }
+    if(LostNum_LeftLine>C_LOSTNUM&&LostNum_RightLine>C_LOSTNUM)  //左右边界均丢线
+    {
+        if(fabsf(Bias)<1.5)
+        {
+            /*在这里将舵机打死，考虑要不要加延时*/
+            Bias=-10;
+            systick_delay_ms(STM0,300);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 判断环岛Flag1是否成立，右侧
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ **           InflectionL：左下拐点
+ **           InflectionR：右下拐点
+ ** 返 回 值: 0：Flag1不成立
+ **           1：Flag1成立且在右侧
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CircleIsFlag_1_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+{
+    if(InflectionR.Y<60)    //防止还在下坡时的误判
+    {
+        return 0;
+    }
+    if(InflectionR.X!=0&&InflectionR.Y!=0)  //判断条件一：是否存在右拐点与左侧直道
+    {
+        float bias_left=Regression_Slope(119,0,LeftLine);   //求出左边界线斜率
+        if(fabsf(bias_left)<G_LINEBIAS)    //左边界为直道
+        {
+            for(int row=InflectionR.Y;row-1>0;row--)    //从右拐点开始下向上扫
+            {
+                if(BinaryImage[row][InflectionR.X]==IMAGE_WHITE&&BinaryImage[row-1][InflectionR.X]==IMAGE_BLACK)
+                {
+                    for(int column=InflectionR.X;column>0;column--)   //向左扫
+                    {
+                        if(BinaryImage[row-1][column]==IMAGE_WHITE)
+                        {
+                            /*补线操作*/
+                            Point end;
+                            end.Y=row-1;
+                            end.X=column;
+                            FillingLine('R', InflectionR, end);   //补线
+                            return 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 判断环岛Flag2是否成立，右侧
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ ** 返 回 值: 0：Flag2不成立
+ **           1：Flag2成立且在右侧
+ ** 作    者: WBN
+ ** 注    意：上坡路段仍会误判
+ ********************************************************************************************
+ */
+uint8 CircleIsFlag_2_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+{
+    float bias_left=Regression_Slope(119,0,LeftLine);   //求出左边界线斜率
+    if(fabsf(bias_left)<G_LINEBIAS&&LostNum_RightLine<35)    //左边界为直道且右边丢线小于
+    {
+        if(BinaryImage[100][149]==IMAGE_BLACK)    //经验位置为黑
+        {
+            //下面这个for防止在环岛出口时误判为环岛中部
+            for(int row=80;row+1<MT9V03X_H-1;row++) //向下扫
+            {
+                if(RightLine[row]==MT9V03X_W-1&&RightLine[row+1]!=MT9V03X_W-1)    //丢线-不丢线
+                {
+                    return 0;
+                }
+            }
+//            //下面这个for防止上下坡路段误判，利用了环岛入口处有左拐弯的条件
+//            uint8 flag=0;
+//            for(uint8 row=40;row-1>0;row--) //向上扫
+//            {
+//                if(BinaryImage[row][20]==IMAGE_BLACK&&BinaryImage[row-1][20]==IMAGE_WHITE)  //黑-白
+//                {
+//                    for(;row-1>0;row--) //继续向上扫
+//                    {
+//                        if(BinaryImage[row][20]==IMAGE_WHITE&&BinaryImage[row-1][20]==IMAGE_BLACK)  //白-黑
+//                        {
+//                            flag=1;
+//                        }
+//                    }
+//                    break;
+//                }
+//            }
+//            if(flag==0)
+//            {
+//                return 0;
+//            }
+
+            for(int row=80;row-1>0;row--)  //向上扫
+            {
+                if(RightLine[row]!=MT9V03X_W-1&&RightLine[row-1]==MT9V03X_W-1)    //不丢线-丢线
+                {
+                    for(;row-1>0;row--)    //继续向上扫
+                    {
+                        if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)    //丢线-不丢线
+                        {
+                            return 1;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 判断环岛Flag3是否成立，右侧
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ ** 返 回 值: 0：Flag3不成立
+ **           1：Flag3成立且在右侧
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CircleIsFlag_3_R(int *LeftLine,int *RightLine)
+{
+    if(LostNum_RightLine>100)    //右边接近全丢线
+    {
+        //下面采用经验值随机抽样法
+        if(BinaryImage[90][119]==IMAGE_WHITE&&BinaryImage[30][39]==IMAGE_BLACK)
+        {
+            lcd_showuint8(0, 0, 0);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+//环岛在右边的标志变量
+uint8 circle_island_flag_r=0;     //环岛判断条件标志变量    //由于环岛的判断不是一帧图片，所以需要全局变量以保留上一帧图片的信息
+uint8 circle_island_num_1_r=0;    //环岛判断条件的计数值    //防止距离过远的几帧图片联合形成误判
+uint8 circle_island_num_2_r=0;    //环岛判断条件的计数值    //防止连续复杂地形造成误判
+/*
+ *******************************************************************************************
+ ** 函数功能: 识别环岛
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ **           InflectionL：左下拐点
+ **           InflectionR：右下拐点
+ ** 返 回 值: 0：下一个状态：未开始识别环岛
+ **           1：下一个状态：开始识别环岛入口
+ **           2：下一个状态：成功出环岛
+ ** 作    者: WBN
+ ** 注    意：这里只有环岛在小车右边的情况
+ **           当速度到达100时上坡路段会产生误判从而进入状态一，而又由于在状态一时错过了Flag1、Flag2
+ **           的判断，所以最终可能导致入环失败
+ ********************************************************************************************
+ */
+uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+{
+    //使用switch实现简单的状态机机制
+    switch(circle_island_flag_r)
+    {
+        case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
+        {
+            gpio_set(P21_4, 0);
+            gpio_set(P21_5, 1);
+            gpio_set(P20_9, 1);
+            //在这里num_1的作用是确保在跳转到状态一的时候，识别到环岛中部且在此之前的10帧图片中有一帧识别到了环岛出口
+            if(CircleIsFlag_1_R(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
+            {
+                circle_island_num_1_r++;  //识别到环岛入口标记+1
+                circle_island_num_2_r=0;  //识别不到环岛入口标记=0，以保证else中对帧数的判断是连续的
+                if(circle_island_num_1_r>8)  //num_1限幅
+                {
+                    circle_island_num_1_r=8;
+                }
+            }
+            else    //没有识别到环岛出口
+            {
+                circle_island_num_2_r++;  //识别不到环岛入口标记+1
+                if(circle_island_num_2_r>=20)  //90-20
+                {
+                    circle_island_num_1_r=0;
+                    circle_island_num_2_r=8;  //num_2限幅
+                }
+            }
+            if(CircleIsFlag_2_R(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别到环岛中部，进行状态转移
+            {
+                if(circle_island_num_1_r>0)  //且之前判断到过环岛入口
+                {
+                    circle_island_flag_r=1;   //跳转到下个状态
+                    circle_island_num_1_r=0;
+                    circle_island_num_2_r=0;
+                    return 1;
+                }
+            }
+            return 0;
+        }
+        case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
+        {
+            gpio_set(P21_4, 1);
+            gpio_set(P21_5, 0);
+            gpio_set(P20_9, 1);
+            circle_island_num_1_r++;
+            if(circle_island_num_1_r>25) //通过帧数强行关联状态一
+            {
+                circle_island_flag_r=0;
+                circle_island_num_1_r=0;
+                circle_island_num_2_r=0;
+            }
+            if(CircleIslandBegin_R(LeftLine, RightLine)==1)   //识别到环岛入口，进行补线
+            {
+                circle_island_num_2_r++;
+                circle_island_num_1_r=0;  //识别到环岛重置num1
+            }
+            if(CircleIsFlag_3_R(LeftLine, RightLine)==1)      //识别到已经进入环岛
+            {
+                if(circle_island_num_2_r>0) //确保识别到环岛入口
+                {
+                    circle_island_flag_r=2;   //跳转到下个状态
+                    circle_island_num_1_r=0;
+                    circle_island_num_2_r=0;
+                    return 2;
+                }
+            }
+            return 1;
+        }
+        case 2: //此时小车已经在环岛中，开始判断环岛出口
+        {
+            gpio_set(P21_4, 1);
+            gpio_set(P21_5, 1);
+            gpio_set(P20_9, 0);
+            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
+            while(CircleIslandEnd_R()==0)  //识别到环岛出口跳出循环
+            {
+                if(mt9v03x_finish_flag)
+                {
+                    ImageBinary();                                  //图像二值化
+                    GetImagBasic(LeftLine,CentreLine,RightLine);    //基本扫线
+                    Bias=DifferentBias(110,60,CentreLine);          //计算偏差，此时在环岛中取特殊前瞻
+                    mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
+                }
+            }
+            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
+            circle_island_flag_r=0;   //重置状态
+            circle_island_num_1_r=0;
+            circle_island_num_2_r=0;
+            return 0;
+        }
+    }
+    return 0;
 }
