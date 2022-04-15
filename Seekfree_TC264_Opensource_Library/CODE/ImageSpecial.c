@@ -14,49 +14,115 @@
 #include "Steer.h"
 #include <stdlib.h>             //abs函数，fabs在math.h
 #include "SEEKFREE_MT9V03X.h"
+#include "Motor.h"              //停止电机
 
-/*
- *******************************************************************************************
+/********************************************************************************************
+ ** 函数功能: Sobel算子检测起跑线
+ ** 参    数: 无
+ ** 返 回 值: Sobel阈值
+ ** 作    者: 师兄
+ *********************************************************************************************/
+int64 SobelTest()
+{
+    int64 Sobel = 0;
+    int64 temp = 0;
+
+    for (uint8 i = MT9V03X_H-1-20; i > 50 ; i--)
+    {
+        for (uint8 j = 40; j < MT9V03X_W-1-40; j++)
+        {
+            int64 Gx = 0, Gy = 0;
+            Gx = (-1*BinaryImage(i-1, j-1) + BinaryImage(i-1, j+1) - 2*BinaryImage(i, j-1)
+                  + 2*BinaryImage(i, j+1) - BinaryImage(i+1, j-1) + BinaryImage(i+1, j+1));
+            Gy = (-1 * BinaryImage(i-1, j-1) - 2 * BinaryImage(i-1, j) - BinaryImage(i-1, j+1)
+                  + BinaryImage(i+1, j+1) + 2 * BinaryImage(i+1, j) + BinaryImage(i+1, j+1));
+            temp += FastABS(Gx) + FastABS(Gy);
+            Sobel += temp / 255;
+            temp = 0;
+        }
+    }
+    return Sobel;
+}
+/********************************************************************************************
  ** 函数功能: 识别起跑线
- ** 参    数: *LeftLine：  左线数组
- **           *RightLine：右线数组
- **           InflectionL：左下拐点
- **           InflectionR：右下拐点
- ** 返 回 值: 0：没有识别到起跑线
+ ** 参    数: char Direction: 选择检测左边车库还是检测右边车库L或者R
+ **           Point InflectionL：左下拐点
+ **           Point InflectionR：右下拐点
+ ** 返 回 值:  0：没有识别到起跑线
  **           1：识别到起跑线且车库在车右侧
  **           2：识别到起跑线且车库在车左侧
- ** 作    者: WBN
- ********************************************************************************************
- */
-uint8 GarageIdentify(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+ ** 作    者: LJF
+ *********************************************************************************************/
+uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
 {
-    //车库在小车右侧
-    if(InflectionR.X!=0&&InflectionR.Y!=0)  //右拐点存在（车库在右边）
+    int64 SobelResult=0;//索贝尔计算的结果
+    Point UpInflection;//上拐点的变量
+    UpInflection.X=0,UpInflection.Y=0;//初始化为0
+    lcd_showint32(0, 0, LostNum_LeftLine, 3);
+    lcd_showint32(0, 1, LostNum_RightLine, 3);
+//    lcd_showint32(0, 2, InflectionL.X, 3);
+    switch(Direction)
     {
-        float bias_left=Regression_Slope(119,20,LeftLine);   //求出左边界线斜率
-        if(fabsf(bias_left)<G_LINEBIAS)    //左边界为直道
-        {
-            int row=InflectionR.Y;  //固定列扫描的行数
-            for(int column=InflectionR.X;row-1>0;row--) //从下拐点开始往上扫
+        case 'L':
+            //左边丢线、右边丢线（上面那个转弯的地方）只有一小段，进入索贝尔计算
+            if(LostNum_LeftLine>40 && LostNum_RightLine<20)
             {
-                if(BinaryImage[row][column]!=BinaryImage[row-1][column])    //找到上拐点Y坐标
+                SobelResult=SobelTest();//进行索贝尔计算
+//                lcd_showint32(0, 0, SobelResult, 4);
+                if(SobelResult>ZebraTresholeL)
                 {
-                    row=(row+InflectionR.Y)/2;  //取上下拐点中间的Y坐标固定行
-                    break;
+                    if(InflectionL.X==0)//如果左拐点不存在那么以右下点去补线
+                        InflectionL.Y=MT9V03X_H;
+                    //从下往上找到白跳到黑，确定上拐点的行数
+                    for(int row=InflectionL.Y;row-1>0;row--)
+                    {
+                        if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)
+                        {
+                            UpInflection.Y=row-1;//得到这个行数之后把行给上拐点
+                            break;//跳出循环
+                        }
+                    }
+                    //从左往右边找到黑跳到白，确定上拐点的列数
+                    for(int column=InflectionL.X;column<MT9V03X_W/2;column++)
+                    {
+                        if(BinaryImage[UpInflection.Y][column]==IMAGE_BLACK && BinaryImage[UpInflection.Y][column+1]==IMAGE_WHITE)
+                        {
+                            UpInflection.X=column+1;//得到这个列数之后把列给上拐点
+                            break;//跳出循环
+                        }
+                    }
+//                    lcd_showint32(0, 1, InflectionL.X, 3);
+//                    lcd_showint32(0, 2, InflectionL.Y, 3);
+//                    lcd_showint32(0, 3, UpInflection.X, 3);
+//                    lcd_showint32(0, 4, UpInflection.Y, 3);
+                    FillingLine('L', InflectionL, UpInflection);
+                    return 2;
                 }
             }
-            for(int column=InflectionR.X,zebra_num=0;column-1>0;column--)    //固定行，向左扫
+            break;
+        case 'R':
+            //这里如果为了防止跟三岔误判可以加上右边丢线大于40小于90左边丢线小于10即可
+            //右边丢线、左边不丢线、存在右拐点进入索贝尔计算
+            if(LostNum_RightLine>40 && LostNum_LeftLine<10)
             {
-                if(BinaryImage[row][column]!=BinaryImage[row][column-1])    //该点与下一个点不同颜色 //存在黑白跳变点
+                SobelResult=SobelTest();//进行索贝尔计算
+                lcd_showint32(0, 0, SobelResult, 4);
+                if(SobelResult>ZebraTresholeR)
                 {
-                    zebra_num++;    //斑马线标志+1
-                }
-                if(zebra_num>=G_ZEBRA_NUM)   //斑马线标志的数量达到阈值
-                {
-                    return 1;       //返回车库在右边
+                    /*方案一：右边打死入库，写个while循环把速度停掉打死入库*/
+                    /*方案二：补线进入很多个状态的判断*/
+                    InflectionL.X=LeftLine[MT9V03X_H-5];InflectionL.Y=MT9V03X_H-5;
+                    Bias=DifferentBias(InflectionL.Y,100,CentreLine)-15;//根据补线计算偏差
+                    systick_delay_ms(STM0,450);
+                    while(1)
+                    {
+                        speed_l=0;speed_r=0;
+                    }
+                    return 1;
                 }
             }
-        }
+            break;
+        default:break;
     }
     return 0;
 }
@@ -402,8 +468,8 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
  **           Point *InflectionL:左边拐点
  **           Point *InflectionR:右边拐点
  **           Point *InflectionC:中间拐点
- ** 返 回 值: 0：没有识别到环岛
- **           1：识别到三岔
+ ** 返 回 值:  0：没有识别到环岛
+ **           1：正入三岔
  ** 作    者: LJF
  ** 注    意：1 . 目前仅仅是正入三岔的时候的函数，因为三岔前面都会有个弯道所以会出现车身斜的情况，此时的左右拐点并不一定都存在
  **           2.这个是进三岔的函数，出三岔时候应该重写一个，并在进入三岔后再开启出三岔的判断
@@ -420,7 +486,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             {
                 FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
                 Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
-                return 1;//三个拐点存在三岔成立
+                return 1;//三个拐点存在三岔成立：正入三岔
             }
         }
         else
@@ -435,7 +501,31 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         {
             FillingLine('R',ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
             Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
-            return 1;//三个拐点存在三岔成立
+            return 1;//三岔正入丢失左右拐点那一帧
+        }
+    }
+    else if(LostNum_RightLine>60 && DownInflectionL.X!=0 && DownInflectionR.X==0 && LeftLine[DownInflectionL.X-5]!=0)
+    {
+        Point ImageDownPointR;//以左拐点对称的点去补线和找拐点
+        ImageDownPointR.X=MT9V03X_W-DownInflectionL.X,ImageDownPointR.Y=DownInflectionL.Y;
+        GetForkUpInflection(DownInflectionL, ImageDownPointR, &UpInflectionC);
+        if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
+        {
+            FillingLine('R',ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
+            Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
+            return 2;//三岔左斜入三岔
+        }
+    }
+    else if(LostNum_LeftLine>=60 && DownInflectionR.X!=0 && DownInflectionL.X==0 && RightLine[DownInflectionR.Y-5]!=MT9V03X_W-1)
+    {
+        Point ImageDownPointL;//以左拐点对称的点去补线和找拐点
+        ImageDownPointL.X=MT9V03X_W-DownInflectionR.X,ImageDownPointL.Y=DownInflectionR.Y;
+        GetForkUpInflection(ImageDownPointL, DownInflectionR, &UpInflectionC);
+        if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
+        {
+            FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
+            Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
+            return 3;//三岔右斜入三岔
         }
     }
     return 0;
@@ -535,34 +625,6 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
         return 3;//向左斜入十字
     }
     else return 0;
-}
-
-/********************************************************************************************
- ** 函数功能: Sobel算子检测起跑线
- ** 参    数: 无
- ** 返 回 值: Sobel阈值
- ** 作    者: 师兄
- *********************************************************************************************/
-int64 SobelTest()
-{
-    int64 Sobel = 0;
-    int64 temp = 0;
-
-    for (uint8 i = MT9V03X_H-1-20; i > 20 ; i--)
-    {
-        for (uint8 j = 20; j < MT9V03X_W-1-20; j++)
-        {
-            int64 Gx = 0, Gy = 0;
-            Gx = (-1*BinaryImage(i-1, j-1) + BinaryImage(i-1, j+1) - 2*BinaryImage(i, j-1)
-                  + 2*BinaryImage(i, j+1) - BinaryImage(i+1, j-1) + BinaryImage(i+1, j+1));
-            Gy = (-1 * BinaryImage(i-1, j-1) - 2 * BinaryImage(i-1, j) - BinaryImage(i-1, j+1)
-                  + BinaryImage(i+1, j+1) + 2 * BinaryImage(i+1, j) + BinaryImage(i+1, j+1));
-            temp += FastABS(Gx) + FastABS(Gy);
-            Sobel += temp / 255;
-            temp = 0;
-        }
-    }
-    return Sobel;
 }
 
 /*
@@ -926,7 +988,7 @@ uint8 CrossLoopBegin(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
 
 /*
  *******************************************************************************************
- ** 函数功能: 识别十字回环出口
+ ** 函数功能: 识别第一个十字回环出口
  ** 参    数: LeftLine：左线数组
  **           RightLine：右线数组
  **           InflectionL：左下拐点
@@ -936,7 +998,7 @@ uint8 CrossLoopBegin(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CrossLoopEnd(int *LeftLine,int *RightLine)
+uint8 CrossLoopEnd_F()
 {
     for(uint8 row=10;row+1<40;row++)  //向下扫
     {
@@ -944,6 +1006,60 @@ uint8 CrossLoopEnd(int *LeftLine,int *RightLine)
         {
             return 0;
         }
+    }
+    if(LostNum_LeftLine>110)    //防止还未出环的误判
+    {
+        return 0;
+    }
+    if(LostNum_LeftLine>L_LOSTNUM&&LostNum_RightLine>L_LOSTNUM)  //左右边界均丢线
+    {
+        if(fabsf(Bias)<1.5)
+        {
+            //舵机向右打死并加上一定的延时实现出弯
+            Bias=-10;
+            systick_delay_ms(STM0,300);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 识别第二个十字回环出口
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ **           InflectionL：左下拐点
+ **           InflectionR：右下拐点
+ ** 返 回 值: 0：没有识别到十字回环出口
+ **           1：识别到十字回环出口
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CrossLoopEnd_S()
+{
+    //防止三岔误判
+    uint8 row_1=0,flag=0;
+    for(uint8 row=65;row-1>0;row--)    //中间向上扫
+    {
+        if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
+        {
+            for(;row-1>0;row--) //继续向上扫
+            {
+                if(BinaryImage[row][MT9V03X_W/2]==IMAGE_BLACK&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_WHITE)
+                {
+                    if(row_1-row<10)    //约束两个黑白跳变点之间的距离
+                    {
+                        flag=1;
+                    }
+                }
+            }
+            break;  //这里的break可以滤去远处的干扰
+        }
+    }
+    if(flag==0)
+    {
+        return 0;
     }
     if(LostNum_LeftLine>110)    //防止还未出环的误判
     {
