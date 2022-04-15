@@ -899,3 +899,65 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
     }
     return 0;
 }
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 识别十字回环出口
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ **           InflectionL：左下拐点
+ **           InflectionR：右下拐点
+ ** 返 回 值: 0：没有识别到十字回环出口
+ **           1：识别到十字回环出口
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CrossLoopBegin(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+{
+    if(LostNum_LeftLine>110)    //防止还未出环岛的误判
+    {
+        return 0;
+    }
+    if(LostNum_LeftLine>L_LOSTNUM&&LostNum_RightLine>L_LOSTNUM)  //左右边界均丢线
+    {
+        if(fabsf(Bias)<1.5)
+        {
+            //舵机向右打死并加上一定的延时实现出弯
+            Bias=-10;
+            systick_delay_ms(STM0,300);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 识别十字回环出口
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ **           InflectionL：左下拐点
+ **           InflectionR：右下拐点
+ ** 返 回 值: 0：没有识别到十字回环出口
+ **           1：识别到十字回环出口
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CrossLoopEnd(int *LeftLine,int *RightLine)
+{
+    if(LostNum_LeftLine>110)    //防止还未出环岛的误判
+    {
+        return 0;
+    }
+    if(LostNum_LeftLine>L_LOSTNUM&&LostNum_RightLine>L_LOSTNUM)  //左右边界均丢线
+    {
+        if(fabsf(Bias)<1.5)
+        {
+            //舵机向右打死并加上一定的延时实现出弯
+            Bias=-10;
+            systick_delay_ms(STM0,300);
+            return 1;
+        }
+    }
+    return 0;
+}
