@@ -22,6 +22,7 @@ uint8 CircleIsland_flag=0;      //环岛标志变量
 void ImageProcess()
 {
     /***************************变量定义****************************/
+    static uint8 flag;
     Point LeftDownPoint,RightDownPoint;     //左右下拐点
     LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;
     Point ForkUpPoint;
@@ -33,9 +34,49 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-    CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint); //环岛
 //    CrossLoopEnd(LeftLine, RightLine);
-//    CircleIslandEnd_R();
+    /****************************状态机***************************/
+    switch(flag)
+    {
+        case 0: //识别左环岛
+        {
+            gpio_set(P21_4, 0);
+            gpio_set(P21_5, 1);
+            gpio_set(P20_9, 1);
+            if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
+            {
+                flag=1; //跳转到状态1
+            }
+            break;
+        }
+        case 1: //识别十字回环出口
+        {
+            gpio_set(P21_4, 1);
+            gpio_set(P21_5, 0);
+            gpio_set(P20_9, 1);
+            if(CrossLoopEnd(LeftLine, RightLine)==1)
+            {
+                flag=2; //跳转到状态2
+            }
+            break;
+        }
+        case 2: //识别右环岛
+        {
+            gpio_set(P21_4, 1);
+            gpio_set(P21_5, 1);
+            gpio_set(P20_9, 0);
+            if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
+            {
+                flag=3; //跳转到状态3
+            }
+            break;
+        }
+        case 3: //识别左车库，三岔等
+        {
+
+            break;
+        }
+    }
     /***************************偏差计算**************************/
     Bias=DifferentBias(100,60,CentreLine);//无特殊处理时的偏差计算
 }

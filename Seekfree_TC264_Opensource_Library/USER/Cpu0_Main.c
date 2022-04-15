@@ -66,7 +66,7 @@ int core0_main(void)
 	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
 	/**********************PID初始化***********************************************/
 	PID_init(&SteerK,&MotorK);          //初始化PID参数
-	MotorSetTarget(100,100);            //初始化速度环目标值
+	MotorSetTarget(90,90);            //初始化速度环目标值
 	/********************定时器中断初始化****************************/
 	pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化定时器中断
 	/****************************************************************/
@@ -77,34 +77,7 @@ int core0_main(void)
 
 	while (TRUE)
 	{
-//	    printf("%d  %d  %d\r\n",Fork_flag,CrossRoads_flag,CircleIsland_flag);   //打印flag
-//	    switch(KeyScan())       //按键处理
-//	    {
-//	        case 1: //按键S1
-//	        {
-//	            gpio_toggle(P21_4);
-//	            break;
-//	        }
-//	        case 2: //按键S2
-//	        {
-//	            gpio_toggle(P21_5);
-//	            break;
-//	        }
-//	        case 3: //按键S3
-//	        {
-//	            break;
-//	        }
-//	        case 4: //按键S4
-//            {
-//                break;
-//            }
-//            case 5: //按键S5
-//            {
-//                break;
-//            }
-//            default:break;
-//	    }
-//	    receiving_process();    //接收野火上位机下发的数据
+
 	}
 }
 
