@@ -635,6 +635,10 @@ uint8 CircleIslandEnd_R()
     {
         return 0;
     }
+    if(BinaryImage[115][155]==IMAGE_BLACK)  //防止刚进环岛的误判
+    {
+        return 0;
+    }
     if(LostNum_LeftLine>C_LOSTNUM&&LostNum_RightLine>C_LOSTNUM)  //左右边界均丢线
     {
         if(fabsf(Bias)<1.5)

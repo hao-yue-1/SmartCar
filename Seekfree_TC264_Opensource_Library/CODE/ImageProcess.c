@@ -33,8 +33,9 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-//    CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint); //环岛
-    CrossLoopEnd(LeftLine, RightLine);
+    CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint); //环岛
+//    CrossLoopEnd(LeftLine, RightLine);
+//    CircleIslandEnd_R();
     /***************************偏差计算**************************/
     Bias=DifferentBias(100,60,CentreLine);//无特殊处理时的偏差计算
 }
