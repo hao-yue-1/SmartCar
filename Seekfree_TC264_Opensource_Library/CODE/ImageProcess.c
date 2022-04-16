@@ -34,30 +34,32 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-    if(SobelLCount<SobelLTestStop)
-    {
-        Garage_flag=GarageIdentify('L', LeftDownPoint, RightDownPoint);//识别车库
-        if(Garage_flag==0)//如果没识别到车库，再继续识别三岔，怕误判,补救
-        {
-            Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-        }
-    }
-    else
-    {
-        gpio_toggle(P21_4);
-        Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-    }
-    lcd_showuint8(0, 0, Fork_flag);
-    if(Fork_flag!=0 || Garage_flag!=0)  //在识别函数里面已经计算了Bias
-    {
-        Garage_flag=0;Fork_flag=0;
-        gpio_toggle(P21_5);
-        return;
-    }
-    else
-    {
-        Bias=DifferentBias(100,60,CentreLine);//无特殊处理时的偏差计算
-    }
+//    CrossLoopEnd_S();
+    CrossLoopBegin_F(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    if(SobelLCount<SobelLTestStop)
+//    {
+//        Garage_flag=GarageIdentify('L', LeftDownPoint, RightDownPoint);//识别车库
+//        if(Garage_flag==0)//如果没识别到车库，再继续识别三岔，怕误判,补救
+//        {
+//            Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//        }
+//    }
+//    else
+//    {
+//        gpio_toggle(P21_4);
+//        Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    }
+//    lcd_showuint8(0, 0, Fork_flag);
+//    if(Fork_flag!=0 || Garage_flag!=0)  //在识别函数里面已经计算了Bias
+//    {
+//        Garage_flag=0;Fork_flag=0;
+//        gpio_toggle(P21_5);
+//        return;
+//    }
+//    else
+//    {
+//        Bias=DifferentBias(100,60,CentreLine);//无特殊处理时的偏差计算
+//    }
     /****************************状态机***************************/
 //    switch(flag)
 //    {
@@ -118,7 +120,7 @@ void ImageProcess()
 //        }
 //    }
     /***************************偏差计算**************************/
-//    Bias=DifferentBias(100,60,CentreLine);//无特殊处理时的偏差计算
+    Bias=DifferentBias(100,60,CentreLine);//无特殊处理时的偏差计算
 //    lcd_showfloat(0, 0, Bias, 2, 2);
 }
 

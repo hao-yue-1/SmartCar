@@ -44,6 +44,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
 /*十字相关函数*/
 void GetCrossRoadsUpInflection(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR,Point *UpInflectionL,Point *UpInflectionR);//搜寻出十字的上拐点
 uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR);//十字识别函数
-uint8 CrossLoopEnd_F();
-uint8 CrossLoopEnd_S();
+uint8 CrossLoopEnd_F(void);
+uint8 CrossLoopEnd_S(void);
+uint8 CrossLoopBegin_F(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
 #endif /* CODE_IMAGESPECIAL_H_ */

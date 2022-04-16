@@ -53,9 +53,9 @@ void core1_main(void)
             //把三线画出来
             for(int i=MT9V03X_H-1;i>0;i--)
             {
-//                lcd_drawpoint(LeftLine[i],i,GREEN);
+                lcd_drawpoint(LeftLine[i],i,GREEN);
                 lcd_drawpoint(CentreLine[i],i,RED);
-//                lcd_drawpoint(RightLine[i],i,BLUE);
+                lcd_drawpoint(RightLine[i],i,BLUE);
             }
 //            lcd_showfloat(0, 0, Bias, 2, 3);
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像

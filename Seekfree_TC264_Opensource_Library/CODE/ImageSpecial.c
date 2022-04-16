@@ -1054,16 +1054,13 @@ uint8 CrossLoopBegin(int *LeftLine,int *RightLine,Point InflectionL,Point Inflec
 /*
  *******************************************************************************************
  ** 函数功能: 识别第一个十字回环出口
- ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
- **           InflectionL：左下拐点
- **           InflectionR：右下拐点
+ ** 参    数: 无
  ** 返 回 值: 0：没有识别到十字回环出口
  **           1：识别到十字回环出口
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CrossLoopEnd_F()
+uint8 CrossLoopEnd_F(void)
 {
     for(uint8 row=10;row+1<40;row++)  //向下扫
     {
@@ -1092,18 +1089,15 @@ uint8 CrossLoopEnd_F()
 /*
  *******************************************************************************************
  ** 函数功能: 识别第二个十字回环出口
- ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
- **           InflectionL：左下拐点
- **           InflectionR：右下拐点
+ ** 参    数: 无
  ** 返 回 值: 0：没有识别到十字回环出口
  **           1：识别到十字回环出口
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CrossLoopEnd_S()
+uint8 CrossLoopEnd_S(void)
 {
-    //防止三岔误判
+    //防止三岔误判，这个条件的成立是建立在十字回环用路肩挡起来
     uint8 row_1=0,flag=0;
     for(uint8 row=65;row-1>0;row--)    //中间向上扫
     {
@@ -1138,6 +1132,93 @@ uint8 CrossLoopEnd_S()
             Bias=-10;
             systick_delay_ms(STM0,300);
             return 1;
+        }
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 识别第一个十字回环入口
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ **           InflectionL：左下拐点
+ **           InflectionR：右下拐点
+ ** 返 回 值: 0：没有识别到十字回环出口
+ **           1：识别到十字回环出口
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CrossLoopBegin_F(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+{
+    if(InflectionL.X!=0&&InflectionL.Y!=0)    //存在左拐点
+    {
+        uint8 row_up=0;
+        for(uint8 row=InflectionL.Y+2,column=InflectionL.X-2;row-1>0;row--)  //左拐点往上扫
+        {
+            if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)  //黑-白
+            {
+                for(;row-1>0;row--)   //继续向上扫
+                {
+                    if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+                    {
+                        row_up=row; //保存补线的终点Y坐标
+                        for(;row-1>0;row--)   //继续向上扫
+                        {
+                            if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)  //黑-白
+                            {
+                                for(;row-1;row--)   //继续向上扫
+                                {
+                                    if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+                                    {
+                                        for(row_up-=5;column<MT9V03X_W;column++)
+                                        {
+                                            if(BinaryImage[row_up][column]==IMAGE_WHITE)
+                                            {
+                                                Point end;
+                                                end.Y=row_up;
+                                                end.X=column;
+                                                FillingLine('L', InflectionL, end); //补线
+                                                return 1;
+                                            }
+                                        }
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    if(LostNum_LeftLine>70&&LostNum_RightLine<35)   //无拐点但左右丢线符合
+    {
+        float right_bias=0;
+        right_bias=Regression_Slope(110, 50, RightLine);    //求右边线斜率
+        if(fabsf(right_bias)>0.5)   //防止进环后的误判
+        {
+            return 0;
+        }
+        for(uint8 row=100;row-1>0;row--)    //向上扫
+        {
+            if(LeftLine[row]==0&&LeftLine[row-1]!=0)
+            {
+                if(row-5>0)
+                {
+                    row-=5;
+                }
+                Point start,end;
+                start.Y=119;
+                start.X=LeftLine[row];
+                end.Y=row;
+                end.X=LeftLine[row]+1;  //不能补垂直的线，稍作偏移
+                FillingLine('L', start, end);   //补线
+                return 1;
+            }
         }
     }
     return 0;
