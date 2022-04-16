@@ -17,6 +17,13 @@ extern uint8 CrossRoads_flag;        //十字标志变量
 extern uint8 Fork_flag;              //三岔识别的标志变量
 extern uint8 CircleIsland_flag;      //环岛标志变量
 
+//主控板LED颜色定义
+#define LED_WHITE    P23_1
+#define LED_GREEN    P22_1
+#define LED_BLUE     P22_2
+#define LED_RED      P22_3
+#define LED_YELLOW   P21_2
+
 void ImageProcess(void);//图像处理逻辑函数
 
 #endif /* CODE_IMAGEPROCESS_H_ */

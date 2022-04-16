@@ -29,6 +29,8 @@
 #include "ImageTack.h"
 #include "zf_gpio.h"
 
+#define KP 0.05  //差速转向KP
+
 //PIT中断函数  示例
 IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 {
@@ -39,6 +41,9 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	StreePWM=Steer_Position_PID(Bias,SteerK);
 	SteerCtrl(StreePWM);
 	//电机PID控制
+	speed_l=BASE_SPEED-KP*(StreePWM-STEER_MID); //(StreePWM-STEER_MID)max=85
+	speed_r=BASE_SPEED+KP*(StreePWM-STEER_MID);
+	MotorSetTarget(speed_l, speed_r);
 	MotorCtrl(speed_l,speed_r);
 	//野火上位机调试
 //	int Bias_UART=Bias*100;

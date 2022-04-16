@@ -52,6 +52,11 @@ int core0_main(void)
     gpio_init(P33_12, GPI, 0, PULLDOWN);
     gpio_init(P33_13, GPI, 0, PULLDOWN);
     gpio_init(P32_4, GPI, 0, PULLDOWN);
+    gpio_init(P23_1, GPO, 1, PUSHPULL);     //初始化主控板的LED
+    gpio_init(P22_1, GPO, 1, PUSHPULL);
+    gpio_init(P22_2, GPO, 1, PUSHPULL);
+    gpio_init(P22_3, GPO, 1, PUSHPULL);
+    gpio_init(P21_2, GPO, 1, PUSHPULL);
     /**************************传感器模块初始化**********************/
 	mt9v03x_init();     //初始化摄像头
 	/***************************驱动模块初始化***********************/
@@ -66,7 +71,7 @@ int core0_main(void)
 	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
 	/**********************PID初始化***********************************************/
 	PID_init(&SteerK,&MotorK);          //初始化PID参数
-	MotorSetTarget(100,100);            //初始化速度环目标值
+	MotorSetTarget(BASE_SPEED,BASE_SPEED);            //初始化速度环目标值
 	/********************定时器中断初始化****************************/
 	pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化定时器中断
 	/****************************************************************/
@@ -77,7 +82,16 @@ int core0_main(void)
 
 	while (TRUE)
 	{
-
+//	    gpio_toggle(LED_WHITE);
+//	    systick_delay_ms(STM0,500);
+//	    gpio_toggle(LED_GREEN);
+//	    systick_delay_ms(STM0,500);
+//	    gpio_toggle(LED_BLUE);
+//	    systick_delay_ms(STM0,500);
+//	    gpio_toggle(LED_RED);
+//	    systick_delay_ms(STM0,500);
+//	    gpio_toggle(LED_YELLOW);
+//	    systick_delay_ms(STM0,500);
 	}
 }
 

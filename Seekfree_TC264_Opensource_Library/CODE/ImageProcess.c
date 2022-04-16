@@ -39,24 +39,30 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
+            gpio_set(LED_WHITE, 0);
             if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
             {
+                gpio_set(LED_WHITE, 1);
                 flag=1; //跳转到状态1
             }
             break;
         }
         case 1: //识别第一个十字回环出口
         {
+            gpio_set(LED_GREEN, 0);
             if(CrossLoopEnd_F()==1)
             {
+                gpio_set(LED_GREEN, 1);
                 flag=2; //跳转到状态2
             }
             break;
         }
         case 2: //识别右环岛
         {
+            gpio_set(LED_BLUE, 0);
             if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
             {
+                gpio_set(LED_BLUE, 1);
                 flag=3; //跳转到状态3
             }
             break;
@@ -73,7 +79,6 @@ void ImageProcess()
         }
         case 5://识别三岔和右车库
         {
-            gpio_set(P21_4, 1);
             if(LostNum_RightLine>40 && LostNum_RightLine<90 && LostNum_LeftLine<10 && LostNum_LeftLine>0)
             {
                 Garage_flag=GarageIdentify('R', LeftDownPoint, RightDownPoint);//识别车库
@@ -90,6 +95,6 @@ void ImageProcess()
     }
     /***************************偏差计算**************************/
     Bias=DifferentBias(100,60,CentreLine);//无特殊处理时的偏差计算
-    lcd_showfloat(0, 0, Bias, 2, 2);
+//    lcd_showfloat(0, 0, Bias, 2, 2);
 }
 
