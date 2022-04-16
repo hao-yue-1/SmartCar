@@ -36,6 +36,8 @@
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
+int16 base_speed=90;        //基础速度
+
 int core0_main(void)
 {
 	get_clk();//获取时钟频率  务必保留
@@ -71,7 +73,7 @@ int core0_main(void)
 	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
 	/**********************PID初始化***********************************************/
 	PID_init(&SteerK,&MotorK);          //初始化PID参数
-	MotorSetTarget(BASE_SPEED,BASE_SPEED);            //初始化速度环目标值
+	MotorSetTarget(base_speed,base_speed);            //初始化速度环目标值
 	/********************定时器中断初始化****************************/
 	pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化定时器中断
 	/****************************************************************/

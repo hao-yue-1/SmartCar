@@ -15,6 +15,7 @@
 #include <stdlib.h>             //abs函数，fabs在math.h
 #include "SEEKFREE_MT9V03X.h"
 #include "Motor.h"              //停止电机
+#include "PID.h"
 
 //索贝尔计算超过阈值的次数当大于某个值就不再进行sobel测试
 uint8 SobelLCount=0;             //左边索贝尔
@@ -179,7 +180,9 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
                     systick_delay_ms(STM0,450);
                     while(1)
                     {
-                        speed_l=0;speed_r=0;
+                        diff_speed_kp=0;
+                        base_speed=0;
+                        MotorSetTarget(0, 0);
                     }
                     return 1;
                 }

@@ -140,21 +140,21 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
 void MotorSetTarget(int16 target_l,int16 target_r)
 {
     //速度限幅
-    if(target_l>BASE_SPEED+10)
+    if(target_l>base_speed+10)
     {
-        target_l=BASE_SPEED+10;
+        target_l=base_speed+10;
     }
-    else if(target_l<BASE_SPEED-10)
+    else if(target_l<base_speed-10)
     {
-        target_l=BASE_SPEED-10;
+        target_l=base_speed-10;
     }
-    if(target_r>BASE_SPEED+10)
+    if(target_r>base_speed+10)
     {
-        target_r=BASE_SPEED+10;
+        target_r=base_speed+10;
     }
-    else if(target_r<BASE_SPEED-10)
+    else if(target_r<base_speed-10)
     {
-        target_r=BASE_SPEED-10;
+        target_r=base_speed-10;
     }
     //速度赋值
     speed_l=target_l;

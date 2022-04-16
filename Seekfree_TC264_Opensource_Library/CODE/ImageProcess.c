@@ -41,6 +41,7 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
+            flag=4; //调试用，跳转到状态4
             gpio_set(LED_WHITE, 0);
             if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
             {

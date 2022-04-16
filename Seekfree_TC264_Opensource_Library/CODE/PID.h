@@ -27,6 +27,8 @@ typedef struct MotorPID
 
 extern SteerPID SteerK;     //舵机的全局变量
 extern MotorPID MotorK;     //电机的全局变量
+extern int16 base_speed;    //基础速度的全局变量
+extern float diff_speed_kp; //差速的全局变量
 
 //这里还要写个PID初始化的函数调参在这里进行
 void PID_init(SteerPID *SteerK,MotorPID *MotorK);                         //两个PID参数的赋值初始化
