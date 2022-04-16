@@ -24,7 +24,7 @@
 #define LEFT_ENCODER    GPT12_T2
 #define RIGHT_ENCODER   GPT12_T6
 //定义基础速度
-#define BASE_SPEED      105
+#define BASE_SPEED      90
 
 extern int16 speed_l,speed_r;       //左右电机速度目标值的全局变量
 
