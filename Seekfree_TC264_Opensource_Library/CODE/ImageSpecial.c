@@ -1085,37 +1085,6 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
 
 /*
  *******************************************************************************************
- ** 函数功能: 识别十字回环出口
- ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
- **           InflectionL：左下拐点
- **           InflectionR：右下拐点
- ** 返 回 值: 0：没有识别到十字回环出口
- **           1：识别到十字回环出口
- ** 作    者: WBN
- ********************************************************************************************
- */
-uint8 CrossLoopBegin(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
-{
-    if(LostNum_LeftLine>110)    //防止还未出环岛的误判
-    {
-        return 0;
-    }
-    if(LostNum_LeftLine>L_LOSTNUM&&LostNum_RightLine>L_LOSTNUM)  //左右边界均丢线
-    {
-        if(fabsf(Bias)<1.5)
-        {
-            //舵机向右打死并加上一定的延时实现出弯
-            Bias=-10;
-            systick_delay_ms(STM0,300);
-            return 1;
-        }
-    }
-    return 0;
-}
-
-/*
- *******************************************************************************************
  ** 函数功能: 识别第一个十字回环出口
  ** 参    数: 无
  ** 返 回 值: 0：没有识别到十字回环出口
@@ -1261,26 +1230,48 @@ uint8 CrossLoopBegin_F(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
     if(LostNum_LeftLine>70&&LostNum_RightLine<35)   //无拐点但左右丢线符合
     {
         float right_bias=0;
-        right_bias=Regression_Slope(110, 50, RightLine);    //求右边线斜率
-        if(fabsf(right_bias)>0.5)   //防止进环后的误判
+        right_bias=Regression_Slope(110, 60, RightLine);    //求右边线斜率
+        if(fabsf(right_bias)>0.6)   //防止进环后的误判
         {
             return 0;
         }
-        for(uint8 row=100;row-1>0;row--)    //向上扫
+        for(uint8 row=0;row<MT9V03X_H-1;row++)  //向下扫
         {
-            if(LeftLine[row]==0&&LeftLine[row-1]!=0)
+            if(BinaryImage[row][20]==IMAGE_BLACK&&BinaryImage[row+1][20]==IMAGE_WHITE)  //黑-白
             {
-                if(row-5>0)
+                for(;row<MT9V03X_H-1;row++) //继续向下扫
                 {
-                    row-=5;
+                    if(BinaryImage[row][20]==IMAGE_WHITE&&BinaryImage[row+1][20]==IMAGE_BLACK)  //白-黑
+                    {
+                        for(;row<MT9V03X_H-1;row++) //继续向下扫
+                        {
+                            if(BinaryImage[row][20]==IMAGE_BLACK&&BinaryImage[row+1][20]==IMAGE_WHITE)  //黑-白
+                            {
+                                //寻找补线点
+                                for(uint8 row=100;row-1>0;row--)    //向上扫
+                                {
+                                    if(LeftLine[row]==0&&LeftLine[row-1]!=0)
+                                    {
+                                        if(row-5>0)
+                                        {
+                                            row-=5;
+                                        }
+                                        Point start,end;
+                                        start.Y=119;
+                                        start.X=LeftLine[row];
+                                        end.Y=row;
+                                        end.X=LeftLine[row]+1;  //不能补垂直的线，稍作偏移
+                                        FillingLine('L', start, end);   //补线
+                                        return 1;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        break;
+                    }
                 }
-                Point start,end;
-                start.Y=119;
-                start.X=LeftLine[row];
-                end.Y=row;
-                end.X=LeftLine[row]+1;  //不能补垂直的线，稍作偏移
-                FillingLine('L', start, end);   //补线
-                return 1;
+                break;
             }
         }
     }
