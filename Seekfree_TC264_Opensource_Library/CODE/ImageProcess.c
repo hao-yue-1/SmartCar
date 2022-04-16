@@ -90,5 +90,6 @@ void ImageProcess()
     }
     /***************************偏差计算**************************/
     Bias=DifferentBias(100,60,CentreLine);//无特殊处理时的偏差计算
+    lcd_showfloat(0, 0, Bias, 2, 2);
 }
 

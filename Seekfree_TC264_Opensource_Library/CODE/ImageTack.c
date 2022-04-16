@@ -135,11 +135,15 @@ float DifferentBias(int startline,int endline,int *CentreLine)
             rownum++;
         }
     }
-
     bias=bias/rownum/10;   //求偏差均值
+
     if(bias<0.5&&bias>-0.5) //分段加权
     {
         bias=bias*0.1;
+    }
+    if(bias<-3||bias>3)
+    {
+        bias=bias*1.5;
     }
 
     if(bias==bias)  //bias是真值
