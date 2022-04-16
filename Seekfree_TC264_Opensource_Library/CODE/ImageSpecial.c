@@ -596,6 +596,69 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
     return 0;
 }
 
+/********************************************************************************************
+ ** 函数功能: 三岔状态跳转判断函数
+ ** 参    数: Point InflectionL：左下拐点
+ **           Point InflectionR：右下拐点
+ ** 返 回 值:  0：三岔还未结束
+ **           1：三岔已结束
+ ** 作    者: LJF
+ *********************************************************************************************/
+uint8 ForkStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 ForkFlag)
+{
+    static uint8 LastFlag,StatusChange;//三岔识别函数的零食状态变量，用来看状态是否跳转
+    uint8 NowFlag=0;
+    NowFlag=ForkFlag;
+    switch(StatusChange)
+    {
+        case 0:
+        {
+            //从识别到三岔到识别不到进入三岔状态
+            if(LastFlag==1 && NowFlag==0)
+            {
+                StatusChange=1;
+            }
+            break;
+        }
+        case 1:
+        {
+            //两帧判断不到三岔，验证确实是进入到了三岔
+            if(LastFlag==0 && NowFlag==0)
+            {
+                StatusChange=2;
+            }
+            break;
+        }
+        case 2:
+        {
+            //从0到1说明识别到三岔出口
+            if(LastFlag==0 && NowFlag==1)
+            {
+                StatusChange=3;
+            }
+            break;
+        }
+        case 3:
+        {
+            //继续还是0说明三岔出来了
+            if(LastFlag==0 && NowFlag==0)
+            {
+                StatusChange=4;
+            }
+            break;
+        }
+
+    }
+    LastFlag=NowFlag;//保留上一次的状态
+    if(StatusChange==4)
+    {
+        StatusChange=0;//为了继续使用该函数，把静态局部变量继续赋为0
+        return 1;//三岔结束了
+    }
+    else
+        return 0;//三岔没结束
+}
+
 /*********************************************************************************
  ** 函数功能: 根据左右下拐点搜寻出十字路口的左右上拐点
  ** 参    数: Point InflectionL: 左边拐点
