@@ -439,10 +439,6 @@ uint8 CircleIsFlag_3_L(int *LeftLine,int *RightLine)
     return 0;
 }
 
-uint8 circle_island_flag=0;     //环岛判断条件标志变量    //由于环岛的判断不是一帧图片，所以需要全局变量以保留上一帧图片的信息
-uint8 circle_island_num_1=0;    //环岛判断条件的计数值    //防止距离过远的几帧图片联合形成误判
-uint8 circle_island_num_2=0;    //环岛判断条件的计数值    //防止连续复杂地形造成误判
-
 /*
  *******************************************************************************************
  ** 函数功能: 识别环岛
@@ -460,37 +456,38 @@ uint8 circle_island_num_2=0;    //环岛判断条件的计数值    //防止连续复杂地形造成
  */
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
+    static uint8 flag,num_1,num_2;
     //使用switch实现简单的状态机机制
-    switch(circle_island_flag)
+    switch(flag)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
             //在这里num_1的作用是确保在跳转到状态一的时候，识别到环岛中部且在此之前的10帧图片中有一帧识别到了环岛出口
             if(CircleIsFlag_1_L(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
             {
-                circle_island_num_1++;  //识别到环岛入口标记+1
-                circle_island_num_2=0;  //识别不到环岛入口标记=0，以保证else中对帧数的判断是连续的
-                if(circle_island_num_1>10)  //num_1限幅
+                num_1++;  //识别到环岛入口标记+1
+                num_2=0;  //识别不到环岛入口标记=0，以保证else中对帧数的判断是连续的
+                if(num_1>10)  //num_1限幅
                 {
-                    circle_island_num_1=10;
+                    num_1=10;
                 }
             }
             else    //没有识别到环岛出口
             {
-                circle_island_num_2++;  //识别不到环岛入口标记+1
-                if(circle_island_num_2>=8)  //连续超过8帧没有识别到环岛出口，重置之前识别到的环岛入口
+                num_2++;  //识别不到环岛入口标记+1
+                if(num_2>=8)  //连续超过8帧没有识别到环岛出口，重置之前识别到的环岛入口
                 {
-                    circle_island_num_1=0;
-                    circle_island_num_2=8;  //num_2限幅
+                    num_1=0;
+                    num_2=8;  //num_2限幅
                 }
             }
             if(CircleIsFlag_2_L(LeftLine, RightLine)==1)    //识别到环岛中部，进行状态转移
             {
-                if(circle_island_num_1>0)  //且之前判断到过环岛入口
+                if(num_1>0)  //且之前判断到过环岛入口
                 {
-                    circle_island_flag=1;   //跳转到下个状态
-                    circle_island_num_1=0;
-                    circle_island_num_2=0;
+                    flag=1;   //跳转到下个状态
+                    num_1=0;
+                    num_2=0;
                     return 1;
                 }
             }
@@ -498,25 +495,25 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
-            circle_island_num_1++;
-            if(circle_island_num_1>8) //通过帧数强行关联状态一
+            num_1++;
+            if(num_1>8) //通过帧数强行关联状态一
             {
-                circle_island_flag=0;
-                circle_island_num_1=0;
-                circle_island_num_2=0;
+                flag=0;
+                num_1=0;
+                num_2=0;
             }
             if(CircleIslandBegin_L(LeftLine, RightLine)==1)   //识别到环岛入口，进行补线
             {
-                circle_island_num_2++;
-                circle_island_num_1=0;  //识别到环岛重置num1
+                num_2++;
+                num_1=0;  //识别到环岛重置num1
             }
             if(CircleIsFlag_3_L(LeftLine, RightLine)==1)      //识别到已经进入环岛
             {
-                if(circle_island_num_2>0) //确保识别到环岛入口
+                if(num_2>0) //确保识别到环岛入口
                 {
-                    circle_island_flag=2;   //跳转到下个状态
-                    circle_island_num_1=0;
-                    circle_island_num_2=0;
+                    flag=2;   //跳转到下个状态
+                    num_1=0;
+                    num_2=0;
                     return 2;
                 }
             }
@@ -524,6 +521,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 2: //此时小车已经在环岛中，开始判断环岛出口
         {
+            diff_speed_kp=0.1;  //在环岛中加大差速
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
             while(CircleIslandEnd_L()==0)  //识别到环岛出口跳出循环
             {
@@ -536,9 +534,10 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                 }
             }
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
-            circle_island_flag=0;   //重置状态
-            circle_island_num_1=0;
-            circle_island_num_2=0;
+            diff_speed_kp=0.05;     //恢复默认差速
+            flag=0;   //重置状态
+            num_1=0;
+            num_2=0;
             return 9;
         }
     }
@@ -947,10 +946,6 @@ uint8 CircleIsFlag_3_R(int *LeftLine,int *RightLine)
     return 0;
 }
 
-//环岛在右边的标志变量
-uint8 circle_island_flag_r=0;     //环岛判断条件标志变量    //由于环岛的判断不是一帧图片，所以需要全局变量以保留上一帧图片的信息
-uint8 circle_island_num_1_r=0;    //环岛判断条件的计数值    //防止距离过远的几帧图片联合形成误判
-uint8 circle_island_num_2_r=0;    //环岛判断条件的计数值    //防止连续复杂地形造成误判
 /*
  *******************************************************************************************
  ** 函数功能: 识别环岛
@@ -970,37 +965,38 @@ uint8 circle_island_num_2_r=0;    //环岛判断条件的计数值    //防止连续复杂地形造
  */
 uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
+    static uint8 flag,num_1,num_2;
     //使用switch实现简单的状态机机制
-    switch(circle_island_flag_r)
+    switch(flag)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
             //在这里num_1的作用是确保在跳转到状态一的时候，识别到环岛中部且在此之前的10帧图片中有一帧识别到了环岛出口
             if(CircleIsFlag_1_R(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
             {
-                circle_island_num_1_r++;  //识别到环岛入口标记+1
-                circle_island_num_2_r=0;  //识别不到环岛入口标记=0，以保证else中对帧数的判断是连续的
-                if(circle_island_num_1_r>8)  //num_1限幅
+                num_1++;  //识别到环岛入口标记+1
+                num_2=0;  //识别不到环岛入口标记=0，以保证else中对帧数的判断是连续的
+                if(num_1>8)  //num_1限幅
                 {
-                    circle_island_num_1_r=8;
+                    num_1=8;
                 }
             }
             else    //没有识别到环岛出口
             {
-                circle_island_num_2_r++;  //识别不到环岛入口标记+1
-                if(circle_island_num_2_r>=20)  //90-20
+                num_2++;  //识别不到环岛入口标记+1
+                if(num_2>=20)  //90-20
                 {
-                    circle_island_num_1_r=0;
-                    circle_island_num_2_r=8;  //num_2限幅
+                    num_1=0;
+                    num_2=8;  //num_2限幅
                 }
             }
             if(CircleIsFlag_2_R(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别到环岛中部，进行状态转移
             {
-                if(circle_island_num_1_r>0)  //且之前判断到过环岛入口
+                if(num_1>0)  //且之前判断到过环岛入口
                 {
-                    circle_island_flag_r=1;   //跳转到下个状态
-                    circle_island_num_1_r=0;
-                    circle_island_num_2_r=0;
+                    flag=1;   //跳转到下个状态
+                    num_1=0;
+                    num_2=0;
                     return 1;
                 }
             }
@@ -1008,25 +1004,25 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
-            circle_island_num_1_r++;
-            if(circle_island_num_1_r>25) //通过帧数强行关联状态一
+            num_1++;
+            if(num_1>25) //通过帧数强行关联状态一
             {
-                circle_island_flag_r=0;
-                circle_island_num_1_r=0;
-                circle_island_num_2_r=0;
+                flag=0;
+                num_1=0;
+                num_2=0;
             }
             if(CircleIslandBegin_R(LeftLine, RightLine)==1)   //识别到环岛入口，进行补线
             {
-                circle_island_num_2_r++;
-                circle_island_num_1_r=0;  //识别到环岛重置num1
+                num_2++;
+                num_1=0;  //识别到环岛重置num1
             }
             if(CircleIsFlag_3_R(LeftLine, RightLine)==1)      //识别到已经进入环岛
             {
-                if(circle_island_num_2_r>0) //确保识别到环岛入口
+                if(num_2>0) //确保识别到环岛入口
                 {
-                    circle_island_flag_r=2;   //跳转到下个状态
-                    circle_island_num_1_r=0;
-                    circle_island_num_2_r=0;
+                    flag=2;   //跳转到下个状态
+                    num_1=0;
+                    num_2=0;
                     return 2;
                 }
             }
@@ -1046,9 +1042,9 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
                 }
             }
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
-            circle_island_flag_r=0;   //重置状态
-            circle_island_num_1_r=0;
-            circle_island_num_2_r=0;
+            flag=0;   //重置状态
+            num_1=0;
+            num_2=0;
             return 9;
         }
     }
@@ -1077,13 +1073,15 @@ uint8 CrossLoopEnd_F(void)
     {
         return 0;
     }
+//    lcd_showuint8(0, 1, LostNum_LeftLine);
     if(LostNum_LeftLine>L_LOSTNUM&&LostNum_RightLine>L_LOSTNUM)  //左右边界均丢线
     {
         if(fabsf(Bias)<1.5)
         {
             //舵机向右打死并加上一定的延时实现出弯
-            Bias=-10;
-            diff_speed_kp=0.1;
+            Bias=-15;
+            base_speed=90;
+            diff_speed_kp=0.2;
             systick_delay_ms(STM0,500);
             diff_speed_kp=0.05;
             return 1;
@@ -1405,6 +1403,6 @@ void OutGarage(void)
     //舵机向右打死并加上一定的延时实现出库
     Bias=-10;
     diff_speed_kp=0.1;
-    systick_delay_ms(STM0,500);
+    systick_delay_ms(STM0,300);
     diff_speed_kp=0.05;
 }

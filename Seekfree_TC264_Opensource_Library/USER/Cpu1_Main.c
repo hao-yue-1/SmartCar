@@ -28,6 +28,8 @@
 
 //将本语句与#pragma section all restore语句之间的全局变量都放在CPU1的RAM中
 
+uint8 outgarage_flag=0;     //出库的flag
+
 void core1_main(void)
 {
 	disableInterrupts();
@@ -43,20 +45,26 @@ void core1_main(void)
 
     while (TRUE)
     {
+        //完成出库
+        if(outgarage_flag==0)
+        {
+            OutGarage();
+            outgarage_flag=1;
+        }
         //图像处理模块
         if(mt9v03x_finish_flag)
         {
             ImageBinary();      //图像二值化
-            Bin_Image_Filter(); //图像去噪
+//            Bin_Image_Filter(); //图像去噪
             lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
             ImageProcess();     //图像处理、元素识别
             //把三线画出来
-            for(int i=MT9V03X_H-1;i>0;i--)
-            {
-                lcd_drawpoint(LeftLine[i],i,GREEN);
-                lcd_drawpoint(CentreLine[i],i,RED);
-                lcd_drawpoint(RightLine[i],i,BLUE);
-            }
+//            for(int i=MT9V03X_H-1;i>0;i--)
+//            {
+//                lcd_drawpoint(LeftLine[i],i,GREEN);
+//                lcd_drawpoint(CentreLine[i],i,RED);
+//                lcd_drawpoint(RightLine[i],i,BLUE);
+//            }
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
         }
         //调试

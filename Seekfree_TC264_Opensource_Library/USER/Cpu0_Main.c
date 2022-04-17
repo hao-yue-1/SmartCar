@@ -36,7 +36,7 @@
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
-int16 base_speed=95;        //基础速度
+int16 base_speed=100;        //基础速度
 
 int core0_main(void)
 {
@@ -76,8 +76,6 @@ int core0_main(void)
 	MotorSetTarget(base_speed,base_speed);            //初始化速度环目标值
 	/********************定时器中断初始化****************************/
 	pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化定时器中断
-	/************************出库***********************************/
-	OutGarage();
 
     //等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
@@ -86,16 +84,7 @@ int core0_main(void)
 
 	while (TRUE)
 	{
-//	    gpio_toggle(LED_WHITE);
-//	    systick_delay_ms(STM0,500);
-//	    gpio_toggle(LED_GREEN);
-//	    systick_delay_ms(STM0,500);
-//	    gpio_toggle(LED_BLUE);
-//	    systick_delay_ms(STM0,500);
-//	    gpio_toggle(LED_RED);
-//	    systick_delay_ms(STM0,500);
-//	    gpio_toggle(LED_YELLOW);
-//	    systick_delay_ms(STM0,500);
+
 	}
 }
 
