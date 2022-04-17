@@ -48,4 +48,5 @@ uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Poin
 uint8 CrossLoopEnd_F(void);
 uint8 CrossLoopEnd_S(void);
 uint8 CrossLoopBegin_F(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
 #endif /* CODE_IMAGESPECIAL_H_ */
