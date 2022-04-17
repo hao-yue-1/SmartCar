@@ -27,7 +27,7 @@ uint8 SobelRCount=0;             //右边索贝尔
  ** 返 回 值: Sobel阈值
  ** 作    者: 师兄
  *********************************************************************************************/
-int64 SobelTest()
+int64 SobelTest(void)
 {
     int64 Sobel = 0;
     int64 temp = 0;
@@ -595,7 +595,6 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         Point ImageDownPointL;//以左拐点对称的点去补线和找拐点
         ImageDownPointL.X=5,ImageDownPointL.Y=DownInflectionR.Y;
         GetForkUpInflection(ImageDownPointL, DownInflectionR, &UpInflectionC);
-        lcd_drawpoint(ImageDownPointL.X, ImageDownPointL.Y, BLUE);
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
             FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
@@ -667,102 +666,6 @@ uint8 ForkStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 ForkF
     }
     else
         return 0;//三岔没结束
-}
-
-/*********************************************************************************
- ** 函数功能: 根据左右下拐点搜寻出十字路口的左右上拐点
- ** 参    数: Point InflectionL: 左边拐点
- **           Point InflectionR: 右边拐点
- **           Point *UpInflectionC: 左边上拐点
- **           Point *UpInflectionC: 右边上拐点
- ** 返 回 值: 无
- ** 说    明: 此函数仅仅是正入十字时的一个操作函数，不是识别函数
- ** 作    者: LJF
- **********************************************************************************/
-void GetCrossRoadsUpInflection(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR,Point *UpInflectionL,Point *UpInflectionR)
-{
-    int row=0;//起始行
-    UpInflectionL->X=DownInflectionL.X+10;UpInflectionL->Y=0;//左上拐点置零
-    UpInflectionR->X=DownInflectionR.X-10;UpInflectionR->Y=0;//右上拐点置零
-
-    for(row=DownInflectionL.Y;row>0;row--)
-    {
-        //对图像数组进行检测
-        if(BinaryImage[row][UpInflectionL->X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionL->X]==IMAGE_BLACK)  //由白到黑跳变
-        {
-            //记录上拐点
-            UpInflectionL->Y=row-1;
-            break;//记录完之后就退出循环
-        }
-    }
-
-    for(row=DownInflectionR.Y;row>0;row--)
-    {
-        if(BinaryImage[row][UpInflectionR->X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionR->X]==IMAGE_BLACK)  //由白到黑跳变
-        {
-            //记录上拐点
-            UpInflectionR->Y=row-1;
-            break;//记录完之后就退出循环
-        }
-    }
-}
-
-/********************************************************************************************
- ** 函数功能: 识别十字路口
- ** 参    数: 左线数组：int *LeftLine
- **           右线数组：int *RightLine
- **           左下拐点：Point DownInflectionL
- **           右下拐点：Point DownInflectionR
- ** 返 回 值: 0：不是十字路口
- **           1：正入十字
- **           2：右斜入十字
- **           3：左斜入十字
- ** 作    者: LJF
- ** 注    意：无
- *********************************************************************************************/
-uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR)
-{
-    int row=0;//起始行
-    Point UpInflectionL,UpInflectionR;//左右上拐点
-    UpInflectionL.X=DownInflectionL.X+10;UpInflectionL.Y=0;//左上拐点置零
-    UpInflectionR.X=DownInflectionR.X-10;UpInflectionR.Y=0;//右上拐点置零
-    //左右两边大量丢线，并且左右下拐点都存在,并且中上是白点
-    if(LostNum_LeftLine>40 && LostNum_RightLine>40 && DownInflectionR.X!=0 && DownInflectionL.X!=0 && LeftLine[DownInflectionL.Y-5]==0 && RightLine[DownInflectionR.Y-5]==MT9V03X_W-1 && BinaryImage[50][MT9V03X_W/2]==IMAGE_WHITE)
-    {
-        GetCrossRoadsUpInflection(LeftLine, RightLine, DownInflectionL, DownInflectionR, &UpInflectionL, &UpInflectionR);
-        FillingLine('L', DownInflectionL, UpInflectionL);
-        FillingLine('R', DownInflectionR, UpInflectionR);
-        return 1;//正入十字
-    }
-    //左边丢线超过一半，并且右拐点上面一段对应的左边丢线，并且右拐点不能在最左边附近
-    else if(LostNum_LeftLine>70 && DownInflectionR.X!=0 && DownInflectionR.X>50 && LeftLine[DownInflectionR.Y-5]==0)
-    {
-//        for(row=DownInflectionR.Y;row>1;row--)//直接右下拐点往上冲找到上拐点
-//        {
-//            if(BinaryImage[row][UpInflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionR.X]==IMAGE_BLACK)  //由白到黑跳变
-//            {
-//                UpInflectionR.Y=row-1;//记录上拐点
-//                FillingLine('R', DownInflectionR, UpInflectionR);
-//                break;//记录完之后就退出循环
-//            }
-//        }
-        return 2;//向右斜入十字
-    }
-    //右边丢线超过一半,并且左拐点上面一段对应的右边丢线,并且左拐点不能在最右边
-    else if(LostNum_RightLine>70 && DownInflectionL.X!=0 && DownInflectionL.X<MT9V03X_W-50)
-    {
-//        for(row=DownInflectionL.Y;row>1;row--)
-//        {
-//            if(BinaryImage[row][UpInflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionL.X]==IMAGE_BLACK)  //由白到黑跳变
-//            {
-//                UpInflectionL.Y=row-1;//记录上拐点
-//                FillingLine('L', DownInflectionL, UpInflectionL);
-//                break;//记录完之后就退出循环
-//            }
-//        }
-        return 3;//向左斜入十字
-    }
-    else return 0;
 }
 
 /*
@@ -1119,29 +1022,29 @@ uint8 CrossLoopEnd_F(void)
  */
 uint8 CrossLoopEnd_S(void)
 {
-//    //防止三岔误判，这个条件的成立是建立在十字回环用路肩挡起来
-//    uint8 row_1=0,flag=0;
-//    for(uint8 row=65;row-1>0;row--)    //中间向上扫
-//    {
-//        if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
-//        {
-//            for(;row-1>0;row--) //继续向上扫
-//            {
-//                if(BinaryImage[row][MT9V03X_W/2]==IMAGE_BLACK&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_WHITE)
-//                {
-//                    if(row_1-row<10)    //约束两个黑白跳变点之间的距离
-//                    {
-//                        flag=1;
-//                    }
-//                }
-//            }
-//            break;  //这里的break可以滤去远处的干扰
-//        }
-//    }
-//    if(flag==0)
-//    {
-//        return 0;
-//    }
+    //防止三岔误判，这个条件的成立是建立在十字回环用路肩挡起来
+    uint8 row_1=0,flag=0;
+    for(uint8 row=65;row-1>0;row--)    //中间向上扫
+    {
+        if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
+        {
+            for(;row-1>0;row--) //继续向上扫
+            {
+                if(BinaryImage[row][MT9V03X_W/2]==IMAGE_BLACK&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_WHITE)
+                {
+                    if(row_1-row<10)    //约束两个黑白跳变点之间的距离
+                    {
+                        flag=1;
+                    }
+                }
+            }
+            break;  //这里的break可以滤去远处的干扰
+        }
+    }
+    if(flag==0)
+    {
+        return 0;
+    }
     if(LostNum_LeftLine>110)    //防止还未出环的误判
     {
         return 0;
@@ -1379,17 +1282,19 @@ uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
     return 0;
 }
 
-uint8 test(void)
+/*
+ *******************************************************************************************
+ ** 函数功能: 完成出库（开环）
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+void OutGarage(void)
 {
-    for(uint8 i=100;i>20;i--)
-    {
-        lcd_drawpoint(20, i, RED);
-        lcd_drawpoint(140, i, RED);
-    }
-    for(uint8 i=20;i<140;i++)
-    {
-        lcd_drawpoint(i, 20, RED);
-        lcd_drawpoint(i, 100, RED);
-    }
-    return 0;
+    //舵机向右打死并加上一定的延时实现出库
+    Bias=-10;
+    diff_speed_kp=0.1;
+    systick_delay_ms(STM0,500);
+    diff_speed_kp=0.05;
 }

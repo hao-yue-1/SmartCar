@@ -76,7 +76,9 @@ int core0_main(void)
 	MotorSetTarget(base_speed,base_speed);            //初始化速度环目标值
 	/********************定时器中断初始化****************************/
 	pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化定时器中断
-	/****************************************************************/
+	/************************出库***********************************/
+	OutGarage();
+
     //等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);

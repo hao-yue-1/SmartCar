@@ -7,6 +7,7 @@
  */
 #include "ImageProcess.h"
 #include "zf_gpio.h"
+#include "PID.h"
 
 uint8 CrossRoads_flag=0;        //十字标志变量
 uint8 Fork_flag=0;              //三岔识别的标志变量
@@ -41,11 +42,12 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-            flag=3; //调试用，跳转到指定状态
+//            flag=2; //调试用，跳转到指定状态
             gpio_set(LED_WHITE, 0);
             if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
             {
                 gpio_set(LED_WHITE, 1);
+                base_speed=100; //提速上坡进入第一个十字回
                 flag=1; //跳转到状态1
             }
             break;
@@ -56,6 +58,7 @@ void ImageProcess()
             if(CrossLoopEnd_F()==1)
             {
                 gpio_set(LED_GREEN, 1);
+                base_speed=90;  //减速进行右环岛
                 flag=2; //跳转到状态2
             }
             else
@@ -70,6 +73,7 @@ void ImageProcess()
             if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
             {
                 gpio_set(LED_BLUE, 1);
+                base_speed=95;  //提速进入左车库
                 flag=3; //跳转到状态3
             }
             break;
@@ -87,7 +91,7 @@ void ImageProcess()
             else
             {
                 gpio_set(LED_RED, 1);
-                MotorSetTarget(90,90);//从左车库出来降速到90
+                base_speed=90;      //降速进入三岔
                 flag=4;
             }
             break;
@@ -99,6 +103,7 @@ void ImageProcess()
             if(ForkStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
             {
                 gpio_set(LED_YELLOW, 1);
+                base_speed=95;      //提速进入十字回环
                 flag=5; //三岔从车库这边进入不太稳定
             }
             break;
@@ -109,6 +114,7 @@ void ImageProcess()
             if(CrossLoopEnd_S()==1)
             {
                 gpio_set(P21_4, 1);
+                base_speed=95;  //提速进入三岔和入库
                 flag=6;
             }
             else
@@ -146,5 +152,4 @@ void ImageProcess()
     {
         Bias=DifferentBias(100,60,CentreLine);//无特殊处理时的偏差计算
     }
-    lcd_showuint8(3, 3, SobelLCount);
 }

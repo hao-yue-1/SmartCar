@@ -32,8 +32,9 @@ extern uint8 SobelLCount;             //左边索贝尔
 extern uint8 SobelRCount;             //右边索贝尔
 
 /*起跑线相关函数*/
-int64 SobelTest();      //Sobel算子检测起跑线
+int64 SobelTest(void);      //Sobel算子检测起跑线
 uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR);      //起跑线识别
+void OutGarage(void);
 /*环岛相关函数*/
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //左环岛状态机
 uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //右环岛状态机
@@ -43,8 +44,6 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
 uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR);//三岔识别
 uint8 ForkStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 ForkFlag);//三岔状态跳转判断函数
 /*十字相关函数*/
-void GetCrossRoadsUpInflection(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR,Point *UpInflectionL,Point *UpInflectionR);//搜寻出十字的上拐点
-uint8 CrossRoadsIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR);//十字识别函数
 uint8 CrossLoopEnd_F(void);
 uint8 CrossLoopEnd_S(void);
 uint8 CrossLoopBegin_F(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
