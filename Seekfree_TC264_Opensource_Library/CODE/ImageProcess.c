@@ -39,15 +39,8 @@ void ImageProcess()
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
 //    CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-    if(ForkStatusIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
-    {
-        //直接停车
-        diff_speed_kp=0;
-        base_speed=0;
-        MotorSetTarget(0, 0);
-    }
     /****************************状态机***************************/
-#if 0
+#if 1
     switch(flag)
     {
         case 0: //识别左环岛
@@ -57,7 +50,7 @@ void ImageProcess()
             if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
             {
                 gpio_set(LED_WHITE, 1);
-                base_speed=100; //提速上坡进入第一个十字回
+                base_speed=110; //提速上坡进入第一个十字回环
                 flag=1; //跳转到状态1
             }
             break;
@@ -83,14 +76,13 @@ void ImageProcess()
             if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
             {
                 gpio_set(LED_BLUE, 1);
-                base_speed=95;  //提速进入左车库
+                base_speed=100;  //提速进入左车库
                 flag=3; //跳转到状态3
             }
             break;
         }
         case 3: //识别左车库
         {
-            //测试得到速度能上105
             gpio_set(LED_RED, 0);
             if(LostNum_LeftLine>40 && LostNum_RightLine<30)
             {
@@ -99,20 +91,19 @@ void ImageProcess()
             if(GarageLStatusIdentify(LeftDownPoint, RightDownPoint,Garage_flag)==1)
             {
                 gpio_set(LED_RED, 1);
-                base_speed=90;//从左车库出来降速到90
-                flag=4;
+                base_speed=95;  //降速进入三岔
+                flag=4; //跳转到状态4
             }
             break;
         }
         case 4: //识别三岔
         {
             gpio_set(LED_YELLOW, 0);
-            Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-            if(ForkStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
+            if(ForkStatusIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_YELLOW, 1);
-                base_speed=95;      //提速进入十字回环
-                flag=5; //三岔从车库这边进入不太稳定
+                base_speed=100;
+                flag=5; //跳转到状态5
             }
             break;
         }
@@ -127,7 +118,7 @@ void ImageProcess()
             if(CrossLoopEnd_S()==1)
             {
                 gpio_set(P21_4, 1);
-                base_speed=110;  //提速进入三岔和入库
+                base_speed=105;  //提速进入三岔和入库
                 flag=6;
             }
             else

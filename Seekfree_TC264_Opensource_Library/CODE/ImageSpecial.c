@@ -465,7 +465,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
-            gpio_set(LED_WHITE, 0);
             //在这里num_1的作用是确保在跳转到状态一的时候，识别到环岛中部且在此之前的10帧图片中有一帧识别到了环岛出口
             if(CircleIsFlag_1_L(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
             {
@@ -499,8 +498,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
-            gpio_set(LED_WHITE, 1);
-            gpio_set(LED_GREEN, 0);
             circle_island_num_1++;
             if(circle_island_num_1>8) //通过帧数强行关联状态一
             {
@@ -527,8 +524,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 2: //此时小车已经在环岛中，开始判断环岛出口
         {
-            gpio_set(LED_GREEN, 1);
-            gpio_set(LED_BLUE, 0);
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
             while(CircleIslandEnd_L()==0)  //识别到环岛出口跳出循环
             {
@@ -544,7 +539,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
             circle_island_flag=0;   //重置状态
             circle_island_num_1=0;
             circle_island_num_2=0;
-            gpio_set(LED_BLUE, 1);
             return 9;
         }
     }
@@ -682,37 +676,30 @@ uint8 ForkStatusIdentify(int *LeftLine,int *RightLine, Point DownInflectionL,Poi
     {
         case 0:
         {
-            gpio_set(LED_WHITE, 0);
             if(LastFlag==0 && ForkFlag==1)  //无-有
             {
-                gpio_set(LED_WHITE, 1);
                 StatusChange=1;
             }
             break;
         }
         case 1:
         {
-            gpio_set(LED_GREEN, 0);
             if(LastFlag==1 && ForkFlag==1)  //有-有
             {
-                gpio_set(LED_GREEN, 1);
                 StatusChange=2;
             }
             break;
         }
         case 2:
         {
-            gpio_set(LED_BLUE, 0);
             if(LastFlag==1 && ForkFlag==0)  //有-无
             {
-                gpio_set(LED_BLUE, 1);
                 StatusChange=3;
             }
             break;
         }
         case 3:
         {
-            gpio_set(LED_RED, 0);
             if(num<20)  //连续20帧
             {
                 num++;
@@ -720,47 +707,38 @@ uint8 ForkStatusIdentify(int *LeftLine,int *RightLine, Point DownInflectionL,Poi
             }
             if(LastFlag==0 && ForkFlag==0)  //无-无
             {
-                gpio_set(LED_RED, 1);
                 StatusChange=4;
             }
             break;
         }
         case 4:
         {
-            gpio_set(LED_YELLOW, 0);
             if(LastFlag==0 && ForkFlag==1)  //无-有
             {
-                gpio_set(LED_YELLOW, 1);
                 StatusChange=5;
             }
             break;
         }
         case 5:
         {
-            gpio_set(P21_4, 0);
             if(LastFlag==1 && ForkFlag==1)  //有-有
             {
-                gpio_set(P21_4, 1);
                 StatusChange=6;
             }
             break;
         }
         case 6:
         {
-            gpio_set(P21_5, 0);
             if(LastFlag==1 && ForkFlag==0)  //有-无
             {
-                gpio_set(P21_5, 1);
                 StatusChange=7;
             }
             break;
         }
         case 7:
         {
-            gpio_set(P20_9, 0);
             if(LastFlag==0 && ForkFlag==0)  //无-无
             {
-                gpio_set(P20_9, 1);
                 StatusChange=7;
                 return 1;
             }
