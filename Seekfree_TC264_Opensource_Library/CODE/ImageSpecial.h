@@ -24,7 +24,7 @@
 #define BinaryImage(i, j)    BinaryImage[i][j]
 #define ZebraTresholeL 1500  //索贝尔测试的阈值
 #define ZebraTresholeR 2000  //索贝尔测试车库在右边的阈值
-#define SobelLTestStop 4     //索贝尔左边关闭的阈值
+#define SobelLTestStop 3     //索贝尔左边关闭的阈值
 //十字回环出口
 #define L_LOSTNUM   60
 

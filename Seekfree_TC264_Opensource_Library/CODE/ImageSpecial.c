@@ -957,7 +957,6 @@ uint8 CircleIsFlag_3_R(int *LeftLine,int *RightLine)
         //下面采用经验值随机抽样法
         if(BinaryImage[90][119]==IMAGE_WHITE&&BinaryImage[30][39]==IMAGE_BLACK)
         {
-            lcd_showuint8(0, 0, 0);
             return 1;
         }
     }
@@ -1100,7 +1099,9 @@ uint8 CrossLoopEnd_F(void)
         {
             //舵机向右打死并加上一定的延时实现出弯
             Bias=-10;
-            systick_delay_ms(STM0,300);
+            diff_speed_kp=0.1;
+            systick_delay_ms(STM0,500);
+            diff_speed_kp=0.05;
             return 1;
         }
     }
@@ -1118,29 +1119,29 @@ uint8 CrossLoopEnd_F(void)
  */
 uint8 CrossLoopEnd_S(void)
 {
-    //防止三岔误判，这个条件的成立是建立在十字回环用路肩挡起来
-    uint8 row_1=0,flag=0;
-    for(uint8 row=65;row-1>0;row--)    //中间向上扫
-    {
-        if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
-        {
-            for(;row-1>0;row--) //继续向上扫
-            {
-                if(BinaryImage[row][MT9V03X_W/2]==IMAGE_BLACK&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_WHITE)
-                {
-                    if(row_1-row<10)    //约束两个黑白跳变点之间的距离
-                    {
-                        flag=1;
-                    }
-                }
-            }
-            break;  //这里的break可以滤去远处的干扰
-        }
-    }
-    if(flag==0)
-    {
-        return 0;
-    }
+//    //防止三岔误判，这个条件的成立是建立在十字回环用路肩挡起来
+//    uint8 row_1=0,flag=0;
+//    for(uint8 row=65;row-1>0;row--)    //中间向上扫
+//    {
+//        if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
+//        {
+//            for(;row-1>0;row--) //继续向上扫
+//            {
+//                if(BinaryImage[row][MT9V03X_W/2]==IMAGE_BLACK&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_WHITE)
+//                {
+//                    if(row_1-row<10)    //约束两个黑白跳变点之间的距离
+//                    {
+//                        flag=1;
+//                    }
+//                }
+//            }
+//            break;  //这里的break可以滤去远处的干扰
+//        }
+//    }
+//    if(flag==0)
+//    {
+//        return 0;
+//    }
     if(LostNum_LeftLine>110)    //防止还未出环的误判
     {
         return 0;
@@ -1151,7 +1152,9 @@ uint8 CrossLoopEnd_S(void)
         {
             //舵机向右打死并加上一定的延时实现出弯
             Bias=-10;
-            systick_delay_ms(STM0,300);
+            diff_speed_kp=0.1;
+            systick_delay_ms(STM0,500);
+            diff_speed_kp=0.05;
             return 1;
         }
     }
@@ -1327,7 +1330,6 @@ uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
     }
     if(LostNum_LeftLine>70&&LostNum_RightLine<35)   //无拐点但左右丢线符合
     {
-        lcd_showuint8(0, 5, 5);
         float right_bias=0;
         right_bias=Regression_Slope(110, 60, RightLine);    //求右边线斜率
         if(fabsf(right_bias)>0.6)   //防止进环后的误判
@@ -1338,12 +1340,10 @@ uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
         {
             if(BinaryImage[row][20]==IMAGE_BLACK&&BinaryImage[row+1][20]==IMAGE_WHITE)  //黑-白
             {
-                lcd_showuint8(0, 6, 6);
                 for(;row<MT9V03X_H-1;row++) //继续向下扫
                 {
                     if(BinaryImage[row][20]==IMAGE_WHITE&&BinaryImage[row+1][20]==IMAGE_BLACK)  //白-黑
                     {
-                        lcd_showuint8(0, 7, 7);
                         for(;row<MT9V03X_H-1;row++) //继续向下扫
                         {
                             if(BinaryImage[row][20]==IMAGE_BLACK&&BinaryImage[row+1][20]==IMAGE_WHITE)  //黑-白
