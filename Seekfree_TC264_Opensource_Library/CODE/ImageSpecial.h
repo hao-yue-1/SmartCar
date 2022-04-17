@@ -34,6 +34,7 @@ extern uint8 SobelRCount;             //右边索贝尔
 /*起跑线相关函数*/
 int64 SobelTest(void);      //Sobel算子检测起跑线
 uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR);      //起跑线识别
+uint8 GarageLStatusIdentify(Point InflectionL,Point InflectionR,uint8 GarageLFlag);  //左车库的状态机转移
 void OutGarage(void);
 /*环岛相关函数*/
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //左环岛状态机

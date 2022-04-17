@@ -169,9 +169,9 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
                 Bias=Regression_Slope(InflectionL.Y, UpInflection.Y, LeftLine);
                 //对斜率求出来的偏差进行个缩放
                 if(Bias<=1)
-                    Bias=Bias*2.5;
+                    Bias=Bias*2.25;
                 else
-                    Bias=Bias*2;
+                    Bias=Bias*1.75;
                 return 2;
             }
             break;
@@ -200,6 +200,60 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
     }
     return 0;
 }
+/********************************************************************************************
+ ** 函数功能: 左车库的状态机转移
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ ** 返 回 值: 0：没有识别到环岛
+ **           1：识别到环岛且在车身左侧
+ ** 作    者: LJF
+ *********************************************************************************************/
+uint8 GarageLStatusIdentify(Point InflectionL,Point InflectionR,uint8 GarageLFlag)
+{
+    static uint8 LastFlag,StatusChange,Statusnums;//上一次识别的结果和状态变量
+    uint8 NowFlag=0;//这次的识别结果
+    NowFlag=GarageLFlag;
+    switch(StatusChange)
+    {
+        case 0:
+        {
+            //从没有识别到左车库到识别到左车库
+            if(LastFlag==0 && NowFlag==2)
+            {
+                StatusChange=1;
+            }
+            break;
+        }
+        case 1:
+        {
+            //从识别到左车库到识别不到左车库
+            if(LastFlag==2 && NowFlag==0)
+            {
+                StatusChange=2;
+            }
+            break;
+        }
+        case 2:
+        {
+            //从识别不到左车库到识别不到左车库
+            if(LastFlag==0 && NowFlag==0 && Statusnums>1)
+            {
+                StatusChange=3;
+            }
+            Statusnums++;//延迟一帧，防止误判
+            break;
+        }
+    }
+    LastFlag=NowFlag;
+    if(StatusChange==3)
+    {
+        StatusChange=0;
+        return 1;
+    }
+    else
+        return 0;
+}
+
 /*
  *******************************************************************************************
  ** 函数功能: 识别环岛入口，左侧

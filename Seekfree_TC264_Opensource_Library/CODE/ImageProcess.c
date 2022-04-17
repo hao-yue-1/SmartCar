@@ -42,7 +42,7 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-//            flag=2; //调试用，跳转到指定状态
+            flag=3; //调试用，跳转到指定状态
             gpio_set(LED_WHITE, 0);
             if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
             {
@@ -80,18 +80,16 @@ void ImageProcess()
         }
         case 3: //识别左车库
         {
+            //测试得到速度能上105
             gpio_set(LED_RED, 0);
-            if(SobelLCount<SobelLTestStop)//车库识别到两帧即结束，这里不知道稳不稳
+            if(LostNum_LeftLine>40 && LostNum_RightLine<30)
             {
-                if(LostNum_LeftLine>40 && LostNum_RightLine<30)
-                {
-                    Garage_flag=GarageIdentify('L', LeftDownPoint, RightDownPoint);//识别车库
-                }
+                Garage_flag=GarageIdentify('L', LeftDownPoint, RightDownPoint);//识别车库
             }
-            else
+            if(GarageLStatusIdentify(LeftDownPoint, RightDownPoint,Garage_flag)==1)
             {
                 gpio_set(LED_RED, 1);
-                base_speed=90;      //降速进入三岔
+                base_speed=90;//从左车库出来降速到90
                 flag=4;
             }
             break;
