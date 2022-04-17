@@ -81,7 +81,7 @@ void ImageProcess()
 //        case 3: //识别左车库
 //        {
 //            gpio_set(LED_RED, 0);
-//            if(SobelLCount<SobelLTestStop)//车库识别到两帧即结束，这里不知道稳不稳
+//            if(LostNum_LeftLine>40 && LostNum_RightLine<30 && SobelLCount<SobelLTestStop)//车库识别到两帧即结束，这里不知道稳不稳
 //            {
 //                Garage_flag=GarageIdentify('L', LeftDownPoint, RightDownPoint);//识别车库
 //            }

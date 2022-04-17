@@ -62,9 +62,10 @@ uint8 DealGarageLSpecial()
     int row=0,cloumn=0,flag=0,BiasRow=0;
     Point LeftDownPoint,LeftUpPoint;
     LeftDownPoint.X=5,LeftDownPoint.Y=MT9V03X_H-5,LeftUpPoint.X=0,LeftUpPoint.Y=0;
-    if(BinaryImage[MT9V03X_H-5][5]==IMAGE_WHITE)
+    //这里相当于是这种情况的判断条件，即：这个点为白点
+    if(BinaryImage[MT9V03X_H/2+10][5]==IMAGE_WHITE)
     {
-        row=MT9V03X_H-5;cloumn=5;
+        row=MT9V03X_H/2+10;cloumn=5;
         for(;row>0;row--)
         {
             //从左下角白点往上找到白跳黑
@@ -92,7 +93,13 @@ uint8 DealGarageLSpecial()
             }
         }
         FillingLine('L', LeftDownPoint, LeftUpPoint);
-        Bias=DifferentBias(BiasRow, LeftUpPoint.Y, CentreLine);
+        //用补的线去求斜率偏差
+        Bias=Regression_Slope(LeftDownPoint.Y, LeftUpPoint.Y, LeftLine);
+        //对斜率求出来的偏差进行个缩放
+        if(Bias<=1)
+            Bias=Bias*2.5;
+        else
+            Bias=Bias*2;
         return 1;
     }
     else
@@ -118,53 +125,54 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
     {
         case 'L':
             //左边丢线(40,95)、右边丢线(0,20)（上面那个转弯的地方）只有一小段，进入索贝尔计算
-            if(LostNum_LeftLine>40 && LostNum_LeftLine<95 && LostNum_RightLine<20)
+            SobelResult=SobelTest();//进行索贝尔计算
+            if(SobelResult>ZebraTresholeL)
             {
-                SobelResult=SobelTest();//进行索贝尔计算
-                if(SobelResult>ZebraTresholeL)
+                SobelLCount++;
+                //对入库的特殊情况进行单帧判断
+                if(DealGarageLSpecial()==1)
                 {
-
-                    SobelLCount++;
-                    //对入库的特殊情况进行单帧判断
-                    if(DealGarageLSpecial()==1)
-                    {
-                        return 2;
-                    }
-
-                    //如果左拐点不是我想得到的那个点说明那个点已经不在图像中
-                    if(InflectionL.X==0 || InflectionL.X>45)
-                    {
-                        InflectionL.X=3;
-                        InflectionL.Y=MT9V03X_H/2+10;
-                        NoInflectionLFlag=1;
-
-                    }
-                    //从下往上找到白跳到黑，确定上拐点的行数
-                    for(int row=InflectionL.Y;row-1>0;row--)
-                    {
-                        if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)
-                        {
-                            UpInflection.Y=row-5;//得到这个行数之后把行给上拐点
-                            break;//跳出循环
-                        }
-                    }
-                    //从左往右边找到黑跳到白，确定上拐点的列数
-                    for(int column=InflectionL.X;column<MT9V03X_W/2;column++)
-                    {
-                        if(BinaryImage[UpInflection.Y][column]==IMAGE_BLACK && BinaryImage[UpInflection.Y][column+1]==IMAGE_WHITE)
-                        {
-                            UpInflection.X=column+1;//得到这个列数之后把列给上拐点
-                            break;//跳出循环
-                        }
-                    }
-                    if(NoInflectionLFlag==1)
-                    {
-                        InflectionL.Y=MT9V03X_H;InflectionL.X=UpInflection.X-10;
-                    }
-                    FillingLine('L', InflectionL, UpInflection);
-                    Bias=DifferentBias(MT9V03X_H/2+10, UpInflection.Y, CentreLine);
                     return 2;
                 }
+
+                //如果左拐点不是我想得到的那个点说明那个点已经不在图像中
+                if(InflectionL.X==0)
+                {
+                    InflectionL.X=3;
+                    InflectionL.Y=MT9V03X_H/2+10;
+                    NoInflectionLFlag=1;
+
+                }
+                //从下往上找到白跳到黑，确定上拐点的行数
+                for(int row=InflectionL.Y;row-1>0;row--)
+                {
+                    if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)
+                    {
+                        UpInflection.Y=row-5;//得到这个行数之后把行给上拐点
+                        break;//跳出循环
+                    }
+                }
+                //从左往右边找到黑跳到白，确定上拐点的列数
+                for(int column=InflectionL.X;column<MT9V03X_W;column++)
+                {
+                    if(BinaryImage[UpInflection.Y][column]==IMAGE_BLACK && BinaryImage[UpInflection.Y][column+1]==IMAGE_WHITE)
+                    {
+                        UpInflection.X=column+1;//得到这个列数之后把列给上拐点
+                        break;//跳出循环
+                    }
+                }
+                if(NoInflectionLFlag==1)
+                {
+                    InflectionL.Y=MT9V03X_H;InflectionL.X=UpInflection.X-10;
+                }
+                FillingLine('L', InflectionL, UpInflection);
+                Bias=Regression_Slope(InflectionL.Y, UpInflection.Y, LeftLine);
+                //对斜率求出来的偏差进行个缩放
+                if(Bias<=1)
+                    Bias=Bias*2.5;
+                else
+                    Bias=Bias*2;
+                return 2;
             }
             break;
         case 'R':
