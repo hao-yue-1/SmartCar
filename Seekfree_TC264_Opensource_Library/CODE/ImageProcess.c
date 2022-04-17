@@ -41,7 +41,7 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-//            flag=3; //调试用，跳转到指定状态
+            flag=3; //调试用，跳转到指定状态
             gpio_set(LED_WHITE, 0);
             if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
             {
@@ -87,6 +87,7 @@ void ImageProcess()
             else
             {
                 gpio_set(LED_RED, 1);
+                MotorSetTarget(90,90);//从左车库出来降速到90
                 flag=4;
             }
             break;
@@ -145,5 +146,5 @@ void ImageProcess()
     {
         Bias=DifferentBias(100,60,CentreLine);//无特殊处理时的偏差计算
     }
-//    lcd_showuint8(3, 3, SobelLCount);
+    lcd_showuint8(3, 3, SobelLCount);
 }
