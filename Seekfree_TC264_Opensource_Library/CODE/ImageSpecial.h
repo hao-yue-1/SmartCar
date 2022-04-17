@@ -33,20 +33,20 @@ extern uint8 SobelRCount;             //右边索贝尔
 
 /*起跑线相关函数*/
 int64 SobelTest(void);      //Sobel算子检测起跑线
-uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR);      //起跑线识别
+uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR);            //起跑线识别
 uint8 GarageLStatusIdentify(Point InflectionL,Point InflectionR,uint8 GarageLFlag);  //左车库的状态机转移
-void OutGarage(void);
+void OutGarage(void);       //出库
 /*环岛相关函数*/
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //左环岛状态机
 uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //右环岛状态机
 uint8 DealGarageLSpecial();     //左车库特殊情况处理，左斜情况
 /*三岔相关函数*/
-void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC);//搜寻出三岔上拐点
-uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR);//三岔识别
-uint8 ForkStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 ForkFlag);//三岔状态跳转判断函数
+void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC);     //搜寻出三岔上拐点
+uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR);   //三岔识别
+uint8 ForkStatusIdentify(int *LeftLine,int *RightLine, Point DownInflectionL,Point DownInflectionR);           //三岔状态跳转判断函数
 /*十字相关函数*/
-uint8 CrossLoopEnd_F(void);
-uint8 CrossLoopEnd_S(void);
-uint8 CrossLoopBegin_F(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
-uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CrossLoopEnd_F(void); //第一个十字回环出口
+uint8 CrossLoopEnd_S(void); //第二个十字回环出口
+uint8 CrossLoopBegin_F(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //第一个十字回环入口
+uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //第二个十字回环入口
 #endif /* CODE_IMAGESPECIAL_H_ */

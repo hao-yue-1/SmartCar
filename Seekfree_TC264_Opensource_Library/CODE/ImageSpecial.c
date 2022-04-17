@@ -16,6 +16,7 @@
 #include "SEEKFREE_MT9V03X.h"
 #include "Motor.h"              //停止电机
 #include "PID.h"
+#include "ImageProcess.h"       //LED宏定义
 
 //索贝尔计算超过阈值的次数当大于某个值就不再进行sobel测试
 uint8 SobelLCount=0;             //左边索贝尔
@@ -464,6 +465,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
+            gpio_set(LED_WHITE, 0);
             //在这里num_1的作用是确保在跳转到状态一的时候，识别到环岛中部且在此之前的10帧图片中有一帧识别到了环岛出口
             if(CircleIsFlag_1_L(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
             {
@@ -497,6 +499,8 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
+            gpio_set(LED_WHITE, 1);
+            gpio_set(LED_GREEN, 0);
             circle_island_num_1++;
             if(circle_island_num_1>8) //通过帧数强行关联状态一
             {
@@ -523,6 +527,8 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 2: //此时小车已经在环岛中，开始判断环岛出口
         {
+            gpio_set(LED_GREEN, 1);
+            gpio_set(LED_BLUE, 0);
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
             while(CircleIslandEnd_L()==0)  //识别到环岛出口跳出循环
             {
@@ -538,6 +544,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
             circle_island_flag=0;   //重置状态
             circle_island_num_1=0;
             circle_island_num_2=0;
+            gpio_set(LED_BLUE, 1);
             return 9;
         }
     }
@@ -631,7 +638,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         }
     }
     //左拐点x[0,70)
-    else if(LostNum_RightLine>60 && DownInflectionL.X>=0 && DownInflectionL.Y>70 && LeftLine[DownInflectionL.Y-5]!=0)
+    else if(LostNum_RightLine>60 && DownInflectionL.X!=0 && DownInflectionL.Y>60)
     {
         Point ImageDownPointR;//以左拐点对称的点去补线和找拐点
         ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=DownInflectionL.Y;
@@ -644,7 +651,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         }
     }
     //右拐点x[0,70)
-    else if(LostNum_LeftLine>=60 && DownInflectionR.X>=0 && DownInflectionR.Y>70 && RightLine[DownInflectionR.Y-5]!=MT9V03X_W-1)
+    else if(LostNum_LeftLine>=60 && DownInflectionR.X!=0 && DownInflectionR.Y>60)
     {
         Point ImageDownPointL;//以左拐点对称的点去补线和找拐点
         ImageDownPointL.X=5,ImageDownPointL.Y=DownInflectionR.Y;
@@ -667,59 +674,101 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
  **           1：三岔已结束
  ** 作    者: LJF
  *********************************************************************************************/
-uint8 ForkStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 ForkFlag)
+uint8 ForkStatusIdentify(int *LeftLine,int *RightLine, Point DownInflectionL,Point DownInflectionR)
 {
-    static uint8 LastFlag,StatusChange;//三岔识别函数的零食状态变量，用来看状态是否跳转
-    uint8 NowFlag=0;
-    NowFlag=ForkFlag;
+    static uint8 ForkFlag,LastFlag,StatusChange,num;//三岔识别函数的零食状态变量，用来看状态是否跳转
+    ForkFlag=ForkIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);   //获取三岔状态
     switch(StatusChange)
     {
         case 0:
         {
-            //从识别到三岔到识别不到进入三岔状态
-            if(LastFlag==1 && NowFlag==0)
+            gpio_set(LED_WHITE, 0);
+            if(LastFlag==0 && ForkFlag==1)  //无-有
             {
+                gpio_set(LED_WHITE, 1);
                 StatusChange=1;
             }
             break;
         }
         case 1:
         {
-            //两帧判断不到三岔，验证确实是进入到了三岔
-            if(LastFlag==0 && NowFlag==0)
+            gpio_set(LED_GREEN, 0);
+            if(LastFlag==1 && ForkFlag==1)  //有-有
             {
+                gpio_set(LED_GREEN, 1);
                 StatusChange=2;
             }
             break;
         }
         case 2:
         {
-            //从0到1说明识别到三岔出口
-            if(LastFlag==0 && NowFlag==1)
+            gpio_set(LED_BLUE, 0);
+            if(LastFlag==1 && ForkFlag==0)  //有-无
             {
+                gpio_set(LED_BLUE, 1);
                 StatusChange=3;
             }
             break;
         }
         case 3:
         {
-            //继续还是0说明三岔出来了
-            if(LastFlag==0 && NowFlag==0)
+            gpio_set(LED_RED, 0);
+            if(num<20)  //连续20帧
             {
+                num++;
+                break;
+            }
+            if(LastFlag==0 && ForkFlag==0)  //无-无
+            {
+                gpio_set(LED_RED, 1);
                 StatusChange=4;
             }
             break;
         }
+        case 4:
+        {
+            gpio_set(LED_YELLOW, 0);
+            if(LastFlag==0 && ForkFlag==1)  //无-有
+            {
+                gpio_set(LED_YELLOW, 1);
+                StatusChange=5;
+            }
+            break;
+        }
+        case 5:
+        {
+            gpio_set(P21_4, 0);
+            if(LastFlag==1 && ForkFlag==1)  //有-有
+            {
+                gpio_set(P21_4, 1);
+                StatusChange=6;
+            }
+            break;
+        }
+        case 6:
+        {
+            gpio_set(P21_5, 0);
+            if(LastFlag==1 && ForkFlag==0)  //有-无
+            {
+                gpio_set(P21_5, 1);
+                StatusChange=7;
+            }
+            break;
+        }
+        case 7:
+        {
+            gpio_set(P20_9, 0);
+            if(LastFlag==0 && ForkFlag==0)  //无-无
+            {
+                gpio_set(P20_9, 1);
+                StatusChange=7;
+                return 1;
+            }
+        }
 
     }
-    LastFlag=NowFlag;//保留上一次的状态
-    if(StatusChange==4)
-    {
-        StatusChange=0;//为了继续使用该函数，把静态局部变量继续赋为0
-        return 1;//三岔结束了
-    }
-    else
-        return 0;//三岔没结束
+    LastFlag=ForkFlag;//保留上一次的状态
+    return 0;
 }
 
 /*
@@ -1076,29 +1125,58 @@ uint8 CrossLoopEnd_F(void)
  */
 uint8 CrossLoopEnd_S(void)
 {
-    //防止三岔误判，这个条件的成立是建立在十字回环用路肩挡起来
-    uint8 row_1=0,flag=0;
-    for(uint8 row=65;row-1>0;row--)    //中间向上扫
-    {
-        if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
-        {
-            for(;row-1>0;row--) //继续向上扫
-            {
-                if(BinaryImage[row][MT9V03X_W/2]==IMAGE_BLACK&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_WHITE)
-                {
-                    if(row_1-row<10)    //约束两个黑白跳变点之间的距离
-                    {
-                        flag=1;
-                    }
-                }
-            }
-            break;  //这里的break可以滤去远处的干扰
-        }
-    }
-    if(flag==0)
-    {
-        return 0;
-    }
+    //防止三岔误判，判断是十字回环出口，这个条件的成立是建立在十字回环用路肩挡起来
+//    uint8 row_1=0,flag=0;
+//    for(uint8 row=65;row-1>0;row--)    //中间向上扫
+//    {
+//        if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
+//        {
+//            for(;row-1>0;row--) //继续向上扫
+//            {
+//                if(BinaryImage[row][MT9V03X_W/2]==IMAGE_BLACK&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_WHITE)
+//                {
+//                    if(row_1-row<10)    //约束两个黑白跳变点之间的距离
+//                    {
+//                        flag=1;
+//                    }
+//                }
+//            }
+//            break;  //这里的break可以滤去远处的干扰
+//        }
+//    }
+//    if(flag==0)
+//    {
+//        return 0;
+//    }
+    //防三岔误判，判断是三岔，这个条件的成立是建立在十字回环用蓝布挡起来
+//    uint8 flag_l=0,flag_r=0;
+//    for(uint8 row=100,column=MT9V03X_W/2;row-1>20;row--)    //向上扫
+//    {
+//        if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+//        {
+//            for(row-=3;column>0;column--)                       //向左扫
+//            {
+//                if(BinaryImage[row][column]==IMAGE_WHITE)   //向左找到白
+//                {
+//                    flag_l=1;
+//                    break;
+//                }
+//            }
+//            for(column=MT9V03X_W/2;column<MT9V03X_W-1;row++)    //向右扫
+//            {
+//                if(BinaryImage[row][column]==IMAGE_WHITE)   //向右找到白
+//                {
+//                    flag_r=1;
+//                    break;
+//                }
+//            }
+//            if(flag_l==1&&flag_r==1)
+//            {
+//                return 0;
+//            }
+//            break;
+//        }
+//    }
     if(LostNum_LeftLine>110)    //防止还未出环的误判
     {
         return 0;
