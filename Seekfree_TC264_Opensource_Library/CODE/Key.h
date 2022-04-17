@@ -23,6 +23,7 @@
 #define KEY_S4_PRES     4
 #define KEY_S5_PRES     5
 
-uint8 KeyScan();
+uint8 KeyScan(void);
+uint8 KeyParameter(void);
 
 #endif /* CODE_KEY_H_ */
