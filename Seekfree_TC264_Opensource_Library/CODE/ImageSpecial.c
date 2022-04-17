@@ -543,6 +543,106 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
     }
     return 0;
 }
+//下面这个是4.18晚想修改状态机机制做的，结果驱动板烧了导致搁浅，目前还不能用
+//uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+//{
+//    static uint8 flag,num_1,num_2;
+//    //使用switch实现简单的状态机机制
+//    switch(flag)
+//    {
+//        case 0:
+//        {
+//            gpio_set(LED_WHITE,0);
+//            if(CircleIsFlag_1_L(LeftLine, RightLine, InflectionL, InflectionR)==1)
+//            {
+//                gpio_set(LED_WHITE,1);
+//                flag=1; //跳转到状态1
+//            }
+//            break;
+//        }
+//        case 1:
+//        {
+//            gpio_set(LED_GREEN,0);
+//            if(num_1<8)
+//            {
+//                num_1++;
+//                if(CircleIsFlag_2_L(LeftLine, RightLine)==1)
+//                {
+//                    gpio_set(LED_GREEN,1);
+//                    flag=2; //跳转到状态2
+//                }
+//            }
+//            else    //跳转到状态1超过一定帧数后还未跳转状态则返回上一状态
+//            {
+//                gpio_set(LED_GREEN,1);
+//                num_1=0;
+//                flag=0; //跳转回到状态0
+//            }
+//            break;
+//        }
+//        case 2:
+//        {
+//            gpio_set(LED_BLUE,0);
+//            if(num_1<8)
+//            {
+//                num_1++;
+//                if(CircleIslandBegin_L(LeftLine, RightLine)==1)
+//                {
+//                    gpio_set(LED_BLUE,1);
+//                    flag=3; //跳转到状态3
+//                }
+//            }
+//            else
+//            {
+//                gpio_set(LED_BLUE,1);
+//                num_1=0;
+//                flag=0; //跳转回到状态0
+//            }
+//            break;
+//        }
+//        case 3:
+//        {
+//            gpio_set(LED_RED,0);
+//            if(num_1<8)
+//            {
+//                num_1++;
+//                if(CircleIsFlag_3_L(LeftLine, RightLine)==1)
+//                {
+//                    gpio_set(LED_RED,1);
+//                    flag=4; //跳转到状态4
+//                }
+//            }
+//            else
+//            {
+//                gpio_set(LED_RED,1);
+//                num_1=0;
+//                flag=0; //跳转回到状态0
+//            }
+//            break;
+//        }
+//        case 4:
+//        {
+//            gpio_set(LED_YELLOW,0);
+//            diff_speed_kp=0.1;  //在环岛中加大差速
+//            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
+//            while(CircleIslandEnd_L()==0)  //识别到环岛出口跳出循环
+//            {
+//                if(mt9v03x_finish_flag)
+//                {
+//                    ImageBinary();                                  //图像二值化
+//                    GetImagBasic(LeftLine,CentreLine,RightLine);    //基本扫线
+//                    Bias=DifferentBias(110,60,CentreLine);          //计算偏差，此时在环岛中取特殊前瞻
+//                    mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
+//                }
+//            }
+//            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
+//            diff_speed_kp=0.05;     //恢复默认差速
+//            gpio_set(LED_YELLOW,1);
+//            return 1;
+//        }
+//    }
+//    return 0;
+//}
 
 /*********************************************************************************
  ** 函数功能: 根据左右下拐点搜寻出三岔上拐点

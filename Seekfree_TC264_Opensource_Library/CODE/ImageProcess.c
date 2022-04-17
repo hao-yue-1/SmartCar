@@ -38,10 +38,10 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-//    CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+    CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
 //    CrossLoopEnd_F();
     /****************************状态机***************************/
-#if 1
+#if 0
     switch(flag)
     {
         case 0: //识别左环岛
