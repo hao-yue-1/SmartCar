@@ -191,7 +191,6 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
                     {
                         diff_speed_kp=0;
                         base_speed=0;
-                        MotorSetTarget(0, 0);
                     }
                     return 1;
                 }
@@ -1173,15 +1172,13 @@ uint8 CrossLoopEnd_F(void)
     {
         return 0;
     }
-//    lcd_showuint8(0, 1, LostNum_LeftLine);
     if(LostNum_LeftLine>L_LOSTNUM&&LostNum_RightLine>L_LOSTNUM)  //左右边界均丢线
     {
         if(fabsf(Bias)<1.5)
         {
             //舵机向右打死并加上一定的延时实现出弯
-            Bias=-15;
-            base_speed=90;
-            diff_speed_kp=0.2;
+            Bias=-10;
+            diff_speed_kp=0.1;
             systick_delay_ms(STM0,500);
             diff_speed_kp=0.05;
             return 1;
@@ -1253,6 +1250,13 @@ uint8 CrossLoopEnd_S(void)
 //            break;
 //        }
 //    }
+    for(uint8 row=MT9V03X_H/2;row+1<MT9V03X_H-1;row++)  //防止出三岔急弯误判
+    {
+        if(BinaryImage[row][155]==IMAGE_BLACK&&BinaryImage[row][155]==IMAGE_WHITE)  //黑-白
+        {
+            return 0;
+        }
+    }
     if(LostNum_LeftLine>110)    //防止还未出环的误判
     {
         return 0;
@@ -1500,6 +1504,7 @@ uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
  */
 void OutGarage(void)
 {
+    systick_delay_ms(STM0,200);
     //舵机向右打死并加上一定的延时实现出库
     Bias=-10;
     diff_speed_kp=0.1;

@@ -39,14 +39,15 @@ void ImageProcess()
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
 //    CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-//    CrossLoopEnd_F();
+//    CrossLoopEnd_S();
+//    CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
     /****************************状态机***************************/
 #if 1
     switch(flag)
     {
         case 0: //识别左环岛
         {
-//            flag=3; //调试用，跳转到指定状态
+            flag=4; //调试用，跳转到指定状态
             if(num_crossend<40)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 num_crossend++;
@@ -56,7 +57,7 @@ void ImageProcess()
             if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
             {
                 gpio_set(LED_WHITE, 1);
-                base_speed=120; //提速上坡进入第一个十字回环
+                base_speed=105; //提速上坡进入第一个十字回环
                 flag=1;         //跳转到状态1
             }
             break;
@@ -108,7 +109,7 @@ void ImageProcess()
             if(ForkStatusIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_YELLOW, 1);
-                SteerK.D=3;diff_speed_kp=0.1;//过完三岔减小KD，增大KP，使得进十字回环的弯不会撞，并且三岔直道不摆
+//                SteerK.D=3;diff_speed_kp=0.1;//过完三岔减小KD，增大KP，使得进十字回环的弯不会撞，并且三岔直道不摆
                 base_speed=105; //提速进入第二个十字回环
                 flag=5;         //跳转到状态5
             }
@@ -125,7 +126,7 @@ void ImageProcess()
             if(CrossLoopEnd_S()==1)
             {
                 gpio_set(P21_4, 1);
-                diff_speed_kp=0.05; //还原差速KP
+//                diff_speed_kp=0.05; //还原差速KP
                 base_speed=105; //提速进入三岔和入库
                 flag=6;         //跳转到状态6
             }

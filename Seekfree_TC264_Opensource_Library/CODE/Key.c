@@ -126,7 +126,7 @@ uint8 KeyParameter(void)
             {
                 case 0: //基础速度
                 {
-                    base_speed+=1;
+                    base_speed+=5;
                     lcd_showint16(0, 1, base_speed);
                     break;
                 }
@@ -144,13 +144,13 @@ uint8 KeyParameter(void)
                 }
                 case 3: //舵机D
                 {
-                    SteerK.D+=0.1;
+                    SteerK.D+=1;
                     lcd_showfloat(0, 1, SteerK.D, 2, 3);
                     break;
                 }
                 case 4: //电机P
                 {
-                    MotorK.P+=0.1;
+                    MotorK.P+=10;
                     lcd_showfloat(0, 1, MotorK.P, 2, 3);
                     break;
                 }
@@ -175,7 +175,7 @@ uint8 KeyParameter(void)
             {
                 case 0: //基础速度
                 {
-                    base_speed-=1;
+                    base_speed-=5;
                     lcd_showint16(0, 1, base_speed);
                     break;
                 }
@@ -193,13 +193,13 @@ uint8 KeyParameter(void)
                 }
                 case 3: //舵机D
                 {
-                    SteerK.D-=0.1;
+                    SteerK.D-=1;
                     lcd_showfloat(0, 1, SteerK.D, 2, 3);
                     break;
                 }
                 case 4: //电机P
                 {
-                    MotorK.P-=0.1;
+                    MotorK.P-=10;
                     lcd_showfloat(0, 1, MotorK.P, 2, 3);
                     break;
                 }
