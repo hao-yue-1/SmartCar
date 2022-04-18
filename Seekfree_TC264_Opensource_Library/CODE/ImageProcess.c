@@ -109,7 +109,7 @@ void ImageProcess()
             if(ForkStatusIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_YELLOW, 1);
-//                SteerK.D=3;diff_speed_kp=0.1;//过完三岔减小KD，增大KP，使得进十字回环的弯不会撞，并且三岔直道不摆
+                SteerK.D=3;diff_speed_kp=0.1;//过完三岔减小KD，增大KP，使得进十字回环的弯不会撞，并且三岔直道不摆
                 base_speed=105; //提速进入第二个十字回环
                 flag=5;         //跳转到状态5
             }
@@ -126,7 +126,7 @@ void ImageProcess()
             if(CrossLoopEnd_S()==1)
             {
                 gpio_set(P21_4, 1);
-//                diff_speed_kp=0.05; //还原差速KP
+                diff_speed_kp=0.05; //还原差速KP
                 base_speed=105; //提速进入三岔和入库
                 flag=6;         //跳转到状态6
             }
