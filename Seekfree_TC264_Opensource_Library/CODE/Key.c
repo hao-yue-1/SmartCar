@@ -36,6 +36,60 @@ uint8 KeyScan(void)
     return 0;   //无按键按下
 }
 
+void KeyDisplay(uint8 flag)
+{
+    lcd_clear(WHITE);
+    switch(flag)
+    {
+        case 0:
+        {
+            lcd_showstr(0, 0, "base_speed:");
+            lcd_showint16(0, 1, base_speed);
+            break;
+        }
+        case 1:
+        {
+            lcd_showstr(0, 0, "diff_speed_kp:");
+            lcd_showfloat(0, 1, diff_speed_kp, 2, 3);
+            break;
+        }
+        case 2:
+        {
+            lcd_showstr(0, 0, "Steer.P:");
+            lcd_showfloat(0, 1, SteerK.P, 2, 3);
+            break;
+        }
+        case 3:
+        {
+            lcd_showstr(0, 0, "Steer.D:");
+            lcd_showfloat(0, 1, SteerK.D, 2, 3);
+            break;
+        }
+        case 4:
+        {
+            lcd_showstr(0, 0, "Motor.P:");
+            lcd_showfloat(0, 1, MotorK.P, 2, 3);
+            break;
+        }
+        case 5:
+        {
+            lcd_showstr(0, 0, "Motor.I:");
+            lcd_showfloat(0, 1, MotorK.I, 2, 3);
+            break;
+        }
+    }
+}
+
+void ParameterDisplay(void)
+{
+    lcd_showint16(0, 0, base_speed);
+    lcd_showfloat(0, 1, diff_speed_kp, 2, 3);
+    lcd_showfloat(0, 2, SteerK.P, 2, 3);
+    lcd_showfloat(0, 3, SteerK.D, 2, 3);
+    lcd_showfloat(0, 4, MotorK.P, 2, 3);
+    lcd_showfloat(0, 5, MotorK.I, 2, 3);
+}
+
 /*
  ** 函数功能: 按键调参
  ** 参    数: 无
@@ -45,118 +99,137 @@ uint8 KeyScan(void)
 uint8 KeyParameter(void)
 {
     static uint8 key_num;   //调整的参数
-    static float key_steer_p=SteerK.P,key_steer_d=SteerK.D,key_motor_p=MotorK.P,key_motor_i=MotorK.I,key_diff_speed_kp=diff_speed_kp;    //初始化调节的PID参数
-    static int16 key_base_speed=base_speed; //初始化调节的基础速度
     switch(KeyScan())
     {
         case KEY_S1_PRES:   //S1：选择下一个参数
         {
-            key_num++;  //选择下一个参数
+            if(key_num>0)
+            {
+                key_num--;  //选择下一个参数
+            }
+            KeyDisplay(key_num);
             break;
         }
         case KEY_S2_PRES:   //S2：选择上一个参数
         {
-            key_num--;  //选择上一个参数
+            if(key_num<5)
+            {
+                key_num++;  //选择上一个参数
+            }
+            KeyDisplay(key_num);
             break;
         }
         case KEY_S3_PRES:   //S3：目前参数调大
         {
+            KeyDisplay(key_num);
             switch(key_num)
             {
                 case 0: //基础速度
                 {
-                    key_base_speed+=1;
-                    lcd_showstr(0, 0, "Base Speed:")
-                    lcd_showint16(0, 1, key_base_speed);
+                    base_speed+=1;
+                    lcd_showint16(0, 1, base_speed);
+                    break;
                 }
                 case 1: //差速
                 {
-                    key_diff_speed_kp+=0.1;
-                    lcd_showstr(0, 0, "Different Speed:")
-                    lcd_showfloat(0, 1, key_diff_speed_kp, 2, 3);
+                    diff_speed_kp+=0.1;
+                    lcd_showfloat(0, 1, diff_speed_kp, 2, 3);
+                    break;
                 }
                 case 2: //舵机P
                 {
-                    key_steer_p+=0.1;
-                    lcd_showstr(0, 0, "Steer.P:")
-                    lcd_showfloat(0, 1, key_steer_p, 2, 3);
+                    SteerK.P+=0.1;
+                    lcd_showfloat(0, 1, SteerK.P, 2, 3);
+                    break;
                 }
                 case 3: //舵机D
                 {
-                    key_steer_d+=0.1;
-                    lcd_showstr(0, 0, "Steer.D:")
-                    lcd_showfloat(0, 1, key_steer_d, 2, 3);
+                    SteerK.D+=0.1;
+                    lcd_showfloat(0, 1, SteerK.D, 2, 3);
+                    break;
                 }
                 case 4: //电机P
                 {
-                    key_motor_p+=0.1;
-                    lcd_showstr(0, 0, "Motor.P:")
-                    lcd_showfloat(0, 1, key_motor_p, 2, 3);
+                    MotorK.P+=0.1;
+                    lcd_showfloat(0, 1, MotorK.P, 2, 3);
+                    break;
                 }
                 case 5: //电机I
                 {
-                    key_motor_i+=0.1;
-                    lcd_showstr(0, 0, "Motor.I:")
-                    lcd_showfloat(0, 1, key_motor_i, 2, 3);
+                    MotorK.I+=0.1;
+                    lcd_showfloat(0, 1, MotorK.I, 2, 3);
+                    break;
                 }
-
+                default:
+                {
+                    lcd_showstr(0, 4, "ERROR!!!");
+                    break;
+                }
             }
             break;
         }
         case KEY_S4_PRES:   //S4：目前参数调小
         {
+            KeyDisplay(key_num);
             switch(key_num)
             {
                 case 0: //基础速度
                 {
-                    key_base_speed-=1;
-                    lcd_showstr(0, 0, "Base Speed:")
-                    lcd_showint16(0, 1, key_base_speed);
+                    base_speed-=1;
+                    lcd_showint16(0, 1, base_speed);
+                    break;
                 }
                 case 1: //差速
                 {
-                    key_diff_speed_kp-=0.1;
-                    lcd_showstr(0, 0, "Different Speed:")
-                    lcd_showfloat(0, 1, key_diff_speed_kp, 2, 3);
+                    diff_speed_kp-=0.1;
+                    lcd_showfloat(0, 1, diff_speed_kp, 2, 3);
+                    break;
                 }
                 case 2: //舵机P
                 {
-                    key_steer_p-=0.1;
-                    lcd_showstr(0, 0, "Steer.P:")
-                    lcd_showfloat(0, 1, key_steer_p, 2, 3);
+                    SteerK.P-=0.1;
+                    lcd_showfloat(0, 1, SteerK.P, 2, 3);
+                    break;
                 }
                 case 3: //舵机D
                 {
-                    key_steer_d-=0.1;
-                    lcd_showstr(0, 0, "Steer.D:")
-                    lcd_showfloat(0, 1, key_steer_d, 2, 3);
+                    SteerK.D-=0.1;
+                    lcd_showfloat(0, 1, SteerK.D, 2, 3);
+                    break;
                 }
                 case 4: //电机P
                 {
-                    key_motor_p-=0.1;
-                    lcd_showstr(0, 0, "Motor.P:")
-                    lcd_showfloat(0, 1, key_motor_p, 2, 3);
+                    MotorK.P-=0.1;
+                    lcd_showfloat(0, 1, MotorK.P, 2, 3);
+                    break;
                 }
                 case 5: //电机I
                 {
-                    key_motor_i-=0.1;
-                    lcd_showstr(0, 0, "Motor.I:")
-                    lcd_showfloat(0, 1, key_motor_i, 2, 3);
+                    MotorK.I-=0.1;
+                    lcd_showfloat(0, 1, MotorK.I, 2, 3);
+                    break;
                 }
-
+                default:
+                {
+                    lcd_showstr(0, 4, "ERROR!!!");
+                    break;
+                }
             }
             break;
         }
         case KEY_S5_PRES:   //S5：参数赋值，退出调参
         {
-            base_speed=key_base_speed;
-            diff_speed_kp=key_diff_speed_kp;
-            SteerK.P=key_steer_p;
-            SteerK.D=key_steer_d;
-            MotorK.P=key_motor_p;
-            MotorK.I=key_motor_i;
+            lcd_clear(WHITE);
+            lcd_showint16(0, 0, base_speed);
+            lcd_showfloat(0, 1, diff_speed_kp, 2, 3);
+            lcd_showfloat(0, 2, SteerK.P, 2, 3);
+            lcd_showfloat(0, 3, SteerK.D, 2, 3);
+            lcd_showfloat(0, 4, MotorK.P, 2, 3);
+            lcd_showfloat(0, 5, MotorK.I, 2, 3);
+            systick_delay_ms(STM0,4000);
             return 1;
         }
+        default:break;
     }
     systick_delay_ms(STM0,100);
     return 0;

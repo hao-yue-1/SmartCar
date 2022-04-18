@@ -25,5 +25,6 @@
 
 uint8 KeyScan(void);
 uint8 KeyParameter(void);
+void ParameterDisplay(void);
 
 #endif /* CODE_KEY_H_ */

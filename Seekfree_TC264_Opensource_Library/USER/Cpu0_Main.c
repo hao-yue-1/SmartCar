@@ -43,8 +43,8 @@ int core0_main(void)
 	get_clk();//获取时钟频率  务必保留
 	/***************************交互的初始化**************************/
 //	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);      //初始化串口0与电脑上位机通讯
-//	uart_init(UART_2, 115200, UART2_TX_P10_5, UART2_RX_P10_6);      //初始化蓝牙模块所用的串口2
-//	lcd_init();     //初始化TFT屏幕
+	uart_init(UART_2, 115200, UART2_TX_P10_5, UART2_RX_P10_6);      //初始化蓝牙模块所用的串口2
+	lcd_init();     //初始化TFT屏幕
 	gpio_init(P20_8, GPO, 1, PUSHPULL);     //初始化核心板的LED
 	gpio_init(P20_9, GPO, 1, PUSHPULL);
     gpio_init(P21_4, GPO, 1, PUSHPULL);
@@ -59,23 +59,20 @@ int core0_main(void)
     gpio_init(P22_2, GPO, 1, PUSHPULL);
     gpio_init(P22_3, GPO, 1, PUSHPULL);
     gpio_init(P21_2, GPO, 1, PUSHPULL);
-//    /**************************传感器模块初始化**********************/
-//	mt9v03x_init();     //初始化摄像头
-//	/***************************驱动模块初始化***********************/
-//	gtm_pwm_init(STEER_PIN, 50, STEER_MID);       //初始化舵机
-//	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);      //初始化左电机
-////	gpio_init(P02_6, GPO, 1, PUSHPULL);           //逐飞驱动：左电机
-//	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);      //自制驱动：左电机
-//	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);     //初始化：右电机
-////	gpio_init(P02_7, GPO, 1, PUSHPULL);           //逐飞驱动：右电机
-//	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);     //自制驱动：右电机
-//	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
-//	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
-//	/**********************PID初始化***********************************************/
-//	PID_init(&SteerK,&MotorK);          //初始化PID参数
-//	MotorSetTarget(base_speed,base_speed);            //初始化速度环目标值
-//	/********************定时器中断初始化****************************/
-//	pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化定时器中断
+    /**************************传感器模块初始化**********************/
+	mt9v03x_init();     //初始化摄像头
+	/***************************驱动模块初始化***********************/
+	gtm_pwm_init(STEER_PIN, 50, STEER_MID);       //初始化舵机
+	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);      //初始化左电机
+//	gpio_init(P02_6, GPO, 1, PUSHPULL);           //逐飞驱动：左电机
+	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);      //自制驱动：左电机
+	gtm_pwm_init(RIGHT_MOTOR_PIN1,17*1000,0);     //初始化：右电机
+//	gpio_init(P02_7, GPO, 1, PUSHPULL);           //逐飞驱动：右电机
+	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);     //自制驱动：右电机
+	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
+	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
+	/**********************PID初始化***********************************************/
+	PID_init(&SteerK,&MotorK);          //初始化PID参数
 
     //等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);

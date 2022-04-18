@@ -322,7 +322,7 @@ int8_t receiving_process(void)
         i_temp = *(float *)&temp1;
         d_temp = *(float *)&temp2;
         
-        MotorPIDSet(p_temp, i_temp, d_temp);    // 设置 P I D     已做移植替换
+//        MotorPIDSet(p_temp, i_temp, d_temp);    // 设置 P I D     已做移植替换
       }
       break;
 
