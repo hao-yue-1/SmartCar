@@ -66,7 +66,7 @@ void core1_main(void)
         {
             ImageBinary();      //图像二值化
 //            Bin_Image_Filter(); //图像去噪
-            lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
+//            lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
             ImageProcess();     //图像处理、元素识别
             //把三线画出来
 //            for(int i=MT9V03X_H-1;i>0;i--)
