@@ -56,11 +56,11 @@ void core1_main(void)
     while (TRUE)
     {
         //完成出库
-//        if(outgarage_flag==0)
-//        {
-//            OutGarage();
-//            outgarage_flag=1;
-//        }
+        if(outgarage_flag==0)
+        {
+            OutGarage();
+            outgarage_flag=1;
+        }
         //图像处理模块
         if(mt9v03x_finish_flag)
         {

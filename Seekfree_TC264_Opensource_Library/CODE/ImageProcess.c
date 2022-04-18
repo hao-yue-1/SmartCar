@@ -45,10 +45,10 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-            flag=2; //调试用，跳转到指定状态
-            if(num_crossend<40)  //出库后延时一会再开启下一个元素的识别，防止误判
+//            flag=2; //调试用，跳转到指定状态
+            if(num_circle<40)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
-                num_crossend++;
+                num_circle++;
                 break;
             }
             gpio_set(LED_WHITE, 0);
@@ -66,7 +66,7 @@ void ImageProcess()
             if(CrossLoopEnd_F()==1)
             {
                 gpio_set(LED_GREEN, 1);
-                base_speed=90;  //减速进行右环岛
+                base_speed=150; //提速上坡进行右环岛
                 flag=2;         //跳转到状态2
             }
             else
