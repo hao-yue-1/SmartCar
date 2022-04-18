@@ -38,16 +38,14 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-//    CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-//    CrossLoopEnd_S();
-//    CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
     /****************************状态机***************************/
 #if 1
     switch(flag)
     {
         case 0: //识别左环岛
         {
-//            flag=1; //调试用，跳转到指定状态
+            flag=2; //调试用，跳转到指定状态
             if(num_crossend<40)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 num_crossend++;
@@ -57,7 +55,7 @@ void ImageProcess()
             if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_WHITE, 1);
-                base_speed=135; //提速上坡进入第一个十字回环
+                base_speed=130; //提速上坡进入第一个十字回环
                 flag=1;         //跳转到状态1
             }
             break;
@@ -80,7 +78,7 @@ void ImageProcess()
         case 2: //识别右环岛
         {
             gpio_set(LED_BLUE, 0);
-            if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
+            if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_BLUE, 1);
                 base_speed=120;  //提速进入左车库
