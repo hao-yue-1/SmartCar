@@ -69,6 +69,7 @@ void core1_main(void)
 //            lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
             ImageProcess();     //图像处理、元素识别
             //把三线画出来
+//            lcd_clear(WHITE);
 //            for(int i=MT9V03X_H-1;i>0;i--)
 //            {
 //                lcd_drawpoint(LeftLine[i],i,GREEN);

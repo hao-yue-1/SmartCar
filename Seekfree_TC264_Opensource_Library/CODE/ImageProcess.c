@@ -47,14 +47,14 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-            flag=1; //调试用，跳转到指定状态
+//            flag=1; //调试用，跳转到指定状态
             if(num_crossend<40)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 num_crossend++;
                 break;
             }
             gpio_set(LED_WHITE, 0);
-            if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==9)
+            if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_WHITE, 1);
                 base_speed=135; //提速上坡进入第一个十字回环

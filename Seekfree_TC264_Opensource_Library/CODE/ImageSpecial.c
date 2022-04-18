@@ -445,10 +445,8 @@ uint8 CircleIsFlag_3_L(int *LeftLine,int *RightLine)
  **           RightLine：右线数组
  **           InflectionL：左下拐点
  **           InflectionR：右下拐点
- ** 返 回 值: 0：下一个状态：未开始识别环岛
- **           1：下一个状态：开始识别环岛入口
- **           2：下一个状态：成功出环岛
- **           9：状态机结束
+ ** 返 回 值: 0：还未完成环岛
+ **           1：完成环岛
  ** 作    者: WBN
  ** 注    意：这里只有环岛在小车左边的情况
  ********************************************************************************************
@@ -456,71 +454,75 @@ uint8 CircleIsFlag_3_L(int *LeftLine,int *RightLine)
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
     static uint8 flag,num_1,num_2;
-    //使用switch实现简单的状态机机制
     switch(flag)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
-            //在这里num_1的作用是确保在跳转到状态一的时候，识别到环岛中部且在此之前的10帧图片中有一帧识别到了环岛出口
             if(CircleIsFlag_1_L(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
             {
-                num_1++;  //识别到环岛入口标记+1
-                num_2=0;  //识别不到环岛入口标记=0，以保证else中对帧数的判断是连续的
-                if(num_1>10)  //num_1限幅
+                if(num_1<100)
                 {
-                    num_1=10;
+                    num_1++;    //识别到flag1的帧数++
                 }
             }
             else    //没有识别到环岛出口
             {
-                num_2++;  //识别不到环岛入口标记+1
-                if(num_2>=8)  //连续超过8帧没有识别到环岛出口，重置之前识别到的环岛入口
+                if(num_2<100)
                 {
-                    num_1=0;
-                    num_2=8;  //num_2限幅
+                    num_2++;    //没有识别到flag1的帧数++
                 }
-            }
-            if(CircleIsFlag_2_L(LeftLine, RightLine)==1)    //识别到环岛中部，进行状态转移
-            {
-                if(num_1>0)  //且之前判断到过环岛入口
+                else    //超过100帧没有识别到环岛flag1
                 {
-                    flag=1;   //跳转到下个状态
                     num_1=0;
                     num_2=0;
-                    return 1;
                 }
             }
-            return 0;
+            if(CircleIsFlag_2_L(LeftLine, RightLine)==1)    //识别到环岛中部
+            {
+                if(num_1>2) //在此之前有识别到环岛flag1
+                {
+                    num_1=0;
+                    num_2=0;
+                    flag=1; //跳转到状态1
+                }
+            }
+            break;
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
-            num_1++;
-            if(num_1>8) //通过帧数强行关联状态一
+            if(CircleIslandBegin_L(LeftLine, RightLine)==1)
             {
-                flag=0;
-                num_1=0;
-                num_2=0;
-            }
-            if(CircleIslandBegin_L(LeftLine, RightLine)==1)   //识别到环岛入口，进行补线
-            {
-                num_2++;
-                num_1=0;  //识别到环岛重置num1
-            }
-            if(CircleIsFlag_3_L(LeftLine, RightLine)==1)      //识别到已经进入环岛
-            {
-                if(num_2>0) //确保识别到环岛入口
+                if(num_1<100)
                 {
-                    flag=2;   //跳转到下个状态
-                    num_1=0;
-                    num_2=0;
-                    return 2;
+                    num_1++;    //识别到环岛入口的帧数++
                 }
             }
-            return 1;
+            else
+            {
+                if(num_2<100)
+                {
+                    num_2++;    //识别不到环岛入口的帧数++
+                }
+                else    //超过100帧识别不到环岛入口
+                {
+                    num_1=0;
+                    num_2=0;
+                    flag=0; //跳转回到状态0
+                }
+            }
+            if(CircleIsFlag_3_L(LeftLine, RightLine)==1)    //识别已经进入环岛
+            {
+                if(num_2>2) //在此之前有识别到环岛入口
+                {
+                    num_1=0;
+                    num_2=0;
+                    flag=2;
+                }
+            }
+            break;
         }
         case 2: //此时小车已经在环岛中，开始判断环岛出口
         {
-            diff_speed_kp=0.1;  //在环岛中加大差速
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
             while(CircleIslandEnd_L()==0)  //识别到环岛出口跳出循环
             {
@@ -533,115 +535,13 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                 }
             }
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
-            diff_speed_kp=0.05;     //恢复默认差速
-            flag=0;   //重置状态
-            num_1=0;
-            num_2=0;
-            return 9;
+            flag=3;
+            return 1;
         }
+        default:break;
     }
     return 0;
 }
-//下面这个是4.18晚想修改状态机机制做的，结果驱动板烧了导致搁浅，目前还不能用
-//uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
-//{
-//    static uint8 flag,num_1,num_2;
-//    //使用switch实现简单的状态机机制
-//    switch(flag)
-//    {
-//        case 0:
-//        {
-//            gpio_set(LED_WHITE,0);
-//            if(CircleIsFlag_1_L(LeftLine, RightLine, InflectionL, InflectionR)==1)
-//            {
-//                gpio_set(LED_WHITE,1);
-//                flag=1; //跳转到状态1
-//            }
-//            break;
-//        }
-//        case 1:
-//        {
-//            gpio_set(LED_GREEN,0);
-//            if(num_1<8)
-//            {
-//                num_1++;
-//                if(CircleIsFlag_2_L(LeftLine, RightLine)==1)
-//                {
-//                    gpio_set(LED_GREEN,1);
-//                    flag=2; //跳转到状态2
-//                }
-//            }
-//            else    //跳转到状态1超过一定帧数后还未跳转状态则返回上一状态
-//            {
-//                gpio_set(LED_GREEN,1);
-//                num_1=0;
-//                flag=0; //跳转回到状态0
-//            }
-//            break;
-//        }
-//        case 2:
-//        {
-//            gpio_set(LED_BLUE,0);
-//            if(num_1<8)
-//            {
-//                num_1++;
-//                if(CircleIslandBegin_L(LeftLine, RightLine)==1)
-//                {
-//                    gpio_set(LED_BLUE,1);
-//                    flag=3; //跳转到状态3
-//                }
-//            }
-//            else
-//            {
-//                gpio_set(LED_BLUE,1);
-//                num_1=0;
-//                flag=0; //跳转回到状态0
-//            }
-//            break;
-//        }
-//        case 3:
-//        {
-//            gpio_set(LED_RED,0);
-//            if(num_1<8)
-//            {
-//                num_1++;
-//                if(CircleIsFlag_3_L(LeftLine, RightLine)==1)
-//                {
-//                    gpio_set(LED_RED,1);
-//                    flag=4; //跳转到状态4
-//                }
-//            }
-//            else
-//            {
-//                gpio_set(LED_RED,1);
-//                num_1=0;
-//                flag=0; //跳转回到状态0
-//            }
-//            break;
-//        }
-//        case 4:
-//        {
-//            gpio_set(LED_YELLOW,0);
-//            diff_speed_kp=0.1;  //在环岛中加大差速
-//            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
-//            while(CircleIslandEnd_L()==0)  //识别到环岛出口跳出循环
-//            {
-//                if(mt9v03x_finish_flag)
-//                {
-//                    ImageBinary();                                  //图像二值化
-//                    GetImagBasic(LeftLine,CentreLine,RightLine);    //基本扫线
-//                    Bias=DifferentBias(110,60,CentreLine);          //计算偏差，此时在环岛中取特殊前瞻
-//                    mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
-//                }
-//            }
-//            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
-//            diff_speed_kp=0.05;     //恢复默认差速
-//            gpio_set(LED_YELLOW,1);
-//            return 1;
-//        }
-//    }
-//    return 0;
-//}
 
 /*********************************************************************************
  ** 函数功能: 根据左右下拐点搜寻出三岔上拐点
