@@ -132,7 +132,7 @@ uint8 KeyParameter(void)
                 }
                 case 1: //²îËÙ
                 {
-                    diff_speed_kp+=0.1;
+                    diff_speed_kp+=0.05;
                     lcd_showfloat(0, 1, diff_speed_kp, 2, 3);
                     break;
                 }
@@ -181,7 +181,7 @@ uint8 KeyParameter(void)
                 }
                 case 1: //²îËÙ
                 {
-                    diff_speed_kp-=0.1;
+                    diff_speed_kp-=0.05;
                     lcd_showfloat(0, 1, diff_speed_kp, 2, 3);
                     break;
                 }

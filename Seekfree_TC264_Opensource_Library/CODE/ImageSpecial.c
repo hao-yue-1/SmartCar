@@ -604,8 +604,9 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
     Point UpInflectionC;
     if(DownInflectionL.X!=0 && DownInflectionR.X!=0)//当左右拐点存在,且左右拐点不会太快出现丢线情况
     {
-        if(abs((DownInflectionL.Y-DownInflectionR.Y))<30)//左右两个拐点的行数小于30，才进行判断
-        {
+          //取消这个左右拐点行数的判断，增加运算速率
+//        if(abs((DownInflectionL.Y-DownInflectionR.Y))<40)//左右两个拐点的行数小于30，才进行判断
+//        {
             GetForkUpInflection(DownInflectionL, DownInflectionR, &UpInflectionC);//去搜索上拐点
             if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
             {
@@ -613,14 +614,14 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
                 Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
                 return 1;//三个拐点存在三岔成立：正入三岔
             }
-        }
+//        }
         else
             return 0;
     }
     else if(DownInflectionL.X==0 && DownInflectionR.X==0)//如果左右下拐点不存在并且下面一段出现就丢线的话的话,我们就去看存不存在正上的拐点
     {
         Point ImageDownPointL,ImageDownPointR;//以画面的左下角和右下角作为左右补线的点
-        ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H-10,ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H-10;
+        ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H,ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H;
         GetForkUpInflection(ImageDownPointL, ImageDownPointR, &UpInflectionC);
         if(UpInflectionC.Y!=0 && UpInflectionC.Y>40)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
@@ -1080,7 +1081,7 @@ uint8 CrossLoopEnd_F(void)
             //舵机向右打死并加上一定的延时实现出弯
             Bias=-10;
             diff_speed_kp=0.1;
-            systick_delay_ms(STM0,500);
+            systick_delay_ms(STM0,400);
             diff_speed_kp=0.05;
             return 1;
         }
@@ -1169,7 +1170,7 @@ uint8 CrossLoopEnd_S(void)
             //舵机向右打死并加上一定的延时实现出弯
             Bias=-10;
             diff_speed_kp=0.1;
-            systick_delay_ms(STM0,500);
+            systick_delay_ms(STM0,400);
             diff_speed_kp=0.05;
             return 1;
         }

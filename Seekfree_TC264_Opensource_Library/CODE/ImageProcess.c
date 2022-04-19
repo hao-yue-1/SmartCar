@@ -39,13 +39,14 @@ void ImageProcess()
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
 //    CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
     /****************************状态机***************************/
 #if 1
     switch(flag)
     {
         case 0: //识别左环岛
         {
-//            flag=2; //调试用，跳转到指定状态
+//            flag=3; //调试用，跳转到指定状态
             if(num_circle<40)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 num_circle++;
@@ -81,7 +82,7 @@ void ImageProcess()
             if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_BLUE, 1);
-                base_speed=120;  //提速进入左车库
+                base_speed=130;  //提速进入左车库
                 flag=3;          //跳转到状态3
             }
             break;
@@ -96,7 +97,7 @@ void ImageProcess()
             if(GarageLStatusIdentify(LeftDownPoint, RightDownPoint,Garage_flag)==1)
             {
                 gpio_set(LED_RED, 1);
-                base_speed=130;  //提速进入三岔
+                base_speed=125;  //降速进入三岔
                 flag=4;         //跳转到状态4
             }
             break;
@@ -107,7 +108,7 @@ void ImageProcess()
             if(ForkStatusIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_YELLOW, 1);
-                base_speed=125; //提速进入第二个十字回环
+                base_speed=130; //提速进入第二个十字回环
                 flag=5;         //跳转到状态5
             }
             break;
@@ -123,7 +124,7 @@ void ImageProcess()
             if(CrossLoopEnd_S()==1)
             {
                 gpio_set(P21_4, 1);
-                base_speed=125; //提速进入三岔和入库
+                base_speed=130; //提速进入三岔和入库
                 flag=6;         //跳转到状态6
             }
             else
