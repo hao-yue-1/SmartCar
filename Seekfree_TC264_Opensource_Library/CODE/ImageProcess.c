@@ -45,7 +45,7 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-//            flag=1; //调试用，跳转到指定状态
+//            flag=4; //调试用，跳转到指定状态
             if(case_0<40)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;
@@ -81,7 +81,7 @@ void ImageProcess()
             {
                 if(CrossLoopBegin_F(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
                 {
-                    base_speed=130;
+                    base_speed=125;//降速进入入十字环
                 }
             }
             break;
@@ -130,6 +130,7 @@ void ImageProcess()
             if(ForkStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
             {
                 gpio_set(LED_YELLOW, 1);
+                diff_speed_kp=0.01;//修改参数
                 base_speed=130; //提速进入第二个十字回环
                 flag=5;         //跳转到状态5
             }

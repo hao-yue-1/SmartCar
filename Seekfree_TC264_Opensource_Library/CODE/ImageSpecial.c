@@ -742,7 +742,6 @@ uint8 ForkStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFl
                 return 1;
             }
         }
-
     }
     LastFlag=ForkFlag;//保留上一次的状态
     return 0;
