@@ -26,7 +26,7 @@ void ImageProcess()
 {
     /***************************变量定义****************************/
     static uint8 flag;
-    static uint8 num_crossend,num_circle;
+    static uint8 num_crossend,num_circle_l,num_circle_r,num_fork_2;
     Point LeftDownPoint,RightDownPoint;     //左右下拐点
     LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;
     Point ForkUpPoint;
@@ -46,10 +46,10 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-            flag=4; //调试用，跳转到指定状态
-            if(num_circle<40)  //出库后延时一会再开启下一个元素的识别，防止误判
+//            flag=4; //调试用，跳转到指定状态
+            if(num_circle_l<40)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
-                num_circle++;
+                num_circle_l++;
                 break;
             }
             gpio_set(LED_WHITE, 0);
@@ -67,7 +67,7 @@ void ImageProcess()
             if(CrossLoopEnd_F()==1)
             {
                 gpio_set(LED_GREEN, 1);
-                base_speed=150; //提速上坡进行右环岛
+//                base_speed=150; //提速上坡进行右环岛
                 flag=2;         //跳转到状态2
             }
             else
@@ -78,11 +78,17 @@ void ImageProcess()
         }
         case 2: //识别右环岛
         {
+            if(num_circle_r<10)
+            {
+                num_circle_r++;
+                break;
+            }
+            base_speed=150; //提速上坡进行右环岛
             gpio_set(LED_BLUE, 0);
             if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_BLUE, 1);
-                base_speed=130;  //提速进入左车库
+                base_speed=130;  //减速进入左车库
                 flag=3;          //跳转到状态3
             }
             break;
@@ -105,7 +111,8 @@ void ImageProcess()
         case 4: //识别三岔
         {
             gpio_set(LED_YELLOW, 0);
-            if(ForkStatusIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
+            Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);   //获取三岔状态
+            if(ForkStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
             {
                 gpio_set(LED_YELLOW, 1);
                 base_speed=130; //提速进入第二个十字回环

@@ -602,7 +602,7 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
 uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR)
 {
     Point UpInflectionC;
-    if(DownInflectionL.X!=0 && DownInflectionR.X!=0)//当左右拐点存在,且左右拐点不会太快出现丢线情况
+    if(DownInflectionL.X!=0 && DownInflectionL.Y>60 && DownInflectionR.X!=0 && DownInflectionR.Y>60)//当左右拐点存在,且左右拐点不会太快出现丢线情况
     {
           //取消这个左右拐点行数的判断，增加运算速率
         if(abs((DownInflectionL.Y-DownInflectionR.Y))<40)//左右两个拐点的行数小于30，才进行判断
@@ -667,10 +667,10 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
  **           1：三岔已结束
  ** 作    者: LJF
  *********************************************************************************************/
-uint8 ForkStatusIdentify(int *LeftLine,int *RightLine, Point DownInflectionL,Point DownInflectionR)
+uint8 ForkStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag)
 {
     static uint8 ForkFlag,LastFlag,StatusChange,num;//三岔识别函数的零食状态变量，用来看状态是否跳转
-    ForkFlag=ForkIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);   //获取三岔状态
+    ForkFlag=NowFlag;
     switch(StatusChange)
     {
         case 0:
@@ -1080,7 +1080,7 @@ uint8 CrossLoopEnd_F(void)
         {
             //舵机向右打死并加上一定的延时实现出弯
             Bias=-10;
-            diff_speed_kp=0.1;
+            diff_speed_kp=0.2;
             systick_delay_ms(STM0,400);
             diff_speed_kp=0.05;
             return 1;

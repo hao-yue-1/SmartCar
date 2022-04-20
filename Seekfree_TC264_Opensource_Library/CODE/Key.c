@@ -150,7 +150,7 @@ uint8 KeyParameter(void)
                 }
                 case 4: //电机P
                 {
-                    MotorK.P+=10;
+                    MotorK.P+=1;
                     lcd_showfloat(0, 1, MotorK.P, 2, 3);
                     break;
                 }
@@ -199,7 +199,7 @@ uint8 KeyParameter(void)
                 }
                 case 4: //电机P
                 {
-                    MotorK.P-=10;
+                    MotorK.P-=1;
                     lcd_showfloat(0, 1, MotorK.P, 2, 3);
                     break;
                 }
@@ -226,7 +226,7 @@ uint8 KeyParameter(void)
             lcd_showfloat(0, 3, SteerK.D, 2, 3);
             lcd_showfloat(0, 4, MotorK.P, 2, 3);
             lcd_showfloat(0, 5, MotorK.I, 2, 3);
-            systick_delay_ms(STM0,4000);
+            systick_delay_ms(STM0,3000);
             return 1;
         }
         default:break;
