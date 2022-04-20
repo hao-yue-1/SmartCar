@@ -52,15 +52,15 @@ void core1_main(void)
         key_flag=KeyParameter();
     }
     pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化定时器中断
+    //完成出库
+    if(outgarage_flag==0)
+    {
+        OutGarage();
+        outgarage_flag=1;
+    }
 
     while (TRUE)
     {
-        //完成出库
-        if(outgarage_flag==0)
-        {
-            OutGarage();
-            outgarage_flag=1;
-        }
         //图像处理模块
         if(mt9v03x_finish_flag)
         {

@@ -26,7 +26,7 @@ void ImageProcess()
 {
     /***************************变量定义****************************/
     static uint8 flag;
-    static uint8 num_crossend,num_circle_l,num_circle_r,num_fork_2;
+    static uint8 case_5,case_0,case_2;
     Point LeftDownPoint,RightDownPoint;     //左右下拐点
     LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;
     Point ForkUpPoint;
@@ -47,9 +47,9 @@ void ImageProcess()
         case 0: //识别左环岛
         {
 //            flag=4; //调试用，跳转到指定状态
-            if(num_circle_l<40)  //出库后延时一会再开启下一个元素的识别，防止误判
+            if(case_0<40)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
-                num_circle_l++;
+                case_0++;
                 break;
             }
             gpio_set(LED_WHITE, 0);
@@ -67,7 +67,6 @@ void ImageProcess()
             if(CrossLoopEnd_F()==1)
             {
                 gpio_set(LED_GREEN, 1);
-//                base_speed=150; //提速上坡进行右环岛
                 flag=2;         //跳转到状态2
             }
             else
@@ -78,9 +77,9 @@ void ImageProcess()
         }
         case 2: //识别右环岛
         {
-            if(num_circle_r<10)
+            if(case_2<10)
             {
-                num_circle_r++;
+                case_2++;
                 break;
             }
             base_speed=150; //提速上坡进行右环岛
@@ -122,9 +121,9 @@ void ImageProcess()
         }
         case 5: //识别第二个十字回环
         {
-            if(num_crossend<20)  //结束三岔后延时一会再开启下一个元素的识别，防止误判
+            if(case_5<20)  //结束三岔后延时一会再开启下一个元素的识别，防止误判
             {
-                num_crossend++;
+                case_5++;
                 break;
             }
             gpio_set(P21_4, 0);

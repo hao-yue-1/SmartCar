@@ -33,10 +33,12 @@
 #include "protocol.h"       //野火上位机协议
 #include "ImageProcess.h"   //图像处理
 #include "Key.h"            //按键处理
+#include "Filter.h"         //滤波算法
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
 int16 base_speed=130;        //基础速度
+kalman1_filter_t kalman1;    //一阶卡尔曼结构体
 
 int core0_main(void)
 {
@@ -71,9 +73,9 @@ int core0_main(void)
 	gtm_pwm_init(RIGHT_MOTOR_PIN2,17*1000,0);     //自制驱动：右电机
 	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
 	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
-	/**********************PID初始化***********************************************/
+	/**************************初始化参数****************************/
 	PID_init(&SteerK,&MotorK);          //初始化PID参数
-
+//	kalman1_init(&kalman1,1,100);       //初始化一阶卡尔曼
     //等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);

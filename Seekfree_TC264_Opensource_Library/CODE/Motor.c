@@ -116,10 +116,17 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
     int pwm_l=0,pwm_r=0;             //左右电机PWM
 
     MotorEncoder(&encoder_l,&encoder_r);              //获取左右电机编码器
-    encoder_l=SecondOrderLagFilter_L(encoder_l);      //二阶低通滤波
+    encoder_l=SecondOrderLagFilter_L(encoder_l);      //低通滤波
     encoder_r=SecondOrderLagFilter_R(encoder_r);
     pwm_l=Speed_PI_Left(encoder_l,speed_l,MotorK);    //左右电机PID
     pwm_r=Speed_PI_Right(encoder_r,speed_r,MotorK);
+
+    if(encoder_l>200)   //防止超调，保护驱动板
+    {
+        MotorSetPWM(0,0);
+        return;
+    }
+
     MotorSetPWM(pwm_l,pwm_r);                         //电机PWM赋值
 
     //野火上位机调试
