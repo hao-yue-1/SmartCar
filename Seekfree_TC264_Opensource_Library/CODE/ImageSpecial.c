@@ -1080,9 +1080,9 @@ uint8 CrossLoopEnd_F(void)
         {
             //舵机向右打死并加上一定的延时实现出弯
             Bias=-10;
-            diff_speed_kp=0.2;
+            diff_speed_kp+=0.2; //增大差速
             systick_delay_ms(STM0,400);
-            diff_speed_kp=0.05;
+            diff_speed_kp-=0.2; //恢复差速
             return 1;
         }
     }
@@ -1169,9 +1169,9 @@ uint8 CrossLoopEnd_S(void)
         {
             //舵机向右打死并加上一定的延时实现出弯
             Bias=-10;
-            diff_speed_kp=0.1;
+            diff_speed_kp+=0.1; //增大差速
             systick_delay_ms(STM0,400);
-            diff_speed_kp=0.05;
+            diff_speed_kp-=0.1; //恢复差速
             return 1;
         }
     }
@@ -1393,6 +1393,116 @@ uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
             }
         }
     }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 判断是否已经进入第一个回环
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ ** 返 回 值: 0：还未进入回环
+ **           1：已经进入回环
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CrossLoopIn_F(int *LeftLine,int *RightLine)
+{
+    if(LostNum_LeftLine>100)    //左边接近全丢线
+    {
+        //下面采用经验值随机抽样法
+        if(BinaryImage[90][40]==IMAGE_WHITE&&BinaryImage[30][120]==IMAGE_BLACK)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 第一个十字回环状态机
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CrossLoop_F(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+{
+    static uint8 flag;
+    static uint8 begin,last_begin;
+
+    switch(flag)
+    {
+        case 0: //识别入口
+        {
+            begin=CrossLoopBegin_F(LeftLine, RightLine, InflectionL, InflectionR);
+            if(begin==1)    //识别到十字回环入口
+            {
+                flag=1; //跳转到状态1
+            }
+            break;
+        }
+        case 1: //连续识别入口
+        {
+            begin=CrossLoopBegin_F(LeftLine, RightLine, InflectionL, InflectionR);
+            if(begin==1&&last_begin==1) //这一次和上一次都识别到十字回环入口
+            {
+                flag=2; //跳转到状态2
+            }
+            break;
+        }
+        case 2: //开始识别不到
+        {
+            begin=CrossLoopBegin_F(LeftLine, RightLine, InflectionL, InflectionR);
+            if(begin==0&&last_begin==1) //这一次没有识别到十字回环入口，上一次识别到了
+            {
+                flag=3; //跳转到状态3
+            }
+            break;
+        }
+        case 3: //连续识别不到
+        {
+            begin=CrossLoopBegin_F(LeftLine, RightLine, InflectionL, InflectionR);
+            if(begin==0&&last_begin==0) //这一次和上一次都没有识别到十字回环入口
+            {
+                flag=4; //跳转到状态4
+            }
+            break;
+        }
+        case 4: //识别已经进入
+        {
+            if(CrossLoopIn_F(LeftLine, RightLine)==1)
+            {
+                flag=5;
+            }
+            break;
+        }
+        case 5:
+        {
+            gpio_set(LED_RED, 0);
+//            base_speed+=5;  //进入环中提速
+            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
+            while(CrossLoopEnd_F()==0)  //识别到出口跳出循环
+            {
+                if(mt9v03x_finish_flag)
+                {
+                    ImageBinary();                                  //图像二值化
+                    GetImagBasic(LeftLine,CentreLine,RightLine);    //基本扫线
+                    Bias=DifferentBias(110,60,CentreLine);          //计算偏差，此时在环岛中取特殊前瞻
+                    Bias+=0.5;    //手动提高偏差切内环
+                    diff_speed_kp+=0.1;  //手动提高差速
+                    mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
+                }
+            }
+            mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
+            diff_speed_kp-=0.1; //恢复差速
+            flag=6;
+            gpio_set(LED_RED, 1);
+            return 1;
+        }
+    }
+    last_begin=begin;
     return 0;
 }
 

@@ -49,4 +49,6 @@ uint8 CrossLoopEnd_F(void); //第一个十字回环出口
 uint8 CrossLoopEnd_S(void); //第二个十字回环出口
 uint8 CrossLoopBegin_F(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //第一个十字回环入口
 uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //第二个十字回环入口
+uint8 CrossLoop_F(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);        //第一个十字回环状态机
+
 #endif /* CODE_IMAGESPECIAL_H_ */

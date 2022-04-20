@@ -26,7 +26,7 @@ void ImageProcess()
 {
     /***************************变量定义****************************/
     static uint8 flag;
-    static uint8 case_5,case_0,case_2;
+    static uint8 case_5,case_0,case_2,case_1,case_4;
     Point LeftDownPoint,RightDownPoint;     //左右下拐点
     LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;
     Point ForkUpPoint;
@@ -38,15 +38,14 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-//    CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-//    Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    CrossLoop_F(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
     /****************************状态机***************************/
 #if 1
     switch(flag)
     {
         case 0: //识别左环岛
         {
-//            flag=4; //调试用，跳转到指定状态
+//            flag=1; //调试用，跳转到指定状态
             if(case_0<40)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;
@@ -56,13 +55,22 @@ void ImageProcess()
             if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_WHITE, 1);
-                base_speed=130; //提速上坡进入第一个十字回环
                 flag=1;         //跳转到状态1
             }
             break;
         }
         case 1: //识别第一个十字回环
         {
+            if(case_1<10)   //延时加速
+            {
+                case_1++;
+                break;
+            }
+            else if(case_1==10)
+            {
+                base_speed=160; //提速上坡进入第一个十字回环
+                case_1++;
+            }
             gpio_set(LED_GREEN, 0);
             if(CrossLoopEnd_F()==1)
             {
@@ -71,13 +79,16 @@ void ImageProcess()
             }
             else
             {
-                CrossLoopBegin_F(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+                if(CrossLoopBegin_F(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
+                {
+                    base_speed=130;
+                }
             }
             break;
         }
         case 2: //识别右环岛
         {
-            if(case_2<10)
+            if(case_2<15)   //延时加速
             {
                 case_2++;
                 break;
@@ -109,6 +120,11 @@ void ImageProcess()
         }
         case 4: //识别三岔
         {
+            if(case_4<5)    //延迟防止误判
+            {
+                case_4++;
+                break;
+            }
             gpio_set(LED_YELLOW, 0);
             Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);   //获取三岔状态
             if(ForkStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
