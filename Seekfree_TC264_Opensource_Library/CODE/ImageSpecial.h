@@ -43,7 +43,8 @@ uint8 DealGarageLSpecial();     //左车库特殊情况处理，左斜情况
 /*三岔相关函数*/
 void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC);     //搜寻出三岔上拐点
 uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR);   //三岔识别
-uint8 ForkStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag);           //三岔状态跳转判断函数
+uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag);           //第一遍三岔状态跳转判断函数
+uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag);           //第二遍三岔状态跳转判断函数
 /*十字相关函数*/
 uint8 CrossLoopEnd_F(void); //第一个十字回环出口
 uint8 CrossLoopEnd_S(void); //第二个十字回环出口

@@ -39,15 +39,13 @@ void ImageProcess()
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
 //    CrossLoop_F(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-    Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-    lcd_showfloat(TFT_X_MAX-100, 0, Bias, 2, 3);
     /****************************状态机***************************/
-#if 0
+#if 1
     switch(flag)
     {
         case 0: //识别左环岛
         {
-            flag=6; //调试用，跳转到指定状态
+//            flag=6; //调试用，跳转到指定状态
             if(case_0<40)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;
@@ -116,7 +114,7 @@ void ImageProcess()
             {
                 gpio_set(LED_RED, 1);
                 base_speed=135;  //提速进入三岔
-                flag=4;         //跳转到状态4
+                flag=4;          //跳转到状态4
             }
             break;
         }
@@ -129,7 +127,7 @@ void ImageProcess()
             }
             gpio_set(LED_YELLOW, 0);
             Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);   //获取三岔状态
-            if(ForkStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
+            if(ForkFStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
             {
                 gpio_set(LED_YELLOW, 1);
                 diff_speed_kp=0.1;//修改参数
@@ -149,7 +147,7 @@ void ImageProcess()
             if(CrossLoopEnd_S()==1)
             {
                 gpio_set(P21_4, 1);
-                base_speed=130; //提速进入三岔和入库
+                base_speed=145; //提速进入三岔和入库
                 flag=6;         //跳转到状态6
             }
             else
@@ -158,22 +156,27 @@ void ImageProcess()
             }
             break;
         }
-        case 6: //识别三岔和右车库
+        case 6: //识别第二遍三岔
         {
             gpio_set(P21_5, 0);
+            Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);   //获取三岔状态
+            if(ForkSStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
+            {
+                gpio_set(P21_5, 1);
+                base_speed=135; //降速准备入库
+                flag=7;         //跳转到状态5
+            }
+            break;
+        }
+        case 7: //识别右车库，入库
+        {
+            gpio_set(P20_9, 0);
             if(LostNum_RightLine>40 && LostNum_RightLine<90 && LostNum_LeftLine<10 && LostNum_LeftLine>0)
             {
                 Garage_flag=GarageIdentify('R', LeftDownPoint, RightDownPoint);//识别车库
-                if(Garage_flag==0)//如果没识别到车库，再继续识别三岔，怕误判,补救
-                {
-                    Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-                }
             }
             else
-            {
-                Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-            }
-            break;
+                break;
         }
     }
 #endif
@@ -185,6 +188,7 @@ void ImageProcess()
     }
     else
     {
-        Bias=DifferentBias(100,60,CentreLine);//无特殊处理时的偏差计算
+        Bias=DifferentBias(100,50,CentreLine);//无特殊处理时的偏差计算
+//        lcd_showfloat(0, 7, Bias, 2, 3);
     }
 }

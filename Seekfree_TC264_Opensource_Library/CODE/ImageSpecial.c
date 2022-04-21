@@ -672,7 +672,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
  **           1：三岔已结束
  ** 作    者: LJF
  *********************************************************************************************/
-uint8 ForkStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag)
+uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag)
 {
     static uint8 StatusChange,num1,num3,numspecial;//三岔识别函数的零食状态变量，用来看状态是否跳转
 
@@ -737,6 +737,78 @@ uint8 ForkStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFl
     return 0;
 }
 
+/********************************************************************************************
+ ** 函数功能: 三岔状态跳转判断函数
+ ** 参    数: Point InflectionL：左下拐点
+ **           Point InflectionR：右下拐点
+ ** 返 回 值:  0：三岔还未结束
+ **           1：三岔已结束
+ ** 作    者: LJF
+ *********************************************************************************************/
+uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag)
+{
+    static uint8 StatusChange,num1,num3,numspecial;//三岔识别函数的零食状态变量，用来看状态是否跳转
+
+    if(numspecial<150)//防止很久都没有出现进入入口的状态，及时去判断出口
+    {
+        numspecial++;
+    }
+    else if(StatusChange<1)//判断状态有没有度过入口状态，若没有则强制跳过
+    {
+        StatusChange=2;
+    }
+
+    switch(StatusChange)
+    {
+        //入口状态
+        case 0:
+        {
+            if(NowFlag==1)
+            {
+                StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
+            }
+            break;
+        }
+        //中途状态
+        case 1:
+        {
+            if(num1<30)  //给足够长的时间让车走到三岔运行中
+            {
+                num1++;
+                break;
+            }
+            if(NowFlag==0)
+            {
+                StatusChange=2;//过了中间过度态之后跳转至检测出口
+            }
+            break;
+        }
+        //出口状态
+        case 2:
+        {
+            if(NowFlag==1)
+            {
+                StatusChange=3;
+            }
+            break;
+        }
+        //确保已经出三岔了，否则三岔口就出三岔了，使得出三岔其实是扫线出的
+        case 3:
+        {
+            if(num3<25)  //给足够长的时间让车走到三岔运行中
+            {
+                num3++;
+                break;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+        default:break;
+    }
+    return 0;
+}
 /*
  *******************************************************************************************
  ** 函数功能: 识别环岛入口，右侧
