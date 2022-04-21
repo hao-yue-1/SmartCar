@@ -319,6 +319,7 @@ uint8 CircleIslandEnd_L()
         if(fabsf(Bias)<1.5)
         {
             /*在这里将舵机打死，考虑要不要加延时*/
+            systick_delay_ms(STM0,50);
             Bias=10;
             systick_delay_ms(STM0,300);
             return 1;
@@ -612,6 +613,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             {
                 FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
                 Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
+                diff_speed_kp=0.05;
                 return 1;//三个拐点存在三岔成立：正入三岔
             }
         }
@@ -627,6 +629,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         {
             FillingLine('R',ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
             Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
+            diff_speed_kp=0.05;
             return 1;//三岔正入丢失左右拐点那一帧
         }
     }
@@ -640,7 +643,8 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         {
             FillingLine('R',ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
             Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
-            return 2;//三岔左斜入三岔
+            diff_speed_kp=0.05;
+            return 1;//三岔左斜入三岔
         }
     }
     //右拐点x[0,70)
@@ -653,7 +657,8 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         {
             FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
             Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
-            return 3;//三岔右斜入三岔
+            diff_speed_kp=0.05;
+            return 1;//三岔右斜入三岔
         }
     }
     return 0;

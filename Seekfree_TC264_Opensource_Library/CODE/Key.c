@@ -77,6 +77,12 @@ void KeyDisplay(uint8 flag)
             lcd_showfloat(0, 1, MotorK.I, 2, 3);
             break;
         }
+        case 6:
+        {
+            lcd_showstr(0, 0, "Motor.D:");
+            lcd_showfloat(0, 1, MotorK.D, 2, 3);
+            break;
+        }
     }
 }
 
@@ -88,6 +94,7 @@ void ParameterDisplay(void)
     lcd_showfloat(0, 3, SteerK.D, 2, 3);
     lcd_showfloat(0, 4, MotorK.P, 2, 3);
     lcd_showfloat(0, 5, MotorK.I, 2, 3);
+    lcd_showfloat(0, 6, MotorK.D, 2, 3);
 }
 
 /*
@@ -112,7 +119,7 @@ uint8 KeyParameter(void)
         }
         case KEY_S2_PRES:   //S2：选择上一个参数
         {
-            if(key_num<5)
+            if(key_num<6)
             {
                 key_num++;  //选择上一个参数
             }
@@ -158,6 +165,12 @@ uint8 KeyParameter(void)
                 {
                     MotorK.I+=0.1;
                     lcd_showfloat(0, 1, MotorK.I, 2, 3);
+                    break;
+                }
+                case 6:
+                {
+                    MotorK.D+=0.1;
+                    lcd_showfloat(0, 1, MotorK.D, 2, 3);
                     break;
                 }
                 default:
@@ -209,6 +222,12 @@ uint8 KeyParameter(void)
                     lcd_showfloat(0, 1, MotorK.I, 2, 3);
                     break;
                 }
+                case 6:
+                {
+                    MotorK.D-=0.1;
+                    lcd_showfloat(0, 1, MotorK.D, 2, 3);
+                    break;
+                }
                 default:
                 {
                     lcd_showstr(0, 4, "ERROR!!!");
@@ -226,6 +245,7 @@ uint8 KeyParameter(void)
             lcd_showfloat(0, 3, SteerK.D, 2, 3);
             lcd_showfloat(0, 4, MotorK.P, 2, 3);
             lcd_showfloat(0, 5, MotorK.I, 2, 3);
+            lcd_showfloat(0, 6, MotorK.D, 2, 3);
             systick_delay_ms(STM0,3000);
             return 1;
         }

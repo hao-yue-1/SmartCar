@@ -39,13 +39,15 @@ void ImageProcess()
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
 //    CrossLoop_F(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+    Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+    lcd_showfloat(TFT_X_MAX-100, 0, Bias, 2, 3);
     /****************************状态机***************************/
-#if 1
+#if 0
     switch(flag)
     {
         case 0: //识别左环岛
         {
-//            flag=4; //调试用，跳转到指定状态
+            flag=6; //调试用，跳转到指定状态
             if(case_0<40)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;

@@ -7,6 +7,7 @@
 
 #include "ImageTack.h"
 #include "SEEKFREE_18TFT.h"
+#include "PID.h"
 
 //变量定义
 float Bias=0;       //偏差
@@ -127,6 +128,14 @@ float DifferentBias(int startline,int endline,int *CentreLine)
     {
         if(BinaryImage[i][CentreLine[i]]==IMAGE_BLACK)
         {
+//            if(i>70)
+//            {
+//                while(1)
+//                {
+//                    diff_speed_kp=0;
+//                    base_speed=0;
+//                }
+//            }
             break;
         }
         else
