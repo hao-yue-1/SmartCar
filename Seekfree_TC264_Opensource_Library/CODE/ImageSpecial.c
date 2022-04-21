@@ -299,6 +299,53 @@ uint8 CircleIslandBegin_L(int *LeftLine,int *RightLine)
 
 /*
  *******************************************************************************************
+ ** 函数功能: 识别环岛入口，左侧，补线直行忽略
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ ** 返 回 值: 0：没有识别到环岛
+ **           1：识别到环岛且在车身左侧
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CircleIslandOverBegin_L(int *LeftLine,int *RightLine)
+{
+    if(BinaryImage[115][5]==IMAGE_BLACK)    //防止提前拐入环岛
+    {
+        return 0;
+    }
+    //环岛入口在左边
+    if(LostNum_LeftLine>C_LOSTLINE)   //左边丢线：环岛入口在左边
+    {
+        for(int row=MT9V03X_H;row-1>0;row--)  //从下往上检查左边界线
+        {
+            if(LeftLine[row]==0&&LeftLine[row-1]!=0)    //该行丢线而下一行不丢线
+            {
+                //下面这个防止进入环岛后误判
+                for(int column=0;column+1<MT9V03X_W-1;column++) //向右扫
+                {
+                    if(BinaryImage[10][column]!=BinaryImage[10][column+1])
+                    {
+                        if(row-10>0)
+                        {
+                            row-=10;
+                        }
+                        Point StarPoint,EndPoint;   //定义补线的起点和终点
+                        EndPoint.Y=row;             //终点赋值
+                        EndPoint.X=LeftLine[row];
+                        StarPoint.Y=MT9V03X_H-1;    //起点赋值
+                        StarPoint.X=0;
+                        FillingLine('L',StarPoint,EndPoint);    //补线
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
  ** 函数功能: 识别环岛出口，左侧
  ** 参    数: InflectionL：左下拐点
  **           InflectionR：右下拐点
@@ -310,11 +357,11 @@ uint8 CircleIslandBegin_L(int *LeftLine,int *RightLine)
  */
 uint8 CircleIslandEnd_L()
 {
-    if(LostNum_LeftLine>110)    //防止还未出环岛的误判
+    if(LostNum_LeftLine>100)    //防止还未出环岛的误判
     {
         return 0;
     }
-    if(LostNum_LeftLine>C_LOSTNUM&&LostNum_RightLine>C_LOSTNUM)  //左右边界均丢线
+    if(LostNum_LeftLine>55&&LostNum_RightLine>55)  //左右边界均丢线
     {
         if(fabsf(Bias)<1.5)
         {
@@ -454,7 +501,7 @@ uint8 CircleIsFlag_3_L(int *LeftLine,int *RightLine)
  */
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    static uint8 flag,num_1,num_2;
+    static uint8 flag,num_1,num_2,flag_begin,flag_last_begin;
     switch(flag)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
@@ -536,8 +583,19 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                 }
             }
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
-            flag=3;
-            return 1;
+            flag=3; //跳转到状态3
+            break;
+        }
+        case 3:
+        {
+            flag_begin=CircleIslandOverBegin_L(LeftLine, RightLine);    //识别环岛入口补线忽略
+            if(flag_begin==0&&flag_last_begin==1)   //上一次识别到环岛入口而这一次没有识别到环岛入口
+            {
+                flag=4;
+                return 1;   //退出状态机
+            }
+            flag_last_begin=flag_begin; //保存上一次的状态
+            break;
         }
         default:break;
     }
@@ -861,6 +919,60 @@ uint8 CircleIslandBegin_R(int *LeftLine,int *RightLine)
 
 /*
  *******************************************************************************************
+ ** 函数功能: 识别环岛入口，右侧
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ ** 返 回 值: 0：没有识别到环岛
+ **           1：识别到环岛且在车身右侧
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CircleIslandOverBegin_R(int *LeftLine,int *RightLine)
+{
+    if(BinaryImage[115][154]==IMAGE_BLACK)    //防止提前拐入环岛
+    {
+        return 0;
+    }
+    for(uint8 row=60;row-1>0;row--)          //防止在Flag1处误判
+    {
+        if(BinaryImage[row][150]==IMAGE_BLACK&&BinaryImage[row-1][150]==IMAGE_WHITE) //黑跳白
+        {
+            return 0;
+        }
+    }
+    //环岛入口在右边
+    if(LostNum_RightLine>C_LOSTLINE)   //右边丢线：环岛入口在右边
+    {
+        for(int row=MT9V03X_H;row-1>0;row--)  //从下往上检查右边界线
+        {
+            if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)    //该行丢线而下一行不丢线
+            {
+                //下面这个防止进入环岛后误判
+                for(int column=MT9V03X_W-1;column-1>0;column--) //向左扫
+                {
+                    if(BinaryImage[30][column]!=BinaryImage[30][column-1])
+                    {
+                        if(row-10>0)
+                        {
+                            row-=10;
+                        }
+                        Point StarPoint,EndPoint;   //定义补线的起点和终点
+                        EndPoint.Y=row;             //终点赋值
+                        EndPoint.X=RightLine[row];
+                        StarPoint.Y=MT9V03X_H-1;    //起点赋值
+                        StarPoint.X=MT9V03X_W-1;
+                        FillingLine('R',StarPoint,EndPoint);    //补线
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
  ** 函数功能: 识别环岛出口，右侧
  ** 参    数: InflectionL：左下拐点
  **           InflectionR：右下拐点
@@ -1022,7 +1134,7 @@ uint8 CircleIsFlag_3_R(int *LeftLine,int *RightLine)
  */
 uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    static uint8 flag,num_1,num_2;
+    static uint8 flag,num_1,num_2,flag_begin,flag_last_begin;
     //使用switch实现简单的状态机机制
     switch(flag)
     {
@@ -1106,7 +1218,18 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
             }
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
             flag=3;
-            return 1;
+            break;
+        }
+        case 3:
+        {
+            flag_begin=CircleIslandOverBegin_R(LeftLine, RightLine);
+            if(flag_begin==0&&flag_last_begin==1)   //上一次识别到环岛入口而这一次没有识别到环岛入口
+            {
+                flag=4;
+                return 1;   //退出状态机
+            }
+            flag_last_begin=flag_begin; //保存上一次的状态
+            break;
         }
         default:break;
     }

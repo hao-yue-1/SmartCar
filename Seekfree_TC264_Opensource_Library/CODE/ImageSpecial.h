@@ -37,6 +37,7 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR);       
 uint8 GarageLStatusIdentify(Point InflectionL,Point InflectionR,uint8 GarageLFlag);  //左车库的状态机转移
 void OutGarage(void);       //出库
 /*环岛相关函数*/
+uint8 CircleIslandOverBegin_L(int *LeftLine,int *RightLine);
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //左环岛状态机
 uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //右环岛状态机
 uint8 DealGarageLSpecial();     //左车库特殊情况处理，左斜情况
