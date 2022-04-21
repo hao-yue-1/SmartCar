@@ -113,7 +113,7 @@ void ImageProcess()
             if(GarageLStatusIdentify(LeftDownPoint, RightDownPoint,Garage_flag)==1)
             {
                 gpio_set(LED_RED, 1);
-                base_speed=125;  //降速进入三岔
+                base_speed=135;  //提速进入三岔
                 flag=4;         //跳转到状态4
             }
             break;
@@ -130,7 +130,7 @@ void ImageProcess()
             if(ForkStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
             {
                 gpio_set(LED_YELLOW, 1);
-                diff_speed_kp=0.01;//修改参数
+                diff_speed_kp=0.1;//修改参数
                 base_speed=130; //提速进入第二个十字回环
                 flag=5;         //跳转到状态5
             }

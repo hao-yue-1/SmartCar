@@ -669,81 +669,66 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
  *********************************************************************************************/
 uint8 ForkStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag)
 {
-    static uint8 ForkFlag,LastFlag,StatusChange,num;//三岔识别函数的零食状态变量，用来看状态是否跳转
-    ForkFlag=NowFlag;
+    static uint8 StatusChange,num1,num3,numspecial;//三岔识别函数的零食状态变量，用来看状态是否跳转
+
+    if(numspecial<60)//防止很久都没有出现进入入口的状态，及时去判断出口
+    {
+        numspecial++;
+    }
+    else if(StatusChange<1)//判断状态有没有度过入口状态，若没有则强制跳过
+    {
+        StatusChange=2;
+    }
+
     switch(StatusChange)
     {
+        //入口状态
         case 0:
         {
-            if(LastFlag==0 && ForkFlag==1)  //无-有
+            if(NowFlag==1)
             {
-                StatusChange=1;
+                StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
             }
             break;
         }
+        //中途状态
         case 1:
         {
-            if(LastFlag==1 && ForkFlag==1)  //有-有
+            if(num1<30)  //给足够长的时间让车走到三岔运行中
             {
-                StatusChange=2;
+                num1++;
+                break;
+            }
+            if(NowFlag==0)
+            {
+                StatusChange=2;//过了中间过度态之后跳转至检测出口
             }
             break;
         }
+        //出口状态
         case 2:
         {
-            if(LastFlag==1 && ForkFlag==0)  //有-无
+            if(NowFlag==1)
             {
                 StatusChange=3;
             }
             break;
         }
+        //确保已经出三岔了，否则三岔口就出三岔了，使得出三岔其实是扫线出的
         case 3:
         {
-            if(num<20)  //连续20帧
+            if(num3<20)  //给足够长的时间让车走到三岔运行中
             {
-                num++;
+                num3++;
                 break;
             }
-            if(LastFlag==0 && ForkFlag==0)  //无-无
+            else
             {
-                StatusChange=4;
-            }
-            break;
-        }
-        case 4:
-        {
-            if(LastFlag==0 && ForkFlag==1)  //无-有
-            {
-                StatusChange=5;
-            }
-            break;
-        }
-        case 5:
-        {
-            if(LastFlag==1 && ForkFlag==1)  //有-有
-            {
-                StatusChange=6;
-            }
-            break;
-        }
-        case 6:
-        {
-            if(LastFlag==1 && ForkFlag==0)  //有-无
-            {
-                StatusChange=7;
-            }
-            break;
-        }
-        case 7:
-        {
-            if(LastFlag==0 && ForkFlag==0)  //无-无
-            {
-                StatusChange=7;
                 return 1;
             }
         }
+        default:break;
     }
-    LastFlag=ForkFlag;//保留上一次的状态
     return 0;
 }
 
