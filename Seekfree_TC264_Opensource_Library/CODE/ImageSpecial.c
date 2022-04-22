@@ -58,7 +58,7 @@ int64 SobelTest(void)
  **           1: 判断成立
  ** 作    者: LJF
  *********************************************************************************************/
-uint8 DealGarageLSpecial()
+uint8 DealGarageLSpecial(void)
 {
     int row=0,cloumn=0,flag=0,BiasRow=0;
     Point LeftDownPoint,LeftUpPoint;
@@ -355,7 +355,7 @@ uint8 CircleIslandOverBegin_L(int *LeftLine,int *RightLine)
  ** 注    意：该函数调用时应确保小车已在环岛中
  ********************************************************************************************
  */
-uint8 CircleIslandEnd_L()
+uint8 CircleIslandEnd_L(void)
 {
     if(LostNum_LeftLine>100)    //防止还未出环岛的误判
     {
@@ -366,9 +366,11 @@ uint8 CircleIslandEnd_L()
         if(fabsf(Bias)<1.5)
         {
             /*在这里将舵机打死，考虑要不要加延时*/
-            systick_delay_ms(STM0,50);
+            systick_delay_ms(STM0,50);  //加一点延时防止撞到内环
+            diff_speed_kp+=0.05;
             Bias=10;
             systick_delay_ms(STM0,300);
+            diff_speed_kp-=0.05;
             return 1;
         }
     }
@@ -473,7 +475,7 @@ uint8 CircleIsFlag_2_L(int *LeftLine,int *RightLine)
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIsFlag_3_L()
+uint8 CircleIsFlag_3_L(void)
 {
     if(LostNum_LeftLine>100)    //左边接近全丢线
     {
@@ -571,6 +573,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 2: //此时小车已经在环岛中，开始判断环岛出口
         {
+            base_speed=140; //在环中减速，准备出环
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
             while(CircleIslandEnd_L()==0)  //识别到环岛出口跳出循环
             {
@@ -982,7 +985,7 @@ uint8 CircleIslandOverBegin_R(int *LeftLine,int *RightLine)
  ** 注    意：该函数调用时应确保小车已在环岛中
  ********************************************************************************************
  */
-uint8 CircleIslandEnd_R()
+uint8 CircleIslandEnd_R(void)
 {
     if(LostNum_RightLine>110)    //防止还未出环岛的误判
     {
@@ -1106,7 +1109,7 @@ uint8 CircleIsFlag_2_R(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIsFlag_3_R()
+uint8 CircleIsFlag_3_R(void)
 {
     if(LostNum_RightLine>100)    //右边接近全丢线
     {

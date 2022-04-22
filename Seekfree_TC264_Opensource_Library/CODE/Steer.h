@@ -11,7 +11,7 @@
 #define CODE_STEER_H_
 
 #define STEER_PIN   ATOM1_CH1_P33_9     //输出舵机PWM引脚
-#define STEER_MID   765                 //舵机居中值
+#define STEER_MID   762                 //舵机居中值         //4.22晚修改，原765
 #define STEER_LEFT  850                 //舵机向左打死值
 #define STEER_RIGHT 680                 //舵机向右打死值
 

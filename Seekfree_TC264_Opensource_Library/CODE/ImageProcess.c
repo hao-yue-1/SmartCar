@@ -14,7 +14,16 @@ uint8 CrossRoads_flag=0;        //十字标志变量
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 CircleIsland_flag=0;      //环岛标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
-uint8 speed_case_1=200,speed_case_2=150,speed_case_3=120,speed_case_4=135,speed_case_5=130,speed_case_6=145,speed_case_7=135;
+uint8 speed_case_1=200,speed_case_2=150,speed_case_3=130,speed_case_4=135,speed_case_5=130,speed_case_6=145,speed_case_7=135;
+
+void Stop(void)
+{
+    while(1)
+    {
+        base_speed=0;
+        diff_speed_kp=0;
+    }
+}
 
 /********************************************************************************************
  ** 函数功能: 对图像的各个元素之间的逻辑处理函数，最终目的是为了得出Bias给中断去控制
@@ -72,7 +81,7 @@ void ImageProcess()
             if(CrossLoopEnd_F()==1)
             {
                 gpio_set(LED_GREEN, 1);
-                base_speed=150; //提速上坡进行右环岛
+                base_speed=speed_case_2; //提速上坡进行右环岛
                 flag=2;         //跳转到状态2
             }
             else
@@ -82,12 +91,14 @@ void ImageProcess()
                     if(case_1==40)  //只进行一次
                     {
                         case_1++;
-                        base_speed=speed_case_2; //分段减速
+                        gpio_set(P21_4, 0);
+                        base_speed=150; //分段减速
                     }
                 }
                 if(CircleIsFlag_3_L()==1)
                 {
-                    base_speed=speed_case_3;//降速入环，为出环做准备
+                    gpio_set(P20_9, 0);
+                    base_speed=120;//降速入环，为出环做准备
                 }
             }
             break;
@@ -103,8 +114,9 @@ void ImageProcess()
             if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_BLUE, 1);
-                base_speed=130;  //减速进入左车库
+                base_speed=speed_case_3;  //减速进入左车库
                 flag=3;          //跳转到状态3
+                Stop();
             }
             break;
         }
