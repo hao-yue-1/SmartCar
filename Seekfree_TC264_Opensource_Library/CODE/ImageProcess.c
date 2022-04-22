@@ -14,6 +14,7 @@ uint8 CrossRoads_flag=0;        //十字标志变量
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 CircleIsland_flag=0;      //环岛标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
+uint8 speed_case_1=200,speed_case_2=150,speed_case_3=120,speed_case_4=135,speed_case_5=130,speed_case_6=145,speed_case_7=135;
 
 /********************************************************************************************
  ** 函数功能: 对图像的各个元素之间的逻辑处理函数，最终目的是为了得出Bias给中断去控制
@@ -45,8 +46,8 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-//            flag=6; //调试用，跳转到指定状态
-            if(case_0<80)  //出库后延时一会再开启下一个元素的识别，防止误判
+//            flag=4; //调试用，跳转到指定状态
+            if(case_0<100)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;
                 break;
@@ -55,14 +56,14 @@ void ImageProcess()
             if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_WHITE, 1);
-                base_speed=160; //提速上坡进入第一个十字回环
+                base_speed=speed_case_1; //提速上坡进入第一个十字回环
                 flag=1;         //跳转到状态1
             }
             break;
         }
         case 1: //识别第一个十字回环
         {
-            if(case_1<10)   //延时一会再进入十字判断
+            if(case_1<30)   //延时一会再进入十字判断
             {
                 case_1++;
                 break;
@@ -71,25 +72,33 @@ void ImageProcess()
             if(CrossLoopEnd_F()==1)
             {
                 gpio_set(LED_GREEN, 1);
+                base_speed=150; //提速上坡进行右环岛
                 flag=2;         //跳转到状态2
             }
             else
             {
                 if(CrossLoopBegin_F(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
                 {
-                    base_speed=125;//降速入环
+                    if(case_1==40)  //只进行一次
+                    {
+                        case_1++;
+                        base_speed=speed_case_2; //分段减速
+                    }
+                }
+                if(CircleIsFlag_3_L()==1)
+                {
+                    base_speed=speed_case_3;//降速入环，为出环做准备
                 }
             }
             break;
         }
         case 2: //识别右环岛
         {
-            if(case_2<15)   //延时加速
+            if(case_2<15)   //延时开启识别
             {
                 case_2++;
                 break;
             }
-            base_speed=150; //提速上坡进行右环岛
             gpio_set(LED_BLUE, 0);
             if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
@@ -111,6 +120,11 @@ void ImageProcess()
                 gpio_set(LED_RED, 1);
                 base_speed=135;  //提速进入三岔
                 flag=4;          //跳转到状态4
+                while(1)
+                {
+                    base_speed=0;
+                    diff_speed_kp=0;
+                }
             }
             break;
         }
@@ -134,7 +148,7 @@ void ImageProcess()
         }
         case 5: //识别第二个十字回环
         {
-            if(case_5<20)  //结束三岔后延时一会再开启下一个元素的识别，防止误判
+            if(case_5<80)  //结束三岔后延时一会再开启下一个元素的识别，防止误判
             {
                 case_5++;
                 break;
@@ -143,12 +157,16 @@ void ImageProcess()
             if(CrossLoopEnd_S()==1)
             {
                 gpio_set(P21_4, 1);
-                base_speed=145; //提速进入三岔和入库
+                base_speed=145; //提速进入三岔
                 flag=6;         //跳转到状态6
             }
             else
             {
-                CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+               CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+               if(CircleIsFlag_3_L()==1)
+               {
+                   base_speed=110;//降速入环，为出环做准备
+               }
             }
             break;
         }

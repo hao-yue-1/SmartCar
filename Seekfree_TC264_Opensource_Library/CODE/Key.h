@@ -26,5 +26,7 @@
 uint8 KeyScan(void);
 uint8 KeyParameter(void);
 void ParameterDisplay(void);
+void BaseSpeedDisplay(void);
+uint8 KeyBaseSpeed(void);
 
 #endif /* CODE_KEY_H_ */

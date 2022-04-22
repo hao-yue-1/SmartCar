@@ -473,7 +473,7 @@ uint8 CircleIsFlag_2_L(int *LeftLine,int *RightLine)
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIsFlag_3_L(int *LeftLine,int *RightLine)
+uint8 CircleIsFlag_3_L()
 {
     if(LostNum_LeftLine>100)    //左边接近全丢线
     {
@@ -558,7 +558,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                     flag=0; //跳转回到状态0
                 }
             }
-            if(CircleIsFlag_3_L(LeftLine, RightLine)==1)    //识别已经进入环岛
+            if(CircleIsFlag_3_L()==1)    //识别已经进入环岛
             {
                 if(num_2>2) //在此之前有识别到环岛入口
                 {
@@ -734,7 +734,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
 {
     static uint8 StatusChange,num1,num3,numspecial;//三岔识别函数的零食状态变量，用来看状态是否跳转
 
-    if(numspecial<60)//防止很久都没有出现进入入口的状态，及时去判断出口
+    if(numspecial<100)//防止很久都没有出现进入入口的状态，及时去判断出口
     {
         numspecial++;
     }
@@ -919,7 +919,7 @@ uint8 CircleIslandBegin_R(int *LeftLine,int *RightLine)
 
 /*
  *******************************************************************************************
- ** 函数功能: 识别环岛入口，右侧
+ ** 函数功能: 识别环岛入口，右侧，补线直行通过
  ** 参    数: LeftLine：左线数组
  **           RightLine：右线数组
  ** 返 回 值: 0：没有识别到环岛
@@ -1106,7 +1106,7 @@ uint8 CircleIsFlag_2_R(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIsFlag_3_R(int *LeftLine,int *RightLine)
+uint8 CircleIsFlag_3_R()
 {
     if(LostNum_RightLine>100)    //右边接近全丢线
     {
@@ -1192,7 +1192,7 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
                     flag=0; //跳转回到状态0
                 }
             }
-            if(CircleIsFlag_3_R(LeftLine, RightLine)==1)    //识别已经进入环岛
+            if(CircleIsFlag_3_R()==1)    //识别已经进入环岛
             {
                 if(num_2>2) //在此之前有识别到环岛入口
                 {
@@ -1265,7 +1265,7 @@ uint8 CrossLoopEnd_F(void)
             //舵机向右打死并加上一定的延时实现出弯
             Bias=-10;
             diff_speed_kp+=0.2; //增大差速
-            systick_delay_ms(STM0,400);
+            systick_delay_ms(STM0,500);
             diff_speed_kp-=0.2; //恢复差速
             return 1;
         }
@@ -1700,7 +1700,7 @@ uint8 CrossLoop_F(int *LeftLine,int *RightLine,Point InflectionL,Point Inflectio
  */
 void OutGarage(void)
 {
-    systick_delay_ms(STM0,150);
+    systick_delay_ms(STM0,100);
     //舵机向右打死并加上一定的延时实现出库
     Bias=-10;
     diff_speed_kp=0.1;

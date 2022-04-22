@@ -122,13 +122,7 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
     pwm_l=Speed_PI_Left(encoder_l,speed_l,MotorK);    //左右电机PID
     pwm_r=Speed_PI_Right(encoder_r,speed_r,MotorK);
 
-    //防止超调，保护驱动板
-    if(encoder_l>180||encoder_r>180)
-    {
-        MotorSetPWM(0,0);
-        return;
-    }
-    else if(encoder_l>220||encoder_r>220)
+    if(encoder_l>350||encoder_r>350)
     {
         MotorSetPWM(0,0);
         lcd_showuint8(0, 7, 7);

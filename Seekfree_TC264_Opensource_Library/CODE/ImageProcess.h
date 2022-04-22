@@ -16,6 +16,7 @@
 extern uint8 CrossRoads_flag;        //十字标志变量
 extern uint8 Fork_flag;              //三岔识别的标志变量
 extern uint8 CircleIsland_flag;      //环岛标志变量
+extern uint8 speed_case_1,speed_case_2,speed_case_3,speed_case_4,speed_case_5,speed_case_6,speed_case_7;
 
 //主控板LED颜色定义
 #define LED_WHITE    P23_1

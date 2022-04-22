@@ -46,11 +46,17 @@ void core1_main(void)
     enableInterrupts();
 
     //按键调参
-    ParameterDisplay();
+    BaseSpeedDisplay(); //分段速度
     while(key_flag!=1)
     {
-        key_flag=KeyParameter();
+        key_flag=KeyBaseSpeed();
     }
+//    key_flag=0;
+//    ParameterDisplay(); //PID参数
+//    while(key_flag!=1)
+//    {
+//        key_flag=KeyParameter();
+//    }
     pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化定时器中断
     //完成出库
     if(outgarage_flag==0)
