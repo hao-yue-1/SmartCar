@@ -88,7 +88,7 @@ void ImageProcess()
             {
                 if(CrossLoopBegin_F(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
                 {
-                    if(case_1==40)  //只进行一次
+                    if(case_1==30)  //只进行一次
                     {
                         case_1++;
                         gpio_set(P21_4, 0);
@@ -116,7 +116,6 @@ void ImageProcess()
                 gpio_set(LED_BLUE, 1);
                 base_speed=speed_case_3;  //减速进入左车库
                 flag=3;          //跳转到状态3
-                Stop();
             }
             break;
         }
@@ -132,11 +131,7 @@ void ImageProcess()
                 gpio_set(LED_RED, 1);
                 base_speed=135;  //提速进入三岔
                 flag=4;          //跳转到状态4
-                while(1)
-                {
-                    base_speed=0;
-                    diff_speed_kp=0;
-                }
+                Stop();
             }
             break;
         }
