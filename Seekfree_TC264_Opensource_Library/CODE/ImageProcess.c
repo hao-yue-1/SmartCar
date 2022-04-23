@@ -14,7 +14,7 @@ uint8 CrossRoads_flag=0;        //十字标志变量
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 CircleIsland_flag=0;      //环岛标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
-uint8 speed_case_1=200,speed_case_2=150,speed_case_3=130,speed_case_4=140,speed_case_5=130,speed_case_6=145,speed_case_7=135;
+uint8 speed_case_1=200,speed_case_2=150,speed_case_3=130,speed_case_4=140,speed_case_5=150,speed_case_6=145,speed_case_7=135;
 
 void Stop(void)
 {
@@ -36,7 +36,7 @@ void ImageProcess()
 {
     /***************************变量定义****************************/
     static uint8 flag;
-    static uint8 case_5,case_0,case_2,case_1,case_4;
+    static uint8 case_5,case_0,case_2,case_1,case_4,case_6;
     Point LeftDownPoint,RightDownPoint;     //左右下拐点
     LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;
     Point ForkUpPoint;
@@ -50,13 +50,14 @@ void ImageProcess()
     /*************************特殊元素判断*************************/
 //    CircleIslandEnd_L();
 //    Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    lcd_showuint8(8, 0, Fork_flag);
     /****************************状态机***************************/
 #if 1
     switch(flag)
     {
         case 0: //识别左环岛
         {
-//            flag=3; //调试用，跳转到指定状态
+//            flag=5; //调试用，跳转到指定状态
             if(case_0<100)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;
@@ -147,9 +148,8 @@ void ImageProcess()
             if(ForkFStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
             {
                 gpio_set(LED_YELLOW, 1);
-                Stop();
                 diff_speed_kp=0.1;//修改参数
-                base_speed=130; //提速进入第二个十字回环
+                base_speed=speed_case_5; //提速进入第二个十字回环
                 flag=5;         //跳转到状态5
             }
             break;
@@ -173,13 +173,18 @@ void ImageProcess()
                CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
                if(CircleIsFlag_3_L()==1)
                {
-                   base_speed=110;//降速入环，为出环做准备
+                   base_speed=120;//降速入环，为出环做准备
                }
             }
             break;
         }
         case 6: //识别第二遍三岔
         {
+            if(case_6<45)  //结束十字回环后延时一会再开启下一个元素的识别，防止S弯误判成三岔入口
+            {
+                case_6++;
+                break;
+            }
             gpio_set(P21_5, 0);
             Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);   //获取三岔状态
             if(ForkSStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)

@@ -630,7 +630,7 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
             {
                 if(BinaryImage[i-1][cloumnL]==IMAGE_WHITE)
                     break;
-                if(cloumnL==11)
+                if(cloumnL==11)//如果起始的列就小于了11，那么则不会return，会直接到后面的赋值
                     return;//遍历完了都没有找到白的即不是三岔，退出判断
             }
             for(cloumnR=UpInflectionC->X;cloumnR<MT9V03X_W-10;cloumnR++)
@@ -694,7 +694,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             return 1;//三岔正入丢失左右拐点那一帧
         }
     }
-    //左拐点x[0,70)
+    //左拐点x[0,70),加上列数不能太右边，避免极端情况影响了
     else if(LostNum_RightLine>=60 && DownInflectionL.X!=0)
     {
         Point ImageDownPointR;//以左拐点对称的点去补线和找拐点
@@ -810,12 +810,13 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
 {
     static uint8 StatusChange,num1,num3,numspecial;//三岔识别函数的零食状态变量，用来看状态是否跳转
 
-    if(numspecial<150)//防止很久都没有出现进入入口的状态，及时去判断出口
+    if(numspecial<175)//防止很久都没有出现进入入口的状态，及时去判断出口
     {
         numspecial++;
     }
     else if(StatusChange<1)//判断状态有没有度过入口状态，若没有则强制跳过
     {
+        gpio_toggle(LED_BLUE);
         StatusChange=2;
     }
 
@@ -826,6 +827,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         {
             if(NowFlag==1)
             {
+                gpio_toggle(LED_WHITE);
                 StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
             }
             break;
@@ -833,13 +835,14 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         //中途状态
         case 1:
         {
-            if(num1<30)  //给足够长的时间让车走到三岔运行中
+            if(num1<50)  //给足够长的时间让车走到三岔运行中
             {
                 num1++;
                 break;
             }
             if(NowFlag==0)
             {
+                gpio_toggle(LED_GREEN);
                 StatusChange=2;//过了中间过度态之后跳转至检测出口
             }
             break;
@@ -849,6 +852,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         {
             if(NowFlag==1)
             {
+                gpio_toggle(LED_RED);
                 StatusChange=3;
             }
             break;
@@ -863,6 +867,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
             }
             else
             {
+                gpio_toggle(LED_YELLOW);
                 return 1;
             }
         }
