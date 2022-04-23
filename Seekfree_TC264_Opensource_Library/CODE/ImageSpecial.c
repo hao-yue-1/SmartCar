@@ -760,12 +760,12 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         //中途状态
         case 1:
         {
-            if(num1<30)  //给足够长的时间让车走到三岔运行中
+            if(num1<50)  //给足够长的时间让车走到三岔运行中
             {
                 num1++;
                 break;
             }
-            if(NowFlag==0)
+            else if(NowFlag==0)
             {
                 StatusChange=2;//过了中间过度态之后跳转至检测出口
             }
@@ -783,7 +783,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         //确保已经出三岔了，否则三岔口就出三岔了，使得出三岔其实是扫线出的
         case 3:
         {
-            if(num3<20)  //给足够长的时间让车走到三岔运行中
+            if(num3<20)  //给足够长的时间让车走出三岔中
             {
                 num3++;
                 break;
