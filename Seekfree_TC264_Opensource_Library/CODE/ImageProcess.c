@@ -14,7 +14,7 @@ uint8 CrossRoads_flag=0;        //十字标志变量
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 CircleIsland_flag=0;      //环岛标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
-uint8 speed_case_1=200,speed_case_2=150,speed_case_3=130,speed_case_4=140,speed_case_5=150,speed_case_6=145,speed_case_7=135;
+uint8 speed_case_1=200,speed_case_2=150,speed_case_3=130,speed_case_4=140,speed_case_5=145,speed_case_6=145,speed_case_7=135;
 
 void Stop(void)
 {
@@ -57,7 +57,7 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-//            flag=5; //调试用，跳转到指定状态
+            flag=4; //调试用，跳转到指定状态
             if(case_0<100)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;
@@ -93,13 +93,11 @@ void ImageProcess()
                     if(case_1==30)  //只进行一次
                     {
                         case_1++;
-                        gpio_set(P21_4, 0);
                         base_speed=150; //分段减速
                     }
                 }
                 if(CircleIsFlag_3_L()==1)
                 {
-                    gpio_set(P20_9, 0);
                     base_speed=120;//降速入环，为出环做准备
                 }
             }
@@ -148,7 +146,7 @@ void ImageProcess()
             if(ForkFStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
             {
                 gpio_set(LED_YELLOW, 1);
-                diff_speed_kp=0.1;//修改参数
+                diff_speed_kp=0.1;  //增大差速过U字弯
                 base_speed=speed_case_5; //提速进入第二个十字回环
                 flag=5;         //跳转到状态5
             }
@@ -161,11 +159,16 @@ void ImageProcess()
                 case_5++;
                 break;
             }
+            if(case_5==80)
+            {
+                diff_speed_kp=0.05; //差速改回去
+                case_5++;
+            }
             gpio_set(P21_4, 0);
             if(CrossLoopEnd_S()==1)
             {
                 gpio_set(P21_4, 1);
-                base_speed=145; //提速进入三岔
+                base_speed=speed_case_6; //提速进入三岔
                 flag=6;         //跳转到状态6
             }
             else
@@ -173,7 +176,7 @@ void ImageProcess()
                CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
                if(CircleIsFlag_3_L()==1)
                {
-                   base_speed=120;//降速入环，为出环做准备
+                   base_speed=125;//降速入环，为出环做准备
                }
             }
             break;
@@ -190,8 +193,10 @@ void ImageProcess()
             if(ForkSStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
             {
                 gpio_set(P21_5, 1);
-                base_speed=135; //降速准备入库
-                flag=7;         //跳转到状态5
+                base_speed=speed_case_7; //降速准备入库
+                MotorK.I=1;     //提高响应速度
+                flag=7;         //跳转到状态7
+                Stop();
             }
             break;
         }

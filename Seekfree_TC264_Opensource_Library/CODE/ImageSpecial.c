@@ -816,7 +816,6 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
     }
     else if(StatusChange<1)//判断状态有没有度过入口状态，若没有则强制跳过
     {
-        gpio_toggle(LED_BLUE);
         StatusChange=2;
     }
 
@@ -827,8 +826,8 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         {
             if(NowFlag==1)
             {
-                gpio_toggle(LED_WHITE);
-                StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
+                StatusChange=1; //只要开始识别到了三岔就说明已经是入口阶段了
+                base_speed+=10; //进入三岔提速，确保是正常进入的三岔才会触发
             }
             break;
         }
@@ -842,8 +841,8 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
             }
             if(NowFlag==0)
             {
-                gpio_toggle(LED_GREEN);
-                StatusChange=2;//过了中间过度态之后跳转至检测出口
+                StatusChange=2; //过了中间过度态之后跳转至检测出口
+                base_speed-=10; //检测出口减速
             }
             break;
         }
@@ -852,7 +851,6 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         {
             if(NowFlag==1)
             {
-                gpio_toggle(LED_RED);
                 StatusChange=3;
             }
             break;
@@ -867,7 +865,6 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
             }
             else
             {
-                gpio_toggle(LED_YELLOW);
                 return 1;
             }
         }
@@ -1361,9 +1358,9 @@ uint8 CrossLoopEnd_S(void)
         {
             //舵机向右打死并加上一定的延时实现出弯
             Bias=-10;
-            diff_speed_kp+=0.1; //增大差速
-            systick_delay_ms(STM0,400);
-            diff_speed_kp-=0.1; //恢复差速
+            diff_speed_kp+=0.2; //增大差速
+            systick_delay_ms(STM0,500);
+            diff_speed_kp-=0.2; //恢复差速
             return 1;
         }
     }
@@ -1672,7 +1669,6 @@ uint8 CrossLoop_F(int *LeftLine,int *RightLine,Point InflectionL,Point Inflectio
         }
         case 5:
         {
-            gpio_set(LED_RED, 0);
 //            base_speed+=5;  //进入环中提速
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
             while(CrossLoopEnd_F()==0)  //识别到出口跳出循环
@@ -1690,7 +1686,6 @@ uint8 CrossLoop_F(int *LeftLine,int *RightLine,Point InflectionL,Point Inflectio
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
             diff_speed_kp-=0.1; //恢复差速
             flag=6;
-            gpio_set(LED_RED, 1);
             return 1;
         }
     }
@@ -1708,7 +1703,7 @@ uint8 CrossLoop_F(int *LeftLine,int *RightLine,Point InflectionL,Point Inflectio
  */
 void OutGarage(void)
 {
-    systick_delay_ms(STM0,100);
+    systick_delay_ms(STM0,50);
     //舵机向右打死并加上一定的延时实现出库
     Bias=-10;
     diff_speed_kp=0.1;
