@@ -1,6 +1,9 @@
 #include "Binarization.h"
+#include "headfile.h"
+#include <stdlib.h>
 
 uint8 BinaryImage[MT9V03X_H][MT9V03X_W]={0};
+uint32 use_time;
 
 /*
  *  @brief  大津法二值化0.8ms程序（实际测试4ms在TC264中）
@@ -132,9 +135,9 @@ uint8 OneDimensionalThreshold(uint16 width, uint16 height)
     int row,cloum;
     int G1,G2;
     int g1,g2;
-    uint8 threshold=120,threshold_last=0;   //阈值与上一次阈值，初始化为不同的值，第一个阈值是认为随机设定的
+    uint8 threshold=160,threshold_last=0;   //阈值与上一次阈值，初始化为不同的值，第一个阈值是认为随机设定的
 
-    while(threshold!=threshold_last)   //只有当连续两次计算的阈值相等时才会跳出while
+    while(abs(threshold-threshold_last)>10)   //只有当连续两次计算的阈值相等时才会跳出while
     {
         //初始化数据
         G1=0;G2=0;
@@ -166,9 +169,13 @@ uint8 OneDimensionalThreshold(uint16 width, uint16 height)
 //根据场地条件调用大津法或谷底最小值得到二值化阈值然后根据灰度图得到黑白图像
 void ImageBinary()
 {
-      uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);//使用大津法得到二值化阈值
-//      uint8 Image_Threshold = GuDiThreshold(MT9V03X_W,MT9V03X_H);//使用谷底最小值得到二值化阈值
-//      uint8 Image_Threshold = OneDimensionalThreshold(MT9V03X_W,MT9V03X_H);//使用一维means法得到二值化阈值
+//    uint8 Image_Threshold = 160;//固定阈值
+//    systick_start(STM1);
+//    uint8 Image_Threshold = GuDiThreshold(MT9V03X_W,MT9V03X_H);//使用谷底最小值得到二值化阈值
+    uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);//使用大津法得到二值化阈值
+//    uint8 Image_Threshold = OneDimensionalThreshold(MT9V03X_W,MT9V03X_H);//使用一维means法得到二值化阈值
+//    use_time = systick_getval_us(STM1);
+//    lcd_showint32(60, 0, use_time, 5);
 //      lcd_showuint8(8, 0, Image_Threshold);
 
     for (int i = 0; i < MT9V03X_H; ++i)

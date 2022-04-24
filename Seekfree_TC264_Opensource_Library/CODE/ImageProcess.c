@@ -14,7 +14,9 @@ uint8 CrossRoads_flag=0;        //十字标志变量
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 CircleIsland_flag=0;      //环岛标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
-uint8 speed_case_1=200,speed_case_2=150,speed_case_3=130,speed_case_4=140,speed_case_5=145,speed_case_6=145,speed_case_7=135;
+uint8 speed_case_1=200,speed_case_2=150,speed_case_3=130,speed_case_4=145,speed_case_5=145,speed_case_6=150,speed_case_7=135;
+
+uint32 SobelResult=0;
 
 void Stop(void)
 {
@@ -57,7 +59,7 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-//            flag=4; //调试用，跳转到指定状态
+//            flag=3; //调试用，跳转到指定状态
             if(case_0<100)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;
@@ -134,18 +136,18 @@ void ImageProcess()
             if(GarageLStatusIdentify(LeftDownPoint, RightDownPoint,Garage_flag)==1)
             {
                 gpio_set(LED_RED, 1);
-                base_speed=speed_case_4;  //提速进入三岔
                 flag=4;          //跳转到状态4
             }
             break;
         }
         case 4: //识别三岔
         {
-            if(case_4<5)    //延迟防止误判
+            if(case_4<15)    //延迟防止误判
             {
                 case_4++;
                 break;
             }
+            base_speed=speed_case_4;  //提速进入三岔
             gpio_set(LED_YELLOW, 0);
             Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);   //获取三岔状态
             if(ForkFStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
@@ -199,7 +201,8 @@ void ImageProcess()
             {
                 gpio_set(P21_5, 1);
                 base_speed=speed_case_7; //降速准备入库
-                MotorK.I=1;     //提高响应速度
+                MotorK.P=15;    //提高响应速度
+                MotorK.I=1.2;
                 flag=7;         //跳转到状态7
             }
             break;
@@ -207,12 +210,8 @@ void ImageProcess()
         case 7: //识别右车库，入库
         {
             gpio_set(P20_9, 0);
-            if(LostNum_RightLine>40 && LostNum_RightLine<90 && LostNum_LeftLine<10 && LostNum_LeftLine>0)
-            {
-                Garage_flag=GarageIdentify('R', LeftDownPoint, RightDownPoint);//识别车库
-            }
-            else
-                break;
+            Garage_flag=GarageIdentify('R', LeftDownPoint, RightDownPoint);//识别车库
+            break;
         }
     }
 #endif

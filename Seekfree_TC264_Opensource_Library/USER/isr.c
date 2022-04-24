@@ -29,6 +29,7 @@
 #include "ImageTack.h"
 #include "zf_gpio.h"
 
+uint32 SteerPWM=0;          //舵机PWM
 float diff_speed_kp=0.05;   //差速转向
 
 //PIT中断函数  示例
@@ -36,21 +37,11 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 {
 	enableInterrupts();//开启中断嵌套
 
-	//舵机PID控制
-	uint32 SteerPWM=0;
-	SteerPWM=Steer_Position_PID(Bias,SteerK);
-	SteerCtrl(SteerPWM);
 	//电机PID控制
 	speed_l=base_speed-diff_speed_kp*(SteerPWM-STEER_MID); //(StreePWM-STEER_MID)max=85
 	speed_r=base_speed+diff_speed_kp*(SteerPWM-STEER_MID);
 	MotorSetTarget(speed_l, speed_r);
 	MotorCtrl(speed_l,speed_r);
-//	MotorCtrl(base_speed,base_speed);   //调速度环用
-	//野火上位机调试
-//	int Bias_UART=Bias*100;
-//	int PWM_UART=StreePWM;
-//	set_computer_value(SEND_FACT_CMD, CURVES_CH1, &Bias_UART, 1);      //发送偏差
-//	set_computer_value(SEND_FACT_CMD, CURVES_CH2, &PWM_UART, 1);      //发送PWM
 	//调试
 	gpio_set(P20_8,0);
 
@@ -61,8 +52,12 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 {
 	enableInterrupts();//开启中断嵌套
-	PIT_CLEAR_FLAG(CCU6_0, PIT_CH1);
 
+	//舵机PID控制
+    SteerPWM=Steer_Position_PID(Bias,SteerK);
+    SteerCtrl(SteerPWM);
+
+	PIT_CLEAR_FLAG(CCU6_0, PIT_CH1);
 }
 
 IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)

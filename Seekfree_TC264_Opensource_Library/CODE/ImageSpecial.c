@@ -179,7 +179,7 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
         case 'R':
             //这里如果为了防止跟三岔误判可以加上右边丢线大于40小于90左边丢线小于10即可
             //右边丢线、左边不丢线、存在右拐点进入索贝尔计算
-            if(LostNum_RightLine>40 && LostNum_LeftLine<10)
+            if(LostNum_RightLine>35 && LostNum_LeftLine<10)
             {
                 SobelResult=SobelTest();//进行索贝尔计算
                 if(SobelResult>ZebraTresholeR)
@@ -534,6 +534,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                     num_1=0;
                     num_2=0;
                     flag=1; //跳转到状态1
+                    base_speed=150; //降速准备入环
                 }
             }
             break;
@@ -753,6 +754,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         {
             if(NowFlag==1)
             {
+                gpio_toggle(LED_WHITE);
                 StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
             }
             break;
@@ -767,6 +769,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
             }
             else if(NowFlag==0)
             {
+                gpio_toggle(LED_GREEN);
                 StatusChange=2;//过了中间过度态之后跳转至检测出口
             }
             break;
@@ -776,6 +779,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         {
             if(NowFlag==1)
             {
+                gpio_toggle(LED_RED);
                 StatusChange=3;
             }
             break;
@@ -826,6 +830,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         {
             if(NowFlag==1)
             {
+                SteerK.P=18.25;//减小KP进入三岔
                 StatusChange=1; //只要开始识别到了三岔就说明已经是入口阶段了
             }
             break;
@@ -837,7 +842,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
             {
                 if(num1==15)
                 {
-                    base_speed+=20; //进入三岔提速，确保是正常进入的三岔才会触发
+                    base_speed+=15; //进入三岔提速，确保是正常进入的三岔才会触发
                 }
                 num1++;
                 break;
@@ -868,6 +873,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
             }
             else
             {
+                SteerK.P=19.25;//还原KP
                 return 1;
             }
         }

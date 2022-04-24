@@ -28,8 +28,6 @@
 //十字回环出口
 #define L_LOSTNUM   60
 
-extern uint8 SobelLCount;             //左边索贝尔
-extern uint8 SobelRCount;             //右边索贝尔
 
 /*起跑线相关函数*/
 int64 SobelTest(void);      //Sobel算子检测起跑线
