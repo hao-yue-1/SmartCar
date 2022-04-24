@@ -549,11 +549,11 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
             }
             else
             {
-                if(num_2<100)
+                if(num_2<10)
                 {
                     num_2++;    //识别不到环岛入口的帧数++
                 }
-                else    //超过100帧识别不到环岛入口
+                else    //超过10帧识别不到环岛入口
                 {
                     num_1=0;
                     num_2=0;

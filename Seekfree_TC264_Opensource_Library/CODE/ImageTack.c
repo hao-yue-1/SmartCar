@@ -150,7 +150,7 @@ float DifferentBias(int startline,int endline,int *CentreLine)
     {
         bias=bias*0.1;
     }
-    if(bias<-3||bias>3)
+    else if(bias<-3||bias>3)
     {
         bias=bias*1.5;
     }

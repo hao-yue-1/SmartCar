@@ -57,8 +57,8 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-            flag=4; //调试用，跳转到指定状态
-            if(case_0<100)  //出库后延时一会再开启下一个元素的识别，防止误判
+//            flag=4; //调试用，跳转到指定状态
+            if(case_0<120)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;
                 break;
@@ -196,7 +196,6 @@ void ImageProcess()
                 base_speed=speed_case_7; //降速准备入库
                 MotorK.I=1;     //提高响应速度
                 flag=7;         //跳转到状态7
-                Stop();
             }
             break;
         }
