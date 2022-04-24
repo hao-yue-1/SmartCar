@@ -36,7 +36,7 @@ void ImageProcess()
 {
     /***************************变量定义****************************/
     static uint8 flag;
-    static uint8 case_5,case_0,case_2,case_1,case_4,case_6;
+    static uint8 case_5,case_0,case_2,case_1,case_4,case_6,case_3;
     Point LeftDownPoint,RightDownPoint;     //左右下拐点
     LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;
     Point ForkUpPoint;
@@ -58,7 +58,7 @@ void ImageProcess()
         case 0: //识别左环岛
         {
 //            flag=4; //调试用，跳转到指定状态
-            if(case_0<120)  //出库后延时一会再开启下一个元素的识别，防止误判
+            if(case_0<100)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;
                 break;
@@ -114,13 +114,18 @@ void ImageProcess()
             if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_BLUE, 1);
-                base_speed=speed_case_3;  //减速进入左车库
                 flag=3;          //跳转到状态3
             }
             break;
         }
         case 3: //识别左车库
         {
+            if(case_3<80)
+            {
+                case_3++;
+                break;
+            }
+            base_speed=speed_case_3;  //减速进入左车库
             gpio_set(LED_RED, 0);
             if(LostNum_LeftLine>40 && LostNum_RightLine<30)
             {

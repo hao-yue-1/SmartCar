@@ -827,7 +827,6 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
             if(NowFlag==1)
             {
                 StatusChange=1; //只要开始识别到了三岔就说明已经是入口阶段了
-                base_speed+=10; //进入三岔提速，确保是正常进入的三岔才会触发
             }
             break;
         }
@@ -836,6 +835,10 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         {
             if(num1<50)  //给足够长的时间让车走到三岔运行中
             {
+                if(num1==15)
+                {
+                    base_speed+=20; //进入三岔提速，确保是正常进入的三岔才会触发
+                }
                 num1++;
                 break;
             }
