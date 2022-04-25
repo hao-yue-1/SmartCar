@@ -58,8 +58,8 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-            flag=6; //调试用，跳转到指定状态
-            if(case_0<100)  //出库后延时一会再开启下一个元素的识别，防止误判
+//            flag=2; //调试用，跳转到指定状态
+            if(case_0<200)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;
                 break;
@@ -75,7 +75,7 @@ void ImageProcess()
         }
         case 1: //识别第一个十字回环
         {
-            if(case_1<30)   //延时一会再进入十字判断
+            if(case_1<100)   //延时一会再进入十字判断
             {
                 case_1++;
                 break;
@@ -106,7 +106,7 @@ void ImageProcess()
         }
         case 2: //识别右环岛
         {
-            if(case_2<15)   //延时开启识别
+            if(case_2<100)   //延时开启识别
             {
                 case_2++;
                 break;
@@ -115,13 +115,14 @@ void ImageProcess()
             if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_BLUE, 1);
+                base_speed=speed_case_2;    //借用case2调试
                 flag=3;          //跳转到状态3
             }
             break;
         }
         case 3: //识别左车库
         {
-            if(case_3<80)
+            if(case_3<160)//帧率从50变成100，数的帧数也要翻倍，这里是大S
             {
                 case_3++;
                 break;
@@ -141,7 +142,7 @@ void ImageProcess()
         }
         case 4: //识别三岔
         {
-            if(case_4<20)    //延迟防止误判
+            if(case_4<50)    //延迟防止误判
             {
                 case_4++;
                 break;
@@ -160,12 +161,12 @@ void ImageProcess()
         }
         case 5: //识别第二个十字回环
         {
-            if(case_5<80)  //结束三岔后延时一会再开启下一个元素的识别，防止误判
+            if(case_5<110)  //结束三岔后延时一会再开启下一个元素的识别，防止误判
             {
                 case_5++;
                 break;
             }
-            if(case_5==80)
+            if(case_5==110)
             {
                 diff_speed_kp=0.05; //差速改回去
                 case_5++;
@@ -182,14 +183,14 @@ void ImageProcess()
                CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
                if(CircleIsFlag_3_L()==1)
                {
-                   base_speed=125;//降速入环，为出环做准备
+                   base_speed=130;//降速入环，为出环做准备
                }
             }
             break;
         }
         case 6: //识别第二遍三岔
         {
-            if(case_6<45)  //结束十字回环后延时一会再开启下一个元素的识别，防止S弯误判成三岔入口
+            if(case_6<90)  //结束十字回环后延时一会再开启下一个元素的识别，防止S弯误判成三岔入口
             {
                 case_6++;
                 break;
@@ -199,7 +200,6 @@ void ImageProcess()
             if(ForkSStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
             {
                 gpio_set(P21_5, 1);
-                Stop();
                 base_speed=speed_case_7; //降速准备入库
                 MotorK.P=15;    //提高响应速度
                 MotorK.I=1.2;

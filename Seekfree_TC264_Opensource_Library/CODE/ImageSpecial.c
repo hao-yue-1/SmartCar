@@ -624,11 +624,11 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
             }
             else
             {
-                if(num_2<20)
+                if(num_2<30)
                 {
                     num_2++;    //识别不到环岛入口的帧数++
                 }
-                else    //超过20帧识别不到环岛入口
+                else    //超过30帧识别不到环岛入口
                 {
                     num_1=0;
                     num_2=0;
@@ -816,7 +816,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
 {
     static uint8 StatusChange,num1,num3,numspecial;//三岔识别函数的零食状态变量，用来看状态是否跳转
 
-    if(numspecial<100)//防止很久都没有出现进入入口的状态，及时去判断出口
+    if(numspecial<200)//防止很久都没有出现进入入口的状态，及时去判断出口
     {
         numspecial++;
     }
@@ -839,7 +839,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         //中途状态
         case 1:
         {
-            if(num1<50)  //给足够长的时间让车走到三岔运行中
+            if(num1<120)  //给足够长的时间让车走到三岔运行中
             {
                 num1++;
                 break;
@@ -862,7 +862,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         //确保已经出三岔了，否则三岔口就出三岔了，使得出三岔其实是扫线出的
         case 3:
         {
-            if(num3<20)  //给足够长的时间让车走出三岔中
+            if(num3<35)  //给足够长的时间让车走出三岔中
             {
                 num3++;
                 break;
@@ -889,7 +889,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
 {
     static uint8 StatusChange,num1,num3,numspecial;//三岔识别函数的零食状态变量，用来看状态是否跳转
 
-    if(numspecial<175)//防止很久都没有出现进入入口的状态，及时去判断出口
+    if(numspecial<255)//防止很久都没有出现进入入口的状态，及时去判断出口
     {
         numspecial++;
     }
@@ -913,9 +913,9 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         //中途状态
         case 1:
         {
-            if(num1<50)  //给足够长的时间让车走到三岔运行中
+            if(num1<100)  //给足够长的时间让车走到三岔运行中
             {
-                if(num1==15)
+                if(num1==50)
                 {
                     base_speed+=15; //进入三岔提速，确保是正常进入的三岔才会触发
                 }
@@ -941,7 +941,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         //确保已经出三岔了，否则三岔口就出三岔了，使得出三岔其实是扫线出的
         case 3:
         {
-            if(num3<25)  //给足够长的时间让车走到三岔运行中
+            if(num3<50)  //给足够长的时间让车走到三岔运行中
             {
                 num3++;
                 break;
@@ -1442,9 +1442,9 @@ uint8 CrossLoopEnd_S(void)
         {
             //舵机向右打死并加上一定的延时实现出弯
             Bias=-10;
-            diff_speed_kp+=0.2; //增大差速
-            systick_delay_ms(STM0,500);
-            diff_speed_kp-=0.2; //恢复差速
+            diff_speed_kp+=0.1; //增大差速
+            systick_delay_ms(STM0,400);
+            diff_speed_kp-=0.1; //恢复差速
             return 1;
         }
     }
