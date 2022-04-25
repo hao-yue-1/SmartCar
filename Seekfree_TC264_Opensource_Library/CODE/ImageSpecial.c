@@ -367,10 +367,10 @@ uint8 CircleIslandEnd_L(void)
         {
             /*在这里将舵机打死，考虑要不要加延时*/
             systick_delay_ms(STM0,50);  //加一点延时防止撞到内环
-            diff_speed_kp+=0.05;
+//            diff_speed_kp+=0.05;
             Bias=10;
             systick_delay_ms(STM0,300);
-            diff_speed_kp-=0.05;
+//            diff_speed_kp-=0.05;
             return 1;
         }
     }
@@ -396,28 +396,97 @@ uint8 CircleIsFlag_1_L(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
         float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
         if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
         {
-            for(int row=InflectionL.Y;row-1>0;row--)    //从左拐点开始下向上扫
+            for(int row=InflectionL.Y;row-1>0;row--)    //从左拐点开始向上扫
             {
                 if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE&&BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)
                 {
-                    for(int column=InflectionL.X;column<MT9V03X_W-1;column++)   //向右扫
+                    uint8 row_f=row;
+                    for(;row-1>0;row--)
                     {
-                        if(BinaryImage[row-1][column]==IMAGE_WHITE)
+                        if(BinaryImage[row][InflectionL.X]==IMAGE_BLACK&&BinaryImage[row-1][InflectionL.X]==IMAGE_WHITE)
                         {
-                            /*补线操作*/
-                            Point end;
-                            end.Y=row-1;
-                            end.X=column;
-                            FillingLine('L', InflectionL, end);   //补线
-                            return 1;
+                            row=(row+row_f)/2;
+                            for(int column=InflectionL.X;column<MT9V03X_W-1;column++)   //向右扫
+                            {
+                                if(BinaryImage[row-1][column]==IMAGE_WHITE)
+                                {
+                                    /*补线操作*/
+                                    Point end;
+                                    end.Y=row-1;
+                                    end.X=column;
+                                    FillingLine('L', InflectionL, end);   //补线
+                                    return 1;
+                                }
+                            }
+                            break;
                         }
                     }
+                    break;
                 }
             }
         }
     }
     return 0;
 }
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 判断环岛Flag1_1是否成立，左侧
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ **           InflectionL：左下拐点
+ **           InflectionR：右下拐点
+ ** 返 回 值: 0：Flag1_1不成立
+ **           1：Flag1_1成立且在左侧
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CircleIsFlag_1_1_L(int *LeftLine,int *RightLine)
+{
+        float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
+        if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
+        {
+            for(int8 row=MT9V03X_H-30,column=2;row-1>0;row--)    //向上扫
+            {
+                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+                {
+                    uint8 row_f=row;
+                    for(;row-1>0;row--)
+                    {
+                        if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)
+                        {
+                            uint8 row_s=row;
+                            for(;row-1>0;row--)
+                            {
+                                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //向右扫
+                                {
+                                    row=(row_f+row_s)/2;
+                                    for(;column+1<MT9V03X_W;column++)
+                                    {
+                                        if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column+1]==IMAGE_WHITE)
+                                        {
+                                            /*补线操作*/
+                                            Point end,start;
+                                            end.Y=row;
+                                            end.X=column;
+                                            start.Y=MT9V03X_H-1;
+                                            start.X=0;
+                                            FillingLine('L', start, end);   //补线
+                                            return 1;
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    return 0;
+}
+
 /*
  *******************************************************************************************
  ** 函数功能: 判断环岛Flag2是否成立，左侧
@@ -515,18 +584,18 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                     num_1++;    //识别到flag1的帧数++
                 }
             }
-            else    //没有识别到环岛出口
-            {
-                if(num_2<100)
-                {
-                    num_2++;    //没有识别到flag1的帧数++
-                }
-                else    //超过100帧没有识别到环岛flag1
-                {
-                    num_1=0;
-                    num_2=0;
-                }
-            }
+//            else    //没有识别到环岛出口
+//            {
+//                if(num_2<100)
+//                {
+//                    num_2++;    //没有识别到flag1的帧数++
+//                }
+//                else    //超过100帧没有识别到环岛flag1
+//                {
+//                    num_1=0;
+//                    num_2=0;
+//                }
+//            }
             if(CircleIsFlag_2_L(LeftLine, RightLine)==1)    //识别到环岛中部
             {
                 if(num_1>2) //在此之前有识别到环岛flag1
@@ -535,7 +604,12 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                     num_2=0;
                     flag=1; //跳转到状态1
                     base_speed=150; //降速准备入环
+                    break;
                 }
+            }
+            if(num_1>0) //识别到环岛Flag1后对Flag1_1进行补线处理
+            {
+                CircleIsFlag_1_1_L(LeftLine, RightLine);
             }
             break;
         }
@@ -550,15 +624,16 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
             }
             else
             {
-                if(num_2<10)
+                if(num_2<20)
                 {
                     num_2++;    //识别不到环岛入口的帧数++
                 }
-                else    //超过10帧识别不到环岛入口
+                else    //超过20帧识别不到环岛入口
                 {
                     num_1=0;
                     num_2=0;
                     flag=0; //跳转回到状态0
+                    break;
                 }
             }
             if(CircleIsFlag_3_L()==1)    //识别已经进入环岛
@@ -568,6 +643,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                     num_1=0;
                     num_2=0;
                     flag=2;
+                    break;
                 }
             }
             break;
@@ -756,7 +832,6 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         {
             if(NowFlag==1)
             {
-                gpio_toggle(LED_WHITE);
                 StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
             }
             break;
@@ -771,7 +846,6 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
             }
             else if(NowFlag==0)
             {
-                gpio_toggle(LED_GREEN);
                 StatusChange=2;//过了中间过度态之后跳转至检测出口
             }
             break;
@@ -781,7 +855,6 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         {
             if(NowFlag==1)
             {
-                gpio_toggle(LED_RED);
                 StatusChange=3;
             }
             break;

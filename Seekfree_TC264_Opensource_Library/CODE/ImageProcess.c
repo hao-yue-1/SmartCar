@@ -50,9 +50,8 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-//    CircleIslandEnd_L();
-//    Fork_flag=ForkIdentify(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-//    lcd_showuint8(8, 0, Fork_flag);
+//    CircleIsFlag_1_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    CircleIsFlag_1_1_L(LeftLine, RightLine);
     /****************************状态机***************************/
 #if 1
     switch(flag)

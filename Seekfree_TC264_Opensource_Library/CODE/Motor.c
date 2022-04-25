@@ -113,6 +113,7 @@ void MotorEncoder(int16* left_encoder,int16* right_encoder)
 */
 void MotorCtrl(int16 speed_l,int16 speed_r)
 {
+    static uint8 flag;               //电机保护flag
     int16 encoder_l=0,encoder_r=0;   //左右电机编码器值
     int pwm_l=0,pwm_r=0;             //左右电机PWM
 
@@ -122,12 +123,25 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
     pwm_l=Speed_PI_Left(encoder_l,speed_l,MotorK);    //左右电机PID
     pwm_r=Speed_PI_Right(encoder_r,speed_r,MotorK);
 
-    if(encoder_l>350||encoder_r>350)
+    //电机驱动保护
+    if(flag==1)
     {
-        MotorSetPWM(0,0);
-        lcd_showuint8(0, 7, 7);
-        while(1);
-        return;
+        if(encoder_l>300||encoder_r>300)    //转速过高
+        {
+            MotorSetPWM(0,0);
+            lcd_showuint8(0, 7, 7);
+            while(1);
+         }
+        else if(encoder_l<50||encoder_r<50) //转速过低
+        {
+            MotorSetPWM(0,0);
+            lcd_showuint8(0, 7, 7);
+            while(1);
+        }
+    }
+    else if(flag==0&&encoder_l>150&&encoder_r>150)
+    {
+        flag=1;
     }
 
     MotorSetPWM(pwm_l,pwm_r);                         //电机PWM赋值
