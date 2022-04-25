@@ -14,7 +14,7 @@ uint8 CrossRoads_flag=0;        //十字标志变量
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 CircleIsland_flag=0;      //环岛标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
-uint8 speed_case_1=200,speed_case_2=150,speed_case_3=130,speed_case_4=155,speed_case_5=145,speed_case_6=150,speed_case_7=135;
+uint8 speed_case_1=200,speed_case_2=150,speed_case_3=130,speed_case_4=155,speed_case_5=145,speed_case_6=160,speed_case_7=135;
 
 uint32 SobelResult=0;
 
@@ -58,7 +58,7 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-//            flag=3; //调试用，跳转到指定状态
+            flag=6; //调试用，跳转到指定状态
             if(case_0<100)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;
@@ -199,6 +199,7 @@ void ImageProcess()
             if(ForkSStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
             {
                 gpio_set(P21_5, 1);
+                Stop();
                 base_speed=speed_case_7; //降速准备入库
                 MotorK.P=15;    //提高响应速度
                 MotorK.I=1.2;
@@ -222,7 +223,7 @@ void ImageProcess()
     }
     else
     {
-        Bias=DifferentBias(100,50,CentreLine);//无特殊处理时的偏差计算
+        Bias=DifferentBias(95,50,CentreLine);//无特殊处理时的偏差计算
 //        lcd_showfloat(0, 7, Bias, 2, 3);
     }
 }
