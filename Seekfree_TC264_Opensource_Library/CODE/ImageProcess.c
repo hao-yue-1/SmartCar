@@ -14,7 +14,7 @@ uint8 CrossRoads_flag=0;        //十字标志变量
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 CircleIsland_flag=0;      //环岛标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
-uint8 speed_case_1=200,speed_case_2=150,speed_case_3=130,speed_case_4=145,speed_case_5=145,speed_case_6=150,speed_case_7=135;
+uint8 speed_case_1=200,speed_case_2=150,speed_case_3=130,speed_case_4=155,speed_case_5=145,speed_case_6=150,speed_case_7=135;
 
 uint32 SobelResult=0;
 
@@ -142,7 +142,7 @@ void ImageProcess()
         }
         case 4: //识别三岔
         {
-            if(case_4<15)    //延迟防止误判
+            if(case_4<20)    //延迟防止误判
             {
                 case_4++;
                 break;

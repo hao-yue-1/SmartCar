@@ -81,6 +81,27 @@ void FillingLine(char Choose, Point StarPoint,Point EndPoint)
     float K;//斜率为浮点型，否则K<1时，K=0
     int B,Y,X;
 
+    /*特殊情况：当要补的线是一条垂线的时候*/
+    if(EndPoint.X==StarPoint.X)
+    {
+        for(Y=StarPoint.Y;Y>EndPoint.Y;Y--)
+        {
+            switch(Choose)
+            {
+                case 'L':
+                    LeftLine[Y]=StarPoint.X;
+                    CentreLine[Y]=(StarPoint.X+RightLine[Y])/2;
+                    break;
+                case 'R':
+                    RightLine[Y]=StarPoint.X;
+                    CentreLine[Y]=(LeftLine[Y]+StarPoint.X)/2;//在里面进行中线的修改，因为不会出现补两边的情况，正入十字就直接冲，斜入就补一边而已
+                    break;
+                default:break;
+            }
+            return;
+        }
+    }
+
     K=(float)(-EndPoint.Y+StarPoint.Y)/(EndPoint.X-StarPoint.X);//k=(y2-y1)/(x2-x1)，强制类型转化否则会损失精度仍然为0
     B=-StarPoint.Y-K*StarPoint.X;//b=y-kx
 
