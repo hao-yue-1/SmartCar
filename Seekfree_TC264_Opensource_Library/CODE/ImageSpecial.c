@@ -179,21 +179,18 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
         case 'R':
             //这里如果为了防止跟三岔误判可以加上右边丢线大于40小于90左边丢线小于10即可
             //右边丢线、左边不丢线、存在右拐点进入索贝尔计算
-            if(LostNum_RightLine>35 && LostNum_LeftLine<10)
+            SobelResult=SobelTest();//进行索贝尔计算
+            if(SobelResult>ZebraTresholeR)
             {
-                SobelResult=SobelTest();//进行索贝尔计算
-                if(SobelResult>ZebraTresholeR)
+                /*方案一：右边打死入库，写个while循环把速度停掉打死入库*/
+                Bias=-15;//右边打死
+                systick_delay_ms(STM0,350);
+                while(1)
                 {
-                    /*方案一：右边打死入库，写个while循环把速度停掉打死入库*/
-                    Bias=-15;//右边打死
-                    systick_delay_ms(STM0,450);
-                    while(1)
-                    {
-                        diff_speed_kp=0;
-                        base_speed=0;
-                    }
-                    return 1;
+                    diff_speed_kp=0;
+                    base_speed=0;
                 }
+                return 1;
             }
             break;
         default:break;
@@ -941,7 +938,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         //确保已经出三岔了，否则三岔口就出三岔了，使得出三岔其实是扫线出的
         case 3:
         {
-            if(num3<50)  //给足够长的时间让车走到三岔运行中
+            if(num3<50)
             {
                 num3++;
                 break;
@@ -1086,6 +1083,7 @@ uint8 CircleIslandEnd_R(void)
         if(fabsf(Bias)<1.5)
         {
             /*在这里将舵机打死，考虑要不要加延时*/
+            systick_delay_ms(STM0,50);   //防止切内环
             Bias=-10;
             systick_delay_ms(STM0,300);
             return 1;
@@ -1787,7 +1785,7 @@ uint8 CrossLoop_F(int *LeftLine,int *RightLine,Point InflectionL,Point Inflectio
  */
 void OutGarage(void)
 {
-    systick_delay_ms(STM0,50);
+//    systick_delay_ms(STM0,50);
     //舵机向右打死并加上一定的延时实现出库
     Bias=-10;
     diff_speed_kp=0.1;

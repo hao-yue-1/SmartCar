@@ -10,11 +10,10 @@
 #include "PID.h"
 #include "Motor.h"
 
-uint8 CrossRoads_flag=0;        //十字标志变量
+uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
-uint8 CircleIsland_flag=0;      //环岛标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
-uint8 speed_case_1=200,speed_case_2=150,speed_case_3=130,speed_case_4=155,speed_case_5=145,speed_case_6=160,speed_case_7=135;
+uint8 speed_case_1=200,speed_case_2=170,speed_case_3=145,speed_case_4=155,speed_case_5=150,speed_case_6=160,speed_case_7=145;
 
 uint32 SobelResult=0;
 
@@ -59,7 +58,7 @@ void ImageProcess()
         case 0: //识别左环岛
         {
 //            flag=2; //调试用，跳转到指定状态
-            if(case_0<200)  //出库后延时一会再开启下一个元素的识别，防止误判
+            if(case_0<180)  //出库后延时一会再开启下一个元素的识别，防止误判
             {
                 case_0++;
                 break;
@@ -68,7 +67,6 @@ void ImageProcess()
             if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_WHITE, 1);
-                base_speed=speed_case_1; //提速上坡进入第一个十字回环
                 flag=1;         //跳转到状态1
             }
             break;
@@ -77,6 +75,10 @@ void ImageProcess()
         {
             if(case_1<100)   //延时一会再进入十字判断
             {
+                if(case_1>10)   //延时加速上坡，给车子调整姿态的时间
+                {
+                    base_speed=speed_case_1;
+                }
                 case_1++;
                 break;
             }
@@ -85,6 +87,7 @@ void ImageProcess()
             {
                 gpio_set(LED_GREEN, 1);
                 base_speed=speed_case_2; //提速上坡进行右环岛
+                bias_startline=95;       //出环恢复动态前瞻
                 flag=2;         //跳转到状态2
             }
             else
@@ -99,7 +102,8 @@ void ImageProcess()
                 }
                 if(CircleIsFlag_3_L()==1)
                 {
-                    base_speed=120;//降速入环，为出环做准备
+                    base_speed=120;     //入环降速，为出环做准备
+                    bias_startline=100; //入环调整动态前瞻
                 }
             }
             break;
@@ -115,7 +119,6 @@ void ImageProcess()
             if(CircleIslandIdentify_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
             {
                 gpio_set(LED_BLUE, 1);
-                base_speed=speed_case_2;    //借用case2调试
                 flag=3;          //跳转到状态3
             }
             break;
@@ -176,6 +179,7 @@ void ImageProcess()
             {
                 gpio_set(P21_4, 1);
                 base_speed=speed_case_6; //提速进入三岔
+                bias_startline=95;       //出环恢复动态前瞻
                 flag=6;         //跳转到状态6
             }
             else
@@ -183,7 +187,8 @@ void ImageProcess()
                CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
                if(CircleIsFlag_3_L()==1)
                {
-                   base_speed=130;//降速入环，为出环做准备
+                   base_speed=130;     //入环降速，为出环做准备
+                   bias_startline=100; //入环调整动态前瞻
                }
             }
             break;
@@ -223,7 +228,7 @@ void ImageProcess()
     }
     else
     {
-        Bias=DifferentBias(95,50,CentreLine);//无特殊处理时的偏差计算
+        Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//无特殊处理时的偏差计算
 //        lcd_showfloat(0, 7, Bias, 2, 3);
     }
 }
