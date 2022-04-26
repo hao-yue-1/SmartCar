@@ -184,7 +184,7 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
             {
                 /*方案一：右边打死入库，写个while循环把速度停掉打死入库*/
                 Bias=-15;//右边打死
-                systick_delay_ms(STM0,350);
+                systick_delay_ms(STM0,200);
                 while(1)
                 {
                     diff_speed_kp=0;

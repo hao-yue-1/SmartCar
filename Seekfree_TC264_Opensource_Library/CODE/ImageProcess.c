@@ -13,7 +13,7 @@
 uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
-uint8 speed_case_1=200,speed_case_2=170,speed_case_3=145,speed_case_4=155,speed_case_5=150,speed_case_6=160,speed_case_7=145;
+uint8 speed_case_1=200,speed_case_2=170,speed_case_3=145,speed_case_4=155,speed_case_5=150,speed_case_6=160,speed_case_7=170;
 
 uint32 SobelResult=0;
 
@@ -209,8 +209,6 @@ void ImageProcess()
             {
                 gpio_set(P21_5, 1);
                 base_speed=speed_case_7; //降速准备入库
-                MotorK.P=15;    //提高响应速度
-                MotorK.I=1.2;
                 flag=7;         //跳转到状态7
             }
             break;
