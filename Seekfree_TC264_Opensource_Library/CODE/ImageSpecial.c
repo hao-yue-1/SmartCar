@@ -183,6 +183,7 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
             if(SobelResult>ZebraTresholeR)
             {
                 /*方案一：右边打死入库，写个while循环把速度停掉打死入库*/
+                systick_delay_ms(STM0,10);//加10ms防止卡车库，如果速度提上去可以取消
                 Bias=-15;//右边打死
                 systick_delay_ms(STM0,200);
                 while(1)
@@ -907,6 +908,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
             {
                 if(num1==50)
                 {
+                    SteerK.D=3;//进入直到之后D减小防止振荡
                     base_speed+=15; //进入三岔提速，确保是正常进入的三岔才会触发
                 }
                 num1++;
@@ -915,7 +917,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
             if(NowFlag==0)
             {
                 StatusChange=2; //过了中间过度态之后跳转至检测出口
-                base_speed-=10; //检测出口减速
+                base_speed-=5; //检测出口减速
             }
             break;
         }
