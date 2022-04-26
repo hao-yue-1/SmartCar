@@ -657,8 +657,8 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 3:
         {
-            flag_begin=CircleIslandOverBegin_L(LeftLine, RightLine);    //识别环岛入口补线忽略
-            if(flag_begin==0&&flag_last_begin==0&&flag_last2_begin==1)   //上上次识别到环岛入口而这两次次没有识别到环岛入口
+            flag_begin=CircleIslandOverBegin_L(LeftLine, RightLine);     //识别环岛入口补线忽略
+            if(flag_begin==0&&flag_last_begin==0&&flag_last2_begin==1)   //上上次识别到环岛入口而这两次都没有识别到环岛入口
             {
                 flag=4;
                 return 1;   //退出状态机
@@ -1008,41 +1008,27 @@ uint8 CircleIslandBegin_R(int *LeftLine,int *RightLine)
  */
 uint8 CircleIslandOverBegin_R(int *LeftLine,int *RightLine)
 {
-    if(BinaryImage[115][154]==IMAGE_BLACK)    //防止提前拐入环岛
-    {
-        return 0;
-    }
-    for(uint8 row=60;row-1>0;row--)          //防止在Flag1处误判
-    {
-        if(BinaryImage[row][150]==IMAGE_BLACK&&BinaryImage[row-1][150]==IMAGE_WHITE) //黑跳白
-        {
-            return 0;
-        }
-    }
     //环岛入口在右边
-    if(LostNum_RightLine>C_LOSTLINE)   //右边丢线：环岛入口在右边
+    for(int row=MT9V03X_H;row-1>0;row--)  //从下往上检查右边界线
     {
-        for(int row=MT9V03X_H;row-1>0;row--)  //从下往上检查右边界线
+        if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)    //该行丢线而下一行不丢线
         {
-            if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)    //该行丢线而下一行不丢线
+            //下面这个防止进入环岛后误判
+            for(int column=MT9V03X_W-1;column-1>0;column--) //向左扫
             {
-                //下面这个防止进入环岛后误判
-                for(int column=MT9V03X_W-1;column-1>0;column--) //向左扫
+                if(BinaryImage[30][column]!=BinaryImage[30][column-1])
                 {
-                    if(BinaryImage[30][column]!=BinaryImage[30][column-1])
+                    if(row-10>0)
                     {
-                        if(row-10>0)
-                        {
-                            row-=10;
-                        }
-                        Point StarPoint,EndPoint;   //定义补线的起点和终点
-                        EndPoint.Y=row;             //终点赋值
-                        EndPoint.X=RightLine[row];
-                        StarPoint.Y=MT9V03X_H-1;    //起点赋值
-                        StarPoint.X=MT9V03X_W-1;
-                        FillingLine('R',StarPoint,EndPoint);    //补线
-                        return 1;
+                        row-=10;
                     }
+                    Point StarPoint,EndPoint;   //定义补线的起点和终点
+                    EndPoint.Y=row;             //终点赋值
+                    EndPoint.X=RightLine[row];
+                    StarPoint.Y=MT9V03X_H-1;    //起点赋值
+                    StarPoint.X=MT9V03X_W-1;
+                    FillingLine('R',StarPoint,EndPoint);    //补线
+                    return 1;
                 }
             }
         }

@@ -13,7 +13,7 @@
 uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
-uint8 speed_case_1=200,speed_case_2=170,speed_case_3=145,speed_case_4=155,speed_case_5=150,speed_case_6=160,speed_case_7=170;
+uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=155,speed_case_5=150,speed_case_6=160,speed_case_7=170;
 
 uint32 SobelResult=0;
 
@@ -49,15 +49,15 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-//    CircleIslandOverBegin_L(LeftLine, RightLine);
+//    CircleIslandOverBegin_R(LeftLine, RightLine);
     /****************************状态机***************************/
 #if 1
     switch(flag)
     {
         case 0: //识别左环岛
         {
-//            flag=2; //调试用，跳转到指定状态
-            if(case_0<180)  //出库后延时一会再开启下一个元素的识别，防止误判
+            flag=1; //调试用，跳转到指定状态
+            if(case_0<165)  //出库后延时一会再开启下一个元素的识别，防止误判，对应速度180
             {
                 case_0++;
                 break;
@@ -72,11 +72,11 @@ void ImageProcess()
         }
         case 1: //识别第一个十字回环
         {
-            if(case_1<100)   //延时一会再进入十字判断
+            if(case_1<90)   //延时一会再进入十字判断
             {
+                CircleIslandOverBegin_L(LeftLine, RightLine);   //防止左环岛过早出状态再次拐入环岛
                 if(case_1>10)   //延时加速上坡，给车子调整姿态的时间
                 {
-                    Stop();
                     base_speed=speed_case_1;
                 }
                 case_1++;
@@ -102,11 +102,6 @@ void ImageProcess()
                 }
                 if(CircleIsFlag_3_L()==1)
                 {
-//                    if(case_1<120)
-//                    {
-//                        case_1++;
-//                        break;
-//                    }
                     base_speed=125;     //入环降速，为出环做准备
                     bias_startline=100; //入环调整动态前瞻
                 }
@@ -145,6 +140,7 @@ void ImageProcess()
             {
                 gpio_set(LED_RED, 1);
                 flag=4;          //跳转到状态4
+                Stop();
             }
             break;
         }
