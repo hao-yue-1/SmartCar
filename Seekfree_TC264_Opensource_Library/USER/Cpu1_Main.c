@@ -59,12 +59,12 @@ void core1_main(void)
     }
     pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化电机定时器中断
     pit_interrupt_ms(CCU6_0,PIT_CH1,20);//初始化舵机定时器中断
-//    //完成出库
-//    if(outgarage_flag==0)
-//    {
-//        OutGarage();
-//        outgarage_flag=1;
-//    }
+    //完成出库
+    if(outgarage_flag==0)
+    {
+        OutGarage();
+        outgarage_flag=1;
+    }
 
     while (TRUE)
     {

@@ -1333,7 +1333,7 @@ uint8 CrossLoopEnd_F(void)
             //舵机向右打死并加上一定的延时实现出弯
             Bias=-10;
             diff_speed_kp+=0.2; //增大差速
-            systick_delay_ms(STM0,500);
+            systick_delay_ms(STM0,300);
             diff_speed_kp-=0.2; //恢复差速
             return 1;
         }

@@ -56,7 +56,7 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-            flag=6; //调试用，跳转到指定状态
+//            flag=6; //调试用，跳转到指定状态
             if(case_0<165)  //出库后延时一会再开启下一个元素的识别，防止误判，对应速度180
             {
                 case_0++;
@@ -88,6 +88,7 @@ void ImageProcess()
                 gpio_set(LED_GREEN, 1);
                 base_speed=speed_case_2; //提速上坡进行右环岛
                 bias_startline=95;       //出环恢复动态前瞻
+                diff_speed_kp-=0.02;     //恢复差速
                 flag=2;         //跳转到状态2
             }
             else
@@ -102,8 +103,9 @@ void ImageProcess()
                 }
                 if(CircleIsFlag_3_L()==1)
                 {
-                    base_speed=125;     //入环降速，为出环做准备
-                    bias_startline=100; //入环调整动态前瞻
+                    base_speed=125;         //入环降速，为出环做准备
+                    diff_speed_kp+=0.02;    //提高一点点差速
+                    bias_startline=100;     //入环调整动态前瞻
                 }
             }
             break;
