@@ -306,34 +306,27 @@ uint8 CircleIslandBegin_L(int *LeftLine,int *RightLine)
  */
 uint8 CircleIslandOverBegin_L(int *LeftLine,int *RightLine)
 {
-    if(BinaryImage[115][5]==IMAGE_BLACK)    //防止提前拐入环岛
-    {
-        return 0;
-    }
     //环岛入口在左边
-    if(LostNum_LeftLine>C_LOSTLINE)   //左边丢线：环岛入口在左边
+    for(int row=MT9V03X_H;row-1>0;row--)  //从下往上检查左边界线
     {
-        for(int row=MT9V03X_H;row-1>0;row--)  //从下往上检查左边界线
+        if(LeftLine[row]==0&&LeftLine[row-1]!=0)    //该行丢线而下一行不丢线
         {
-            if(LeftLine[row]==0&&LeftLine[row-1]!=0)    //该行丢线而下一行不丢线
+            //下面这个防止进入环岛后误判
+            for(int column=0;column+1<MT9V03X_W-1;column++) //向右扫
             {
-                //下面这个防止进入环岛后误判
-                for(int column=0;column+1<MT9V03X_W-1;column++) //向右扫
+                if(BinaryImage[10][column]!=BinaryImage[10][column+1])
                 {
-                    if(BinaryImage[10][column]!=BinaryImage[10][column+1])
+                    if(row-10>0)
                     {
-                        if(row-10>0)
-                        {
-                            row-=10;
-                        }
-                        Point StarPoint,EndPoint;   //定义补线的起点和终点
-                        EndPoint.Y=row;             //终点赋值
-                        EndPoint.X=LeftLine[row];
-                        StarPoint.Y=MT9V03X_H-1;    //起点赋值
-                        StarPoint.X=0;
-                        FillingLine('L',StarPoint,EndPoint);    //补线
-                        return 1;
+                        row-=10;
                     }
+                    Point StarPoint,EndPoint;   //定义补线的起点和终点
+                    EndPoint.Y=row;             //终点赋值
+                    EndPoint.X=LeftLine[row];
+                    StarPoint.Y=MT9V03X_H-1;    //起点赋值
+                    StarPoint.X=0;
+                    FillingLine('L',StarPoint,EndPoint);    //补线
+                    return 1;
                 }
             }
         }
@@ -363,11 +356,9 @@ uint8 CircleIslandEnd_L(void)
         if(fabsf(Bias)<1.5)
         {
             /*在这里将舵机打死，考虑要不要加延时*/
-            systick_delay_ms(STM0,50);  //加一点延时防止撞到内环
-//            diff_speed_kp+=0.05;
+//            systick_delay_ms(STM0,30);  //加一点延时防止撞到内环
             Bias=10;
-            systick_delay_ms(STM0,300);
-//            diff_speed_kp-=0.05;
+            systick_delay_ms(STM0,150);
             return 1;
         }
     }
@@ -443,7 +434,7 @@ uint8 CircleIsFlag_1_1_L(int *LeftLine,int *RightLine)
         float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
         if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
         {
-            for(int8 row=MT9V03X_H-30,column=2;row-1>0;row--)    //向上扫
+            for(uint8 row=MT9V03X_H-30,column=20;row-1>0;row--)    //向上扫
             {
                 if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
                 {
@@ -455,10 +446,11 @@ uint8 CircleIsFlag_1_1_L(int *LeftLine,int *RightLine)
                             uint8 row_s=row;
                             for(;row-1>0;row--)
                             {
-                                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //向右扫
+                                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
                                 {
+                                    lcd_showuint8(0, 3, 3);
                                     row=(row_f+row_s)/2;
-                                    for(;column+1<MT9V03X_W;column++)
+                                    for(;column+1<MT9V03X_W;column++)   //向右扫
                                     {
                                         if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column+1]==IMAGE_WHITE)
                                         {
@@ -466,18 +458,19 @@ uint8 CircleIsFlag_1_1_L(int *LeftLine,int *RightLine)
                                             Point end,start;
                                             end.Y=row;
                                             end.X=column;
-                                            start.Y=MT9V03X_H-1;
-                                            start.X=0;
+                                            start.Y=MT9V03X_H-2;
+                                            start.X=1;
                                             FillingLine('L', start, end);   //补线
                                             return 1;
                                         }
                                     }
+                                    return 0;
                                 }
                             }
-                            break;
+                            return 0;
                         }
                     }
-                    break;
+                    return 0;
                 }
             }
         }
@@ -569,7 +562,7 @@ uint8 CircleIsFlag_3_L(void)
  */
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    static uint8 flag,num_1,num_2,flag_begin,flag_last_begin;
+    static uint8 flag,num_1,num_2,flag_begin,flag_last_begin,flag_last2_begin;
     switch(flag)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
@@ -580,6 +573,10 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                 {
                     num_1++;    //识别到flag1的帧数++
                 }
+            }
+            else
+            {
+                CircleIsFlag_1_1_L(LeftLine, RightLine);
             }
 //            else    //没有识别到环岛出口
 //            {
@@ -603,10 +600,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                     base_speed=150; //降速准备入环
                     break;
                 }
-            }
-            if(num_1>0) //识别到环岛Flag1后对Flag1_1进行补线处理
-            {
-                CircleIsFlag_1_1_L(LeftLine, RightLine);
             }
             break;
         }
@@ -647,7 +640,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 2: //此时小车已经在环岛中，开始判断环岛出口
         {
-            base_speed=140; //在环中减速，准备出环
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
             while(CircleIslandEnd_L()==0)  //识别到环岛出口跳出循环
             {
@@ -666,11 +658,12 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         case 3:
         {
             flag_begin=CircleIslandOverBegin_L(LeftLine, RightLine);    //识别环岛入口补线忽略
-            if(flag_begin==0&&flag_last_begin==1)   //上一次识别到环岛入口而这一次没有识别到环岛入口
+            if(flag_begin==0&&flag_last_begin==0&&flag_last2_begin==1)   //上上次识别到环岛入口而这两次次没有识别到环岛入口
             {
                 flag=4;
                 return 1;   //退出状态机
             }
+            flag_last2_begin=flag_last_begin;   //保存上上次的状态
             flag_last_begin=flag_begin; //保存上一次的状态
             break;
         }

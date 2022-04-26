@@ -39,6 +39,7 @@ uint8 CircleIslandBegin_L(int *LeftLine,int *RightLine);
 uint8 CircleIslandOverBegin_L(int *LeftLine,int *RightLine);
 uint8 CircleIslandEnd_L(void);
 uint8 CircleIsFlag_1_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CircleIsFlag_1_1_L(int *LeftLine,int *RightLine);
 uint8 CircleIsFlag_2_L(int *LeftLine,int *RightLine);
 uint8 CircleIsFlag_3_L(void);
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //×ó»·µº×´Ì¬»ú

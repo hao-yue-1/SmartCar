@@ -25,6 +25,7 @@ extern uint8 speed_case_1,speed_case_2,speed_case_3,speed_case_4,speed_case_5,sp
 #define LED_RED      P22_3
 #define LED_YELLOW   P21_2
 
+void Stop(void);
 void ImageProcess(void);//Í¼Ïñ´¦ÀíÂß¼­º¯Êý
 
 #endif /* CODE_IMAGEPROCESS_H_ */

@@ -49,8 +49,7 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-//    CircleIsFlag_1_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-//    CircleIsFlag_1_1_L(LeftLine, RightLine);
+//    CircleIslandOverBegin_L(LeftLine, RightLine);
     /****************************状态机***************************/
 #if 1
     switch(flag)
@@ -77,6 +76,7 @@ void ImageProcess()
             {
                 if(case_1>10)   //延时加速上坡，给车子调整姿态的时间
                 {
+                    Stop();
                     base_speed=speed_case_1;
                 }
                 case_1++;
@@ -102,7 +102,12 @@ void ImageProcess()
                 }
                 if(CircleIsFlag_3_L()==1)
                 {
-                    base_speed=120;     //入环降速，为出环做准备
+//                    if(case_1<120)
+//                    {
+//                        case_1++;
+//                        break;
+//                    }
+                    base_speed=125;     //入环降速，为出环做准备
                     bias_startline=100; //入环调整动态前瞻
                 }
             }
@@ -156,7 +161,6 @@ void ImageProcess()
             if(ForkFStatusIdentify(LeftDownPoint, RightDownPoint,Fork_flag)==1)
             {
                 gpio_set(LED_YELLOW, 1);
-                diff_speed_kp=0.1;  //增大差速过U字弯
                 base_speed=speed_case_5; //提速进入第二个十字回环
                 flag=5;         //跳转到状态5
             }
@@ -171,7 +175,6 @@ void ImageProcess()
             }
             if(case_5==110)
             {
-                diff_speed_kp=0.05; //差速改回去
                 case_5++;
             }
             gpio_set(P21_4, 0);
@@ -187,7 +190,7 @@ void ImageProcess()
                CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
                if(CircleIsFlag_3_L()==1)
                {
-                   base_speed=130;     //入环降速，为出环做准备
+                   base_speed=135;     //入环降速，为出环做准备
                    bias_startline=100; //入环调整动态前瞻
                }
             }
