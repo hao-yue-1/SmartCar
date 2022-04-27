@@ -53,14 +53,14 @@ void ImageProcess()
 //    {
 //        CircleIsFlag_1_1_R(LeftLine, RightLine);
 //    }
-    CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
     /****************************状态机***************************/
-#if 0
+#if 1
     switch(flag)
     {
         case 0: //识别左环岛
         {
-            flag=4; //调试用，跳转到指定状态
+//            flag=4; //调试用，跳转到指定状态
             if(case_0<165)  //出库后延时一会再开启下一个元素的识别，防止误判，对应速度180
             {
                 case_0++;

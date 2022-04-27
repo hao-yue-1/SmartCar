@@ -1617,7 +1617,7 @@ uint8 CrossLoopBegin_F(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
  */
 uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    if(InflectionL.X!=0&&InflectionL.Y!=0&&InflectionR.X==0&&InflectionR.Y==0)    //存在左拐点且不存在右拐点
+    if(InflectionL.X!=0&&InflectionL.Y!=0)    //存在左拐点
     {
         uint8 row_up=0;
         for(uint8 row=InflectionL.Y+2,column=InflectionL.X-2;row-1>0;row--)  //左拐点往上扫
@@ -1661,58 +1661,47 @@ uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
             }
         }
     }
-    if(LostNum_LeftLine>70&&LostNum_RightLine<35)   //无拐点但左右丢线符合
+    float right_bias=0;
+    right_bias=Regression_Slope(110, 60, RightLine);    //求右边线斜率
+    if(fabsf(right_bias)>0.6)   //防止进环后的误判
     {
-        float right_bias=0;
-        right_bias=Regression_Slope(110, 60, RightLine);    //求右边线斜率
-        if(fabsf(right_bias)>0.6)   //防止进环后的误判
+        return 0;
+    }
+    for(uint8 row=MT9V03X_H-20,column=20;row-1>0;row--) //向上扫
+    {
+        if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
         {
+            uint8 row_f=row;
+            for(;row-1>0;row--) //继续向上扫
+            {
+                if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)
+                {
+                    for(;row-1>0;row--) //继续向上扫
+                    {
+                        if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+                        {
+                            for(row=row_f;column+1<MT9V03X_W-1;column++)
+                            {
+                                if(BinaryImage[row-5][column]==IMAGE_WHITE)
+                                {
+                                    Point end,start;
+                                    end.Y=row_f;
+                                    end.X=column;
+                                    start.Y=119;
+                                    start.X=0;
+                                    FillingLine('L', start, end); //补线
+                                    return 1;
+                                }
+                            }
+                            return 0;
+                        }
+                    }
+                    return 0;
+                }
+            }
             return 0;
         }
-        for(uint8 row=0;row<MT9V03X_H-1;row++)  //向下扫
-        {
-            if(BinaryImage[row][20]==IMAGE_BLACK&&BinaryImage[row+1][20]==IMAGE_WHITE)  //黑-白
-            {
-                for(;row<MT9V03X_H-1;row++) //继续向下扫
-                {
-                    if(BinaryImage[row][20]==IMAGE_WHITE&&BinaryImage[row+1][20]==IMAGE_BLACK)  //白-黑
-                    {
-                        for(;row<MT9V03X_H-1;row++) //继续向下扫
-                        {
-                            if(BinaryImage[row][20]==IMAGE_BLACK&&BinaryImage[row+1][20]==IMAGE_WHITE)  //黑-白
-                            {
-                                //寻找补线点
-                                for(uint8 row=100;row-1>0;row--)    //向上扫
-                                {
-                                    if(LeftLine[row]==0&&LeftLine[row-1]!=0)
-                                    {
-                                        if(row-5>0)
-                                        {
-                                            row-=5;
-                                        }
-                                        Point start,end;
-                                        start.Y=119;
-                                        start.X=LeftLine[row];
-                                        end.Y=row;
-                                        end.X=LeftLine[row]+1;  //不能补垂直的线，稍作偏移
-                                        FillingLine('L', start, end);   //补线
-                                        return 1;
-                                    }
-                                }
-                                return 0;
-                            }
-                        }
-                        return 0;
-                    }
-                }
-                return 0;
-            }
-        }
     }
-//    for(uint8 row=MT9V03X_H-1,column=20;row-1>0;row--)
-//    {
-//        if(BinaryImage[row][column]==IM)
-//    }
     return 0;
 }
 
