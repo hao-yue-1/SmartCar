@@ -13,7 +13,7 @@
 uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
-uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=150,speed_case_6=160,speed_case_7=170;
+uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=165,speed_case_6=160,speed_case_7=170;
 
 uint32 SobelResult=0;
 
@@ -49,18 +49,14 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-//    if(CircleIsFlag_1_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==0)
-//    {
-//        CircleIsFlag_1_1_R(LeftLine, RightLine);
-//    }
-//    CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    CrossLoopEnd_S();
     /****************************状态机***************************/
 #if 1
     switch(flag)
     {
         case 0: //识别左环岛
         {
-//            flag=4; //调试用，跳转到指定状态
+            flag=4; //调试用，跳转到指定状态
             if(case_0<165)  //出库后延时一会再开启下一个元素的识别，防止误判，对应速度180
             {
                 case_0++;
@@ -189,9 +185,9 @@ void ImageProcess()
             else
             {
                CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
-               if(CircleIsFlag_3_L()==1)
+               if(CrossLoopIn_S()==1)
                {
-                   base_speed=165;     //入环提速，为出环做准备
+                   base_speed=160;     //入环降速，为出环做准备
                    bias_startline=100; //入环调整动态前瞻
                }
             }

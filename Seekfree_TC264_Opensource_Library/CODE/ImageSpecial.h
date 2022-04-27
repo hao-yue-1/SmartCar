@@ -23,7 +23,7 @@
 #define FastABS(x) (x > 0 ? x : x * -1.0f)
 #define BinaryImage(i, j)    BinaryImage[i][j]
 #define ZebraTresholeL 1500  //索贝尔测试的阈值
-#define ZebraTresholeR 2000  //索贝尔测试车库在右边的阈值
+#define ZebraTresholeR 2200  //索贝尔测试车库在右边的阈值
 #define SobelLTestStop 3     //索贝尔左边关闭的阈值
 //十字回环出口
 #define L_LOSTNUM   60
@@ -62,6 +62,6 @@ uint8 CrossLoopEnd_F(void); //第一个十字回环出口
 uint8 CrossLoopEnd_S(void); //第二个十字回环出口
 uint8 CrossLoopBegin_F(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //第一个十字回环入口
 uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //第二个十字回环入口
-uint8 CrossLoop_F(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);        //第一个十字回环状态机
+uint8 CrossLoopIn_S(void);  //进入第二个十字回环
 
 #endif /* CODE_IMAGESPECIAL_H_ */
