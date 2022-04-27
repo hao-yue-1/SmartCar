@@ -505,3 +505,45 @@ uint8 KeyBaseSpeed(void)
     return 0;
 }
 
+/*
+ ** 函数功能: 按键选择不同的发车方案
+ ** 参    数: 无
+ ** 返 回 值: 是否退出调参：1:退出选择直接发车  2：退出  0:继续选择
+ ** 作    者: WBN
+ ** 注    意：比赛发车用，主要是几套固定的参数
+ */
+uint8 KeyPlan(void)
+{
+    static uint8 key_num;   //调整的参数
+    switch(KeyScan())
+    {
+        case KEY_S1_PRES:   //S1：方案一，左边元素减速方案
+        {
+
+            return 1;
+        }
+        case KEY_S2_PRES:   //S2：方案二，全程元素减速方案
+        {
+
+            return 1;
+        }
+        case KEY_S3_PRES:   //S3：方案三，左边元素提速方案
+        {
+            
+            return 1;
+        }
+        case KEY_S4_PRES:   //S4：方案四，退出进行分段微调
+        {
+            return 2;
+        }
+        case KEY_S5_PRES:   //S5：默认方案，直接发车
+        {
+
+            return 1;
+        }
+        default:break;
+    }
+    systick_delay_ms(STM0,100);
+    return 0;
+}
+

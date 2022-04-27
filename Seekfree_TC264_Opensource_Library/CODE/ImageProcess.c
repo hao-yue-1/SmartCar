@@ -49,14 +49,18 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-//    CircleIslandOverBegin_R(LeftLine, RightLine);
+//    if(CircleIsFlag_1_R(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==0)
+//    {
+//        CircleIsFlag_1_1_R(LeftLine, RightLine);
+//    }
+    CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
     /****************************状态机***************************/
-#if 1
+#if 0
     switch(flag)
     {
         case 0: //识别左环岛
         {
-//            flag=6; //调试用，跳转到指定状态
+            flag=4; //调试用，跳转到指定状态
             if(case_0<165)  //出库后延时一会再开启下一个元素的识别，防止误判，对应速度180
             {
                 case_0++;
@@ -103,7 +107,7 @@ void ImageProcess()
                 }
                 if(CircleIsFlag_3_L()==1)
                 {
-                    base_speed=125;         //入环降速，为出环做准备
+                    base_speed=140;         //入环降速，为出环做准备
                     diff_speed_kp+=0.02;    //提高一点点差速
                     bias_startline=100;     //入环调整动态前瞻
                 }
@@ -187,7 +191,7 @@ void ImageProcess()
                CrossLoopBegin_S(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
                if(CircleIsFlag_3_L()==1)
                {
-                   base_speed=135;     //入环降速，为出环做准备
+                   base_speed=165;     //入环提速，为出环做准备
                    bias_startline=100; //入环调整动态前瞻
                }
             }

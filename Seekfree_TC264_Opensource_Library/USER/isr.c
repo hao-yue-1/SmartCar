@@ -28,6 +28,7 @@
 #include "PID.h"
 #include "ImageTack.h"
 #include "zf_gpio.h"
+#include <math.h>
 
 uint32 SteerPWM=0;          //舵机PWM
 float diff_speed_kp=0.05;   //差速转向
@@ -38,8 +39,22 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	enableInterrupts();//开启中断嵌套
 
 	//电机PID控制
-	speed_l=base_speed-diff_speed_kp*(SteerPWM-STEER_MID); //(StreePWM-STEER_MID)max=85
-	speed_r=base_speed+diff_speed_kp*(SteerPWM-STEER_MID);
+//	speed_l=base_speed-diff_speed_kp*(SteerPWM-STEER_MID); //(StreePWM-STEER_MID)max=85
+//	speed_r=base_speed+diff_speed_kp*(SteerPWM-STEER_MID);
+	//阿克曼结构差速，减速版
+	int diff_steerpwm=SteerPWM-STEER_MID;
+	double radian;
+	if(diff_steerpwm>0) //左转
+	{
+	    radian=0.0058458*diff_steerpwm;
+	    speed_l=(41/(41+15*tan(radian)))*base_speed;    //左转左轮减速
+	}
+	else                //右转
+	{
+	    diff_steerpwm=-diff_steerpwm;
+	    radian=0.0064373*diff_steerpwm;
+	    speed_r=(41/(41+15*tan(radian)))*base_speed;    //右转右轮减速
+	}
 	MotorSetTarget(speed_l, speed_r);
 	MotorCtrl(speed_l,speed_r);
 	//调试

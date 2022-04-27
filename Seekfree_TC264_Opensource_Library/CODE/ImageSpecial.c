@@ -183,11 +183,12 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
             if(SobelResult>ZebraTresholeR)
             {
                 /*方案一：右边打死入库，写个while循环把速度停掉打死入库*/
-                systick_delay_ms(STM0,10);//加10ms防止卡车库，如果速度提上去可以取消
+                systick_delay_ms(STM0,15);//加10ms防止卡车库，如果速度提上去可以取消
                 Bias=-15;//右边打死
-                systick_delay_ms(STM0,200);
+                systick_delay_ms(STM0,185);
                 while(1)
                 {
+//                    Bias=0;
                     diff_speed_kp=0;
                     base_speed=0;
                 }
@@ -1096,23 +1097,81 @@ uint8 CircleIsFlag_1_R(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
         float bias_left=Regression_Slope(119,0,LeftLine);   //求出左边界线斜率
         if(fabsf(bias_left)<G_LINEBIAS)    //左边界为直道
         {
-            for(int row=InflectionR.Y;row-1>0;row--)    //从右拐点开始下向上扫
+            for(int row=InflectionR.Y;row-1>0;row--)    //从右拐点开始向上扫
             {
                 if(BinaryImage[row][InflectionR.X]==IMAGE_WHITE&&BinaryImage[row-1][InflectionR.X]==IMAGE_BLACK)
                 {
-                    for(int column=InflectionR.X;column>0;column--)   //向左扫
+                    uint8 row_f=row;
+                    for(;row-1>0;row--) //继续向上扫
                     {
-                        if(BinaryImage[row-1][column]==IMAGE_WHITE)
+                        if(BinaryImage[row][InflectionR.X]==IMAGE_BLACK&&BinaryImage[row-1][InflectionR.X]==IMAGE_WHITE)
                         {
-                            /*补线操作*/
-                            Point end;
-                            end.Y=row-1;
-                            end.X=column;
-                            FillingLine('R', InflectionR, end);   //补线
-                            return 1;
+                            row=(row_f+row)/2;
+                            for(uint8 column=InflectionR.X;column>0;column--)   //向左扫
+                            {
+                                if(BinaryImage[row][column]==IMAGE_WHITE)
+                                {
+                                    /*补线操作*/
+                                    Point end;
+                                    end.Y=row;
+                                    end.X=column;
+                                    FillingLine('R', InflectionR, end);   //补线
+                                    return 1;
+                                }
+                            }
                         }
                     }
+                    return 0;
                 }
+            }
+        }
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 判断环岛Flag1_1是否成立，右侧
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ ** 返 回 值: 0：Flag1_1不成立
+ **           1：Flag1_1成立且在右侧
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CircleIsFlag_1_1_R(int *LeftLine,int *RightLine)
+{
+    float bias_left=Regression_Slope(119,0,LeftLine);   //求出左边界线斜率
+    if(fabsf(bias_left)<G_LINEBIAS)    //左边界为直道
+    {
+        for(uint8 row=MT9V03X_H-20,column=MT9V03X_W-20;row-1>0;row--)    //向上扫
+        {
+            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+            {
+                uint8 row_f=row;
+                for(;row-1>0;row--) //继续向上扫
+                {
+                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)
+                    {
+                        row=(row+row_f)/2;
+                        for(;column>0;column--)   //向左扫
+                        {
+                            if(BinaryImage[row][column]==IMAGE_WHITE)
+                            {
+                                /*补线操作*/
+                                Point start,end;
+                                end.Y=row-1;
+                                end.X=column;
+                                start.Y=MT9V03X_H-1;    //右下
+                                start.X=MT9V03X_W-1;
+                                FillingLine('R', start, end);   //补线
+                                return 1;
+                            }
+                        }
+
+                    }
+                }
+                return 0;
             }
         }
     }
@@ -1202,7 +1261,7 @@ uint8 CircleIsFlag_3_R(void)
  */
 uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    static uint8 flag,num_1,num_2,flag_begin,flag_last_begin;
+    static uint8 flag,num_1,num_2,flag_begin,flag_last_begin,flag_last2_begin;
     //使用switch实现简单的状态机机制
     switch(flag)
     {
@@ -1215,18 +1274,22 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
                     num_1++;    //识别到flag1的帧数++
                 }
             }
-            else    //没有识别到环岛出口
+            else
             {
-                if(num_2<100)
-                {
-                    num_2++;    //没有识别到flag1的帧数++
-                }
-                else    //超过100帧没有识别到环岛flag1
-                {
-                    num_1=0;
-                    num_2=0;
-                }
+                CircleIsFlag_1_1_R(LeftLine, RightLine);
             }
+            // else    //没有识别到环岛出口
+            // {
+            //     if(num_2<100)
+            //     {
+            //         num_2++;    //没有识别到flag1的帧数++
+            //     }
+            //     else    //超过100帧没有识别到环岛flag1
+            //     {
+            //         num_1=0;
+            //         num_2=0;
+            //     }
+            // }
             if(CircleIsFlag_2_R(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别到环岛中部
             {
                 if(num_1>0) //在此之前有识别到环岛flag1
@@ -1291,11 +1354,12 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
         case 3:
         {
             flag_begin=CircleIslandOverBegin_R(LeftLine, RightLine);
-            if(flag_begin==0&&flag_last_begin==1)   //上一次识别到环岛入口而这一次没有识别到环岛入口
+            if(flag_begin==0&&flag_last_begin==0&&flag_last2_begin==1)   //上上次识别到环岛入口而这两次都没有识别到环岛入口
             {
                 flag=4;
                 return 1;   //退出状态机
             }
+            flag_last2_begin=flag_last_begin;   //保存上上次的状态
             flag_last_begin=flag_begin; //保存上一次的状态
             break;
         }
@@ -1584,16 +1648,16 @@ uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
                                                 return 1;
                                             }
                                         }
-                                        break;
+                                        return 0;
                                     }
                                 }
-                                break;
+                                return 0;
                             }
                         }
-                        break;
+                        return 0;
                     }
                 }
-                break;
+                return 0;
             }
         }
     }
@@ -1635,16 +1699,20 @@ uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
                                         return 1;
                                     }
                                 }
-                                break;
+                                return 0;
                             }
                         }
-                        break;
+                        return 0;
                     }
                 }
-                break;
+                return 0;
             }
         }
     }
+//    for(uint8 row=MT9V03X_H-1,column=20;row-1>0;row--)
+//    {
+//        if(BinaryImage[row][column]==IM)
+//    }
     return 0;
 }
 
