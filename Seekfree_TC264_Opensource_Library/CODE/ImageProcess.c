@@ -13,7 +13,7 @@
 uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
-uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=165,speed_case_6=160,speed_case_7=170;
+uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=160,speed_case_6=160,speed_case_7=170;
 
 uint32 SobelResult=0;
 
@@ -56,7 +56,7 @@ void ImageProcess()
     {
         case 0: //识别左环岛
         {
-            flag=4; //调试用，跳转到指定状态
+//            flag=4; //调试用，跳转到指定状态
             if(case_0<165)  //出库后延时一会再开启下一个元素的识别，防止误判，对应速度180
             {
                 case_0++;
@@ -160,6 +160,7 @@ void ImageProcess()
                 gpio_set(LED_YELLOW, 1);
                 base_speed=speed_case_5; //提速进入第二个十字回环
                 flag=5;         //跳转到状态5
+                SteerK.D=0;
             }
             break;
         }
@@ -180,6 +181,7 @@ void ImageProcess()
                 gpio_set(P21_4, 1);
                 base_speed=speed_case_6; //提速进入三岔
                 bias_startline=95;       //出环恢复动态前瞻
+                SteerK.D=5;
                 flag=6;         //跳转到状态6
             }
             else
