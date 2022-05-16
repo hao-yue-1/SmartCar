@@ -62,7 +62,7 @@ int core0_main(void)
     gpio_init(P22_3, GPO, 1, PUSHPULL);
     gpio_init(P21_2, GPO, 1, PUSHPULL);
     /**************************传感器模块初始化**********************/
-	mt9v03x_init();     //初始化摄像头
+//	mt9v03x_init();     //初始化摄像头
 	/***************************驱动模块初始化***********************/
 	gtm_pwm_init(STEER_PIN, 50, STEER_MID);       //初始化舵机
 	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);      //初始化左电机
@@ -84,6 +84,7 @@ int core0_main(void)
 
 	while (TRUE)
 	{
+	    SteerCtrl(STEER_LEFT);
 	}
 }
 

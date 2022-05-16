@@ -46,14 +46,14 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	double radian;
 	if(diff_steerpwm>0) //左转
 	{
-	    radian=0.0058458*diff_steerpwm;
-	    speed_l=(41/(41+15*tan(radian)))*base_speed;    //左转左轮减速
+	    radian=0.00838884*diff_steerpwm;    //左轮与竖直线实际夹角    //若舵机阈值与实际最大打角改变，则需要修改此处
+	    speed_l=(41/(41+15*tan(radian)))*base_speed;    //左转左轮减速    //此处由前轮轮距和前后轮轴距决定，一般不需要改动
 	}
 	else                //右转
 	{
 	    diff_steerpwm=-diff_steerpwm;
-	    radian=0.0064373*diff_steerpwm;
-	    speed_r=(41/(41+15*tan(radian)))*base_speed;    //右转右轮减速
+	    radian=0.00789426*diff_steerpwm;     //右轮与竖直线实际夹角    //若舵机阈值与实际最大打角改变，则需要修改此处
+	    speed_r=(41/(41+15*tan(radian)))*base_speed;    //右转右轮减速    //此处由前轮轮距和前后轮轴距决定，一般不需要改动
 	}
 	MotorSetTarget(speed_l, speed_r);
 	MotorCtrl(speed_l,speed_r);
