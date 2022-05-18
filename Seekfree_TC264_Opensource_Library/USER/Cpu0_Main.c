@@ -34,6 +34,7 @@
 #include "ImageProcess.h"   //图像处理
 #include "Key.h"            //按键处理
 #include "Filter.h"         //滤波算法
+#include "Attitude.h"       //姿态解算
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -63,7 +64,10 @@ int core0_main(void)
     gpio_init(P21_2, GPO, 1, PUSHPULL);
     /**************************传感器模块初始化**********************/
 //	mt9v03x_init();     //初始化摄像头
-	/***************************驱动模块初始化***********************/
+    gpio_set(LED_WHITE,0);
+    icm20602_init();    //初始化陀螺仪ICM20602
+    gpio_set(LED_WHITE,1);
+    /***************************驱动模块初始化***********************/
 	gtm_pwm_init(STEER_PIN, 50, STEER_MID);       //初始化舵机
 	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);      //初始化左电机
 //	gpio_init(P02_6, GPO, 1, PUSHPULL);           //逐飞驱动：左电机
@@ -84,7 +88,11 @@ int core0_main(void)
 
 	while (TRUE)
 	{
-	    SteerCtrl(STEER_LEFT);
+	    get_icm20602_gyro();
+	    get_icm20602_accdata();
+//        printf("%d,%d,%d,%d,%d,%d\n",icm_gyro_x,icm_gyro_y,icm_gyro_z,icm_acc_x,icm_acc_y,icm_acc_z);
+      IMU_quaterToEulerianAngles(); //解算欧拉角 //效果最好的是pitch，最差的是yaw
+      printf("%.2f,%.2f,%.2f\n", eulerAngle.roll, eulerAngle.pitch, eulerAngle.yaw);
 	}
 }
 
