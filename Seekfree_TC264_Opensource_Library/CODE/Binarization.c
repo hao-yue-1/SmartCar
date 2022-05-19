@@ -169,10 +169,10 @@ uint8 OneDimensionalThreshold(uint16 width, uint16 height)
 //根据场地条件调用大津法或谷底最小值得到二值化阈值然后根据灰度图得到黑白图像
 void ImageBinary()
 {
-//    uint8 Image_Threshold = 160;//固定阈值
+    uint8 Image_Threshold = 130;//固定阈值
 //    systick_start(STM1);
 //    uint8 Image_Threshold = GuDiThreshold(MT9V03X_W,MT9V03X_H);//使用谷底最小值得到二值化阈值
-    uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);//使用大津法得到二值化阈值
+//    uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);//使用大津法得到二值化阈值
 //    uint8 Image_Threshold = OneDimensionalThreshold(MT9V03X_W,MT9V03X_H);//使用一维means法得到二值化阈值
 //    use_time = systick_getval_us(STM1);
 //    lcd_showint32(60, 0, use_time, 5);

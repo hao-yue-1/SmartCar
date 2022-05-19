@@ -88,39 +88,6 @@ int core0_main(void)
 
 	while (TRUE)
 	{
-	    if(icm_angle_z_flag==0)
-	    {
-	        gpio_set(LED_RED, 1);
-	    }
-	    else
-	    {
-	        gpio_set(LED_RED, 0);
-	    }
-
-	    switch(KeyScan())
-	    {
-	        case KEY_S1_PRES:
-	        {
-	            StartIntegralAngle_Z(90);
-	            break;
-	        }
-	        case KEY_S2_PRES:
-            {
-                StartIntegralAngle_Z(180);
-                break;
-            }
-	        case KEY_S3_PRES:
-            {
-                StartIntegralAngle_Z(45);
-                break;
-            }
-	        case KEY_S4_PRES:
-            {
-                StartIntegralAngle_Z(360);
-                break;
-            }
-	        default:break;
-	    }
 
 	}
 }
