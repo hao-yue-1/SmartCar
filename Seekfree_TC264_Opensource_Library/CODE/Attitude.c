@@ -7,14 +7,14 @@
 #include <math.h>
 
 #define delta_T      0.005f  //周期 5ms计算一次
-#define M_PI 3.1425f      //与math.h中原有的定义重复
+#define M_PI 3.1425f         //圆周率
 
-float I_ex, I_ey, I_ez;  // 误差积分
+float I_ex, I_ey, I_ez;  //误差积分
 
 quaterInfo_t Q_info = {1, 0, 0};  //四元数
 eulerianAngles_t eulerAngle;      //欧拉角
 
-float param_Kp = 50.0;   // 加速度计的收敛速率比例增益 50
+float param_Kp = 50.0;   //加速度计的收敛速率比例增益 50
 float param_Ki = 0.20;   //陀螺仪收敛速率的积分增益 0.2
 float values[10];
 
@@ -102,7 +102,7 @@ static void IMU_AHRSupdate_noMagnetic(float gx, float gy, float gz, float ax, fl
     q1 = q1 + ( q0*gx + q2*gz - q3*gy)*halfT;
     q2 = q2 + ( q0*gy - q1*gz + q3*gx)*halfT;
     q3 = q3 + ( q0*gz + q1*gy - q2*gx)*halfT;
-    //    delta_2=(2*halfT*gx)*(2*halfT*gx)+(2*halfT*gy)*(2*halfT*gy)+(2*halfT*gz)*(2*halfT*gz);
+    // delta_2=(2*halfT*gx)*(2*halfT*gx)+(2*halfT*gy)*(2*halfT*gy)+(2*halfT*gz)*(2*halfT*gz);
     // 整合四元数率    四元数微分方程  四元数更新算法，二阶毕卡法
     //    q0 = (1-delta_2/8)*q0 + (-q1*gx - q2*gy - q3*gz)*halfT;
     //    q1 = (1-delta_2/8)*q1 + (q0*gx + q2*gz - q3*gy)*halfT;
@@ -125,28 +125,28 @@ void IMU_quaterToEulerianAngles(void)
     float q1 = Q_info.q1;
     float q2 = Q_info.q2;
     float q3 = Q_info.q3;
-    eulerAngle.pitch = asin(-2*q1*q3 + 2*q0*q2) * 180/M_PI; // pitch
+    eulerAngle.pitch = asin(-2*q1*q3 + 2*q0*q2) * 180/M_PI;                        // pitch
     eulerAngle.roll = atan2(2*q2*q3 + 2*q0*q1, -2*q1*q1 - 2*q2*q2 + 1) * 180/M_PI; // roll
-    eulerAngle.yaw = atan2(2*q1*q2 + 2*q0*q3, -2*q2*q2 - 2*q3*q3 + 1) * 180/M_PI; // yaw
+    eulerAngle.yaw = atan2(2*q1*q2 + 2*q0*q3, -2*q2*q2 - 2*q3*q3 + 1) * 180/M_PI;  // yaw
 
     /*可以不用作姿态限度的限制*/
-    if(eulerAngle.roll>90 || eulerAngle.roll<-90)
-    {
-        if(eulerAngle.pitch > 0)
-        {
-            eulerAngle.pitch = 180-eulerAngle.pitch;
-        }
-        if(eulerAngle.pitch < 0)
-        {
-            eulerAngle.pitch = -(180+eulerAngle.pitch);
-        }
-    }
-    if(eulerAngle.yaw > 180)
-    {
-        eulerAngle.yaw -=360;
-    }
-    else if(eulerAngle.yaw <-180)
-    {
-        eulerAngle.yaw +=360;
-    }
+//    if(eulerAngle.roll>90 || eulerAngle.roll<-90)
+//    {
+//        if(eulerAngle.pitch > 0)
+//        {
+//            eulerAngle.pitch = 180-eulerAngle.pitch;
+//        }
+//        if(eulerAngle.pitch < 0)
+//        {
+//            eulerAngle.pitch = -(180+eulerAngle.pitch);
+//        }
+//    }
+//    if(eulerAngle.yaw > 180)
+//    {
+//        eulerAngle.yaw -=360;
+//    }
+//    else if(eulerAngle.yaw <-180)
+//    {
+//        eulerAngle.yaw +=360;
+//    }
 }

@@ -34,7 +34,7 @@
 #include "ImageProcess.h"   //图像处理
 #include "Key.h"            //按键处理
 #include "Filter.h"         //滤波算法
-#include "Attitude.h"       //姿态解算
+#include "ICM20602.h"       //ICM20602
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -64,9 +64,9 @@ int core0_main(void)
     gpio_init(P21_2, GPO, 1, PUSHPULL);
     /**************************传感器模块初始化**********************/
 //	mt9v03x_init();     //初始化摄像头
-    gpio_set(LED_WHITE,0);
     icm20602_init();    //初始化陀螺仪ICM20602
-    gpio_set(LED_WHITE,1);
+    pit_interrupt_ms(CCU6_1,PIT_CH0,2);     //初始化陀螺仪积分中断2ms
+    pit_disable_interrupt(CCU6_1,PIT_CH0);  //关闭陀积分螺仪中断
     /***************************驱动模块初始化***********************/
 	gtm_pwm_init(STEER_PIN, 50, STEER_MID);       //初始化舵机
 	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);      //初始化左电机
@@ -79,7 +79,7 @@ int core0_main(void)
 	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
 	/**************************初始化参数****************************/
 	PID_init(&SteerK,&MotorK);          //初始化PID参数
-//	kalman1_init(&kalman1,1,100);       //初始化一阶卡尔曼
+	kalman1_init(&kalman1,1,100);       //初始化一阶卡尔曼
     //等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
@@ -88,11 +88,40 @@ int core0_main(void)
 
 	while (TRUE)
 	{
-	    get_icm20602_gyro();
-	    get_icm20602_accdata();
-//        printf("%d,%d,%d,%d,%d,%d\n",icm_gyro_x,icm_gyro_y,icm_gyro_z,icm_acc_x,icm_acc_y,icm_acc_z);
-      IMU_quaterToEulerianAngles(); //解算欧拉角 //效果最好的是pitch，最差的是yaw
-      printf("%.2f,%.2f,%.2f\n", eulerAngle.roll, eulerAngle.pitch, eulerAngle.yaw);
+	    if(icm_angle_z_flag==0)
+	    {
+	        gpio_set(LED_RED, 1);
+	    }
+	    else
+	    {
+	        gpio_set(LED_RED, 0);
+	    }
+
+	    switch(KeyScan())
+	    {
+	        case KEY_S1_PRES:
+	        {
+	            StartIntegralAngle_Z(90);
+	            break;
+	        }
+	        case KEY_S2_PRES:
+            {
+                StartIntegralAngle_Z(180);
+                break;
+            }
+	        case KEY_S3_PRES:
+            {
+                StartIntegralAngle_Z(45);
+                break;
+            }
+	        case KEY_S4_PRES:
+            {
+                StartIntegralAngle_Z(360);
+                break;
+            }
+	        default:break;
+	    }
+
 	}
 }
 

@@ -56,7 +56,6 @@ void KeyParameterDisplay(uint8 flag)
         case 1:
         {
             lcd_showstr(0, 0, "diff_speed_kp:");
-            lcd_showfloat(0, 1, diff_speed_kp, 2, 3);
             break;
         }
         case 2:
@@ -102,7 +101,6 @@ void ParameterDisplay(void)
 {
     lcd_clear(WHITE);
     lcd_showint16(0, 0, base_speed);
-    lcd_showfloat(0, 1, diff_speed_kp, 2, 3);
     lcd_showfloat(0, 2, SteerK.P, 2, 3);
     lcd_showfloat(0, 3, SteerK.D, 2, 3);
     lcd_showfloat(0, 4, MotorK.P, 2, 3);
@@ -152,8 +150,6 @@ uint8 KeyParameter(void)
                 }
                 case 1: //差速
                 {
-                    diff_speed_kp+=0.05;
-                    lcd_showfloat(0, 1, diff_speed_kp, 2, 3);
                     break;
                 }
                 case 2: //舵机P
@@ -207,8 +203,6 @@ uint8 KeyParameter(void)
                 }
                 case 1: //差速
                 {
-                    diff_speed_kp-=0.05;
-                    lcd_showfloat(0, 1, diff_speed_kp, 2, 3);
                     break;
                 }
                 case 2: //舵机P

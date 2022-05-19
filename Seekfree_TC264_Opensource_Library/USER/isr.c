@@ -29,18 +29,19 @@
 #include "ImageTack.h"
 #include "zf_gpio.h"
 #include <math.h>
+#include "Filter.h"
+#include "ICM20602.h"
 
-uint32 SteerPWM=0;          //舵机PWM
-float diff_speed_kp=0.05;   //差速转向
-
+uint32 SteerPWM=0;            //舵机PWM
+float icm_target_angle_z=0;   //陀螺仪Z轴积分目标角度
+uint8 icm_angle_z_flag=0;     //陀螺仪Z轴积分达到目标角度
 //PIT中断函数  示例
+
+//电机速度环控制中断
 IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 {
 	enableInterrupts();//开启中断嵌套
 
-	//电机PID控制
-//	speed_l=base_speed-diff_speed_kp*(SteerPWM-STEER_MID); //(StreePWM-STEER_MID)max=85
-//	speed_r=base_speed+diff_speed_kp*(SteerPWM-STEER_MID);
 	//阿克曼结构差速，减速版
 	int diff_steerpwm=SteerPWM-STEER_MID;
 	double radian;
@@ -63,7 +64,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH0);
 }
 
-
+//舵机转向环控制中断
 IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 {
 	enableInterrupts();//开启中断嵌套
@@ -75,11 +76,21 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH1);
 }
 
+//陀螺仪角度积分中断
 IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)
 {
 	enableInterrupts();//开启中断嵌套
-	PIT_CLEAR_FLAG(CCU6_1, PIT_CH0);
 
+	float angle_z=GetICM20602Angle_Z(0);    //角度积分
+	if(angle_z>icm_target_angle_z||angle_z<-icm_target_angle_z)  //判断积分角度是否大于目标角度
+	{
+	    icm_angle_z_flag=1;                     //积分到达目标flag=1
+	    pit_disable_interrupt(CCU6_1, PIT_CH0); //关闭中断
+	}
+
+	printf("%f\n",angle_z);
+
+	PIT_CLEAR_FLAG(CCU6_1, PIT_CH0);
 }
 
 IFX_INTERRUPT(cc61_pit_ch1_isr, 0, CCU6_1_CH1_ISR_PRIORITY)

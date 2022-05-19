@@ -192,7 +192,6 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
                 while(1)
                 {
 //                    Bias=0;
-                    diff_speed_kp=0;
                     base_speed=0;
                 }
                 return 1;
@@ -746,7 +745,6 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             {
                 FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
                 Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
-                diff_speed_kp=0.05;
                 return 1;//三个拐点存在三岔成立：正入三岔
             }
         }
@@ -764,7 +762,6 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             //在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
             //这一次是越过了三岔很接近冲出三岔的拐角，我们手动把补到的线计算出来的bias扩大
             Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine)*1.5;
-            diff_speed_kp=0.05;
             return 1;//三岔正入丢失左右拐点那一帧
         }
     }
@@ -778,7 +775,6 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         {
             FillingLine('R',ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
             Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
-            diff_speed_kp=0.05;
             return 1;//三岔左斜入三岔
         }
     }
@@ -792,7 +788,6 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         {
             FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
             Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
-            diff_speed_kp=0.05;
             return 1;//三岔右斜入三岔
         }
     }
@@ -1399,9 +1394,7 @@ uint8 CrossLoopEnd_F(void)
         {
             //舵机向右打死并加上一定的延时实现出弯
             Bias=-10;
-            diff_speed_kp+=0.2; //增大差速
             systick_delay_ms(STM0,300);
-            diff_speed_kp-=0.2; //恢复差速
             return 1;
         }
     }
@@ -1490,9 +1483,7 @@ uint8 CrossLoopEnd_S(void)
             gpio_set(LED_GREEN, 0);
             base_speed=140;     //降速出环
             Bias=-10;
-            diff_speed_kp+=0.1; //增大差速
             systick_delay_ms(STM0,300);
-            diff_speed_kp-=0.1; //恢复差速
             return 1;
         }
     }
@@ -1744,7 +1735,5 @@ void OutGarage(void)
 //    systick_delay_ms(STM0,50);
     //舵机向右打死并加上一定的延时实现出库
     Bias=-10;
-    diff_speed_kp=0.1;
     systick_delay_ms(STM0,300);
-    diff_speed_kp=0.05;
 }
