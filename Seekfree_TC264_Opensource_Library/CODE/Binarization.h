@@ -19,7 +19,4 @@ uint8 OneDimensionalThreshold(uint16 width, uint16 height); //计算二值化阈值 4ms
 
 void ImageBinary(void);                                             //根据阈值二值化图像并修改原点坐标
 
-
-
-
 #endif /* CODE_BINARIZATION_H_ */
