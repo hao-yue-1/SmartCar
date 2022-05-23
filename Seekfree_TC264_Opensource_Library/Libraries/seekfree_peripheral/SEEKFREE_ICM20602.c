@@ -29,7 +29,7 @@
 #include "zf_spi.h"
 #include "SEEKFREE_IIC.h"
 #include "SEEKFREE_ICM20602.h"
-
+#include "LED.h"
 
 int16 icm_gyro_x,icm_gyro_y,icm_gyro_z;
 int16 icm_acc_x,icm_acc_y,icm_acc_z;
@@ -70,10 +70,10 @@ void icm20602_init(void)
 {
 	simiic_init();
     systick_delay_ms(STM0, 10);  //上电延时
-    
+
     //检测
     icm20602_self1_check();
-    
+
     //复位
     simiic_write_reg(ICM20602_DEV_ADDR,ICM20602_PWR_MGMT_1,0x80);               //复位设备
     systick_delay_ms(STM0, 2);                                                        //延时

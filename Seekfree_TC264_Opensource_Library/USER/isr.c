@@ -31,6 +31,7 @@
 #include <math.h>
 #include "Filter.h"
 #include "ICM20602.h"
+#include "LED.h"
 
 uint32 SteerPWM=0;            //舵机PWM
 float icm_target_angle_z=0;   //陀螺仪Z轴积分目标角度
@@ -88,7 +89,7 @@ IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)
 	    pit_disable_interrupt(CCU6_1, PIT_CH0); //关闭中断
 	}
 
-	printf("%f\n",angle_z);
+//	printf("%f\n",angle_z);
 
 	PIT_CLEAR_FLAG(CCU6_1, PIT_CH0);
 }

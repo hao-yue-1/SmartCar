@@ -16,7 +16,7 @@
 #include "SEEKFREE_MT9V03X.h"
 #include "Motor.h"              //停止电机
 #include "PID.h"
-#include "ImageProcess.h"       //LED宏定义
+#include "LED.h"                //LED宏定义
 #include "ICM20602.h"           //陀螺仪积分完成标志变量以及开启积分函数
 
 //索贝尔计算超过阈值的次数当大于某个值就不再进行sobel测试

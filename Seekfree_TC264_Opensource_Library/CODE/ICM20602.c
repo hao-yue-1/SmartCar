@@ -9,6 +9,7 @@
 #include "SEEKFREE_IIC.h"
 #include "SEEKFREE_ICM20602.h"
 #include "zf_ccu6_pit.h"
+#include "Filter.h"
 
 /*
  ** 函数功能: 获取ICM20602Z轴角速度
@@ -44,14 +45,15 @@ float GetICM20602Angle_Z(uint8 flag)
         return 0;
     }
 
-    int16 my_gyro_z=GetICM20602Gyro_Z();   //获取Z轴角速度
-    my_angle_z+=0.00012480f*my_gyro_z;     //积分
+    int16 my_gyro_z=GetICM20602Gyro_Z();                //获取Z轴角速度
+    my_gyro_z=kalman1_filter(&kalman_gyro, my_gyro_z);  //滤波
+    my_angle_z+=0.00012480f*my_gyro_z;                  //积分
 
     return my_angle_z;
 }
 
 /*
- ** 函数功能: 从当前位置开始对ICM20602进行目标积分
+ ** 函数功能: 从当前位置开启对ICM20602进行目标积分
  ** 参    数: target_angle：目标角度
  ** 返 回 值: 无
  ** 作    者: WBN
@@ -62,4 +64,17 @@ void StartIntegralAngle_Z(float target_angle)
     icm_angle_z_flag=0;                     //积分目标flag=0
     GetICM20602Angle_Z(1);                  //积分清零
     pit_enable_interrupt(CCU6_1, PIT_CH0);  //开启中断
+}
+
+/*
+ ** 函数功能: 对ICM20602进行姿态解算得出欧拉角
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void GetICM20602Eulerian(void)
+{
+    get_icm20602_accdata();  //获取加速度计的值
+    get_icm20602_gyro();   //获取陀螺仪的值
+    IMU_quaterToEulerianAngles(); //解算欧拉角
 }

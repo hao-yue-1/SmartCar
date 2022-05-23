@@ -23,10 +23,8 @@
 #define KEY_S4_PRES     4
 #define KEY_S5_PRES     5
 
+void KeyInit(void);
 uint8 KeyScan(void);
-uint8 KeyParameter(void);
-void ParameterDisplay(void);
-void BaseSpeedDisplay(void);
-uint8 KeyBaseSpeed(void);
+
 
 #endif /* CODE_KEY_H_ */

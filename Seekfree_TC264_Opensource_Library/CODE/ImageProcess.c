@@ -9,6 +9,7 @@
 #include "zf_gpio.h"
 #include "PID.h"
 #include "Motor.h"
+#include "LED.h"
 
 uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量

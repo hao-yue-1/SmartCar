@@ -35,11 +35,12 @@
 #include "Key.h"            //按键处理
 #include "Filter.h"         //滤波算法
 #include "ICM20602.h"       //ICM20602
+#include "LED.h"            //LED
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
 int16 base_speed=180;        //基础速度
-kalman1_filter_t kalman1;    //一阶卡尔曼结构体
+kalman1_filter_t kalman_gyro;    //一阶卡尔曼结构体
 
 int core0_main(void)
 {
@@ -48,24 +49,13 @@ int core0_main(void)
 //	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);      //初始化串口0与电脑上位机通讯
 	uart_init(UART_2, 115200, UART2_TX_P10_5, UART2_RX_P10_6);      //初始化蓝牙模块所用的串口2
 	lcd_init();     //初始化TFT屏幕
-	gpio_init(P20_8, GPO, 1, PUSHPULL);     //初始化核心板的LED
-	gpio_init(P20_9, GPO, 1, PUSHPULL);
-    gpio_init(P21_4, GPO, 1, PUSHPULL);
-    gpio_init(P21_5, GPO, 1, PUSHPULL);
-    gpio_init(P33_10, GPI, 0, PULLDOWN);    //初始化按键
-    gpio_init(P33_11, GPI, 0, PULLDOWN);
-    gpio_init(P33_12, GPI, 0, PULLDOWN);
-    gpio_init(P33_13, GPI, 0, PULLDOWN);
-    gpio_init(P32_4, GPI, 0, PULLDOWN);
-    gpio_init(P23_1, GPO, 1, PUSHPULL);     //初始化主控板的LED
-    gpio_init(P22_1, GPO, 1, PUSHPULL);
-    gpio_init(P22_2, GPO, 1, PUSHPULL);
-    gpio_init(P22_3, GPO, 1, PUSHPULL);
-    gpio_init(P21_2, GPO, 1, PUSHPULL);
+	LEDInit();      //初始化LED
+	KeyInit();      //初始化按键
     /**************************传感器模块初始化**********************/
 //	mt9v03x_init();     //初始化摄像头
-    icm20602_init();    //初始化陀螺仪ICM20602
-    pit_interrupt_ms(CCU6_1,PIT_CH0,2);     //初始化陀螺仪积分中断2ms
+	icm20602_init();    //初始化陀螺仪ICM20602
+	gpio_set(LED_GREEN, 0);
+	pit_interrupt_ms(CCU6_1,PIT_CH0,2);     //初始化陀螺仪积分中断2ms
     pit_disable_interrupt(CCU6_1,PIT_CH0);  //关闭陀积分螺仪中断
     /***************************驱动模块初始化***********************/
 	gtm_pwm_init(STEER_PIN, 50, STEER_MID);       //初始化舵机
@@ -79,16 +69,16 @@ int core0_main(void)
 	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
 	/**************************初始化参数****************************/
 	PID_init(&SteerK,&MotorK);          //初始化PID参数
-	kalman1_init(&kalman1,1,100);       //初始化一阶卡尔曼
+	kalman1_init(&kalman_gyro,1,100);       //初始化一阶卡尔曼
     //等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
 	enableInterrupts();
 
-
 	while (TRUE)
 	{
-
+	    GetICM20602Eulerian();
+	    printf("%.2f,%.2f,%.2f\n", eulerAngle.roll, eulerAngle.pitch, eulerAngle.yaw);
 	}
 }
 

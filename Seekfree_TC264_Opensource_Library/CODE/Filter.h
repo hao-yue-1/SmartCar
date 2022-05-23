@@ -22,7 +22,7 @@ typedef struct {
     float gain;     // kalman gain
 } kalman1_filter_t;
 
-extern kalman1_filter_t kalman1;       //定义卡尔曼结构体
+extern kalman1_filter_t kalman_gyro;       //定义卡尔曼结构体
 
 float FirstOrderLagFilter(float value); //一阶滞后滤波算法
 int16 SecondOrderLagFilter_L(int16 value);
