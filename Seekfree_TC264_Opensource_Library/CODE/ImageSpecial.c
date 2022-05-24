@@ -1903,7 +1903,7 @@ uint8 CrossRoadsStatusIdentify(Point DownInflectionL,Point DownInflectionR)
             NowFlag=CrossRoadsIdentify(DownInflectionL, DownInflectionR);
             if(NowFlag==0)
             {
-                StartIntegralAngle_Z(90);//开启陀螺仪
+                StartIntegralAngle_Z(250);//开启陀螺仪,不能够完全转到270，会有一点偏差，就进入识别出口状态
                 StatusChange=2;
             }
             break;

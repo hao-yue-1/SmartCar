@@ -51,7 +51,7 @@ void ImageProcess()
     /*************************ÌØÊâÔªËØÅÐ¶Ï*************************/
     if(CrossRoadsStatusIdentify(LeftDownPoint, RightDownPoint)==1)
     {
-        gpio_toggle(LED_WHITE);
+        while(1);
     }
     /****************************×´Ì¬»ú***************************/
 #if 0

@@ -27,7 +27,7 @@
 
 #include "common.h"
 
-#define     ICM20602_DEV_ADDR           0x69 //SA0接地：0x68   SA0上拉：0x69  模块默认上拉
+#define     ICM20602_DEV_ADDR           0x68 //SA0接地：0x68   SA0上拉：0x69  模块默认上拉
 
 
 #define     ICM20602_SPI_W              0x00
