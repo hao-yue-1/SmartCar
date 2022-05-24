@@ -74,7 +74,7 @@ void IMUGetValues(float *values)
     values[5] = ((float)icm_gyro_z-gyro_offset.z) * M_PI / 180 / 16.4f;
 }
 
-//归一化算法
+//求导数的平方根
 float invSqrt(float x)
 {
     float halfx = 0.5f * x;
