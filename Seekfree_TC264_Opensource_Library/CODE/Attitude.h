@@ -5,6 +5,8 @@
 #ifndef ICM20602_ATTITUDE_H
 #define ICM20602_ATTITUDE_H
 
+#include "common.h"
+
 typedef struct{ //四元数
     float q0;
     float q1;
@@ -18,10 +20,17 @@ typedef struct{ //欧拉角
     float yaw;
 }eulerianAngles_t;
 
-extern float values[10];
+typedef struct  //陀螺仪校准值
+{
+    int16 x;
+    int16 y;
+    int16 z;
+}GyroOffset;
+
+extern float values[6];
 extern eulerianAngles_t eulerAngle;
 
-void IMU_getValues(float * values);
+void IMUGetValues(float * values);
 void IMU_quaterToEulerianAngles(void);
 
 #endif //ICM20602_ATTITUDE_H
