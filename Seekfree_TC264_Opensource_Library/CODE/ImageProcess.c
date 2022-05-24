@@ -49,9 +49,12 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-//    CrossLoopEnd_S();
+    if(CrossRoadsStatusIdentify(LeftDownPoint, RightDownPoint)==1)
+    {
+        gpio_toggle(LED_WHITE);
+    }
     /****************************状态机***************************/
-#if 1
+#if 0
     switch(flag)
     {
         case 0: //识别左环岛

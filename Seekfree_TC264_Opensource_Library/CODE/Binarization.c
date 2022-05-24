@@ -1,6 +1,7 @@
 #include "Binarization.h"
 #include "headfile.h"
 #include <stdlib.h>
+#include "zf_assert.h"
 
 uint8 BinaryImage[MT9V03X_H][MT9V03X_W]={0};
 uint32 use_time;
@@ -169,10 +170,10 @@ uint8 OneDimensionalThreshold(uint16 width, uint16 height)
 //根据场地条件调用大津法或谷底最小值得到二值化阈值然后根据灰度图得到黑白图像
 void ImageBinary()
 {
-    uint8 Image_Threshold = 130;//固定阈值
+//    uint8 Image_Threshold = 130;//固定阈值
 //    systick_start(STM1);
 //    uint8 Image_Threshold = GuDiThreshold(MT9V03X_W,MT9V03X_H);//使用谷底最小值得到二值化阈值
-//    uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);//使用大津法得到二值化阈值
+    uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);//使用大津法得到二值化阈值
 //    uint8 Image_Threshold = OneDimensionalThreshold(MT9V03X_W,MT9V03X_H);//使用一维means法得到二值化阈值
 //    use_time = systick_getval_us(STM1);
 //    lcd_showint32(60, 0, use_time, 5);
@@ -190,3 +191,39 @@ void ImageBinary()
     }
 }
 
+/********************************************************************************************
+ ** 函数功能: 自适应阈值二值化图像
+ ** 参    数: uint8* img_data：灰度图像
+ **           uint8* output_data：二值化图像
+ **           int width：图像宽度
+ **           int height：图像高度
+ **           int block：分割局部阈值的方块大小例如7*7
+ **           uint8 clip_value: 局部阈值减去的经验值一般为（2~5）
+ ** 返 回 值: 无
+ ** 作    者: 上海交大16届智能车智能视觉组SJTUAuTop
+ **           https://zhuanlan.zhihu.com/p/391051197
+ ** 注    意：adaptiveThreshold(mt9v03x_image[0],BinaryImage[0],MT9V03X_W,MT9V03X_H,5,1);//但是没d用跟大津法一样
+ *********************************************************************************************/
+void adaptiveThreshold(uint8 *img_data, uint8 *output_data, int width, int height, int block, uint8 clip_value)
+{
+//  assert(block % 2 == 1); // block必须为奇数
+  int half_block = block / 2;
+  for(int y=half_block; y<height-half_block; y++)
+  {
+    for(int x=half_block; x<width-half_block; x++)
+    {
+      // 计算局部阈值
+      int thres = 0;
+      for(int dy=-half_block; dy<=half_block; dy++)
+      {
+        for(int dx=-half_block; dx<=half_block; dx++)
+        {
+          thres += img_data[(x+dx)+(y+dy)*width];
+        }
+      }
+      thres = thres / (block * block) - clip_value;
+      // 进行二值化
+      output_data[x+y*width] = img_data[x+y*width]>thres ? 255 : 0;
+    }
+  }
+}
