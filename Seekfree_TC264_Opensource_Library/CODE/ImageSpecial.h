@@ -28,7 +28,6 @@
 //十字回环出口
 #define L_LOSTNUM   60
 
-
 /*起跑线相关函数*/
 int64 SobelTest(void);      //Sobel算子检测起跑线
 uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR);            //起跑线识别
