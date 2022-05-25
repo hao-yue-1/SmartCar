@@ -125,10 +125,60 @@ void FillingLine(char Choose, Point StarPoint,Point EndPoint)
                 break;
             default:break;
         }
-        //BinaryImage[Y][X]=IMAGE_BLACK;//BinaryImage[H][W],x=(y-b)/k//对二值化图像进行补线
     }
 }
+void FillinLine_V2(char Choose,int startline,int endline,Point Point1,Point Point2)
+{
+    float K;//斜率为浮点型，否则K<1时，K=0
+    int B,Y,X;
 
+    /*特殊情况：当要补的线是一条垂线的时候*/
+    if(Point1.X==Point2.X)
+    {
+        for(Y=Point1.Y;Y>Point2.Y;Y--)
+        {
+            switch(Choose)
+            {
+                case 'L':
+                    LeftLine[Y]=Point1.X;
+                    CentreLine[Y]=(Point1.X+RightLine[Y])/2;
+                    break;
+                case 'R':
+                    RightLine[Y]=Point1.X;
+                    CentreLine[Y]=(LeftLine[Y]+Point1.X)/2;//在里面进行中线的修改，因为不会出现补两边的情况，正入十字就直接冲，斜入就补一边而已
+                    break;
+                default:break;
+            }
+            return;
+        }
+    }
+    /***********************************************/
+
+    K=(float)(-Point2.Y+Point1.Y)/(Point2.X-Point1.X);//k=(y2-y1)/(x2-x1)，强制类型转化否则会损失精度仍然为0
+    B=-Point2.Y-K*Point1.X;//b=y-kx
+
+    for(Y=startline;Y>endline;Y--)
+    {
+        X=(int)((-Y-B)/K);          //强制类型转化：指针索引的时候只能是整数
+
+        //判断X会不会越界
+        if(X<0)                X=0;
+        else if(X>MT9V03X_W-1) X=MT9V03X_W-1;
+
+        switch(Choose)
+        {
+            case 'L':
+                LeftLine[Y]=X;
+                CentreLine[Y]=(X+RightLine[Y])/2;
+                break;
+            case 'R':
+                RightLine[Y]=X;
+                CentreLine[Y]=(LeftLine[Y]+X)/2;//在里面进行中线的修改，因为不会出现补两边的情况，正入十字就直接冲，斜入就补一边而已
+                break;
+            default:break;
+        }
+    }
+}
 /*
  *******************************************************************************************
  ** 函数功能: 根据中线数组所在离散的点计算出离中线的偏差Bias
