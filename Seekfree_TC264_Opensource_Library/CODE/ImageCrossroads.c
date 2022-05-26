@@ -93,6 +93,23 @@ uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR)
         else
             return 0;
     }
+    //最下面一行丢线，并且左右拐点找不到，入十字中的状态
+    else if(LeftLine[MT9V03X_H-1]==0 && RightLine[MT9V03X_H-1]==MT9V03X_W-1 && DownInflectionL.X==0 && DownInflectionR.X==0)
+    {
+        Point PointL,PointR;//临时的左右下拐点
+        PointL.X=10;PointL.Y=MT9V03X_H;//给定一个左下角的点
+        PointR.X=MT9V03X_W-10;PointR.Y=MT9V03X_H;//给定一个右下角的点
+        //丢失左右下拐点的时候根据边沿去找上拐点
+        GetCrossRoadsUpInflection(PointL, PointR, &UpInflectionL, &UpInflectionR);
+        if(UpInflectionL.Y!=0 && UpInflectionR.Y!=0)
+        {
+            PointL.X=LeftLine[UpInflectionL.Y-5];PointL.Y=UpInflectionL.Y-5;//寻找正确边线上跟左上拐点一起的点来补线
+            PointR.X=RightLine[UpInflectionR.Y-5];PointR.Y=UpInflectionR.Y-5;//寻找正确边线上跟右上拐点一起的点来补线
+            FillinLine_V2('L', MT9V03X_H, UpInflectionL.Y, UpInflectionL, PointL);
+            FillinLine_V2('L', MT9V03X_H, UpInflectionR.Y, UpInflectionR, PointR);
+            return 1;//正入十字
+        }
+    }
     //左边丢线超过一半，右边也存在丢线，右拐点存在，并且右拐点上面一段对应的左边丢线，并且右拐点不能在最左边附近
     else if(LostNum_LeftLine>70 && LostNum_RightLine>15 && DownInflectionR.X!=0 && LeftLine[DownInflectionR.Y-5]==0)
     {
