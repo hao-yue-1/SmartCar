@@ -7,6 +7,8 @@
 
 #include "ImageSpecial.h"
 #include "ICM20602.h"           //陀螺仪积分完成标志变量以及开启积分函数
+#include "LED.h"                //debug
+#include "headfile.h"
 
 /*********************************************************************************
  ** 函数功能: 根据左右下拐点搜寻出十字路口的左右上拐点
@@ -28,10 +30,12 @@ void GetCrossRoadsUpInflection(Point DownInflectionL,Point DownInflectionR,Point
     //从左下拐点往上找，找到白跳黑
     for(row=DownInflectionL.Y-5;row>1;row--)
     {
-        if(BinaryImage[row][DownInflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][DownInflectionL.X]==IMAGE_BLACK)  //白点->黑点
+        //从下面往上面找白的时候列数主动往左右黑色区域偏一点,防止因为找拐点函数找的拐点很怪使得补线补错
+        if(BinaryImage[row][DownInflectionL.X-3]==IMAGE_WHITE && BinaryImage[row-1][DownInflectionL.X-3]==IMAGE_BLACK)  //白点->黑点
         {
             //从白黑跳变点上几行再找黑跳白，得到很好的拐点去补线
-            for(cloum=DownInflectionL.X;cloum<MT9V03X_W/2;cloum++)
+            //多往右边扫三十列，别勉稍微有一点斜但是左右拐点又存在
+            for(cloum=DownInflectionL.X;cloum<MT9V03X_W/2+30;cloum++)
             {
                 if(BinaryImage[row-3][cloum]==IMAGE_BLACK && BinaryImage[row-3][cloum+1]==IMAGE_WHITE)  //黑点->白点
                 {
@@ -46,10 +50,12 @@ void GetCrossRoadsUpInflection(Point DownInflectionL,Point DownInflectionR,Point
 
     for(row=DownInflectionR.Y-5;row>1;row--)
     {
-        if(BinaryImage[row][DownInflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][DownInflectionR.X]==IMAGE_BLACK)  //由白到黑跳变
+        //从下面往上面找白的时候列数主动往左右黑色区域偏一点,防止因为找拐点函数找的拐点很怪使得补线补错
+        if(BinaryImage[row][DownInflectionR.X+3]==IMAGE_WHITE && BinaryImage[row-1][DownInflectionR.X+3]==IMAGE_BLACK)  //由白到黑跳变
         {
             //从白黑跳变点上几行再找黑跳白，得到很好的拐点去补线
-            for(cloum=DownInflectionR.X;cloum>MT9V03X_W/2;cloum--)
+            //多往左边扫三十列，别勉稍微有一点斜但是左右拐点又存在
+            for(cloum=DownInflectionR.X;cloum>MT9V03X_W/2-30;cloum--)
             {
                 if(BinaryImage[row-3][cloum]==IMAGE_BLACK && BinaryImage[row-3][cloum-1]==IMAGE_WHITE)  //黑点->白点
                 {
@@ -80,6 +86,13 @@ uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR)
     Point UpInflectionL,UpInflectionR;//左右上拐点
     UpInflectionL.X=0;UpInflectionL.Y=0;//左上拐点置零
     UpInflectionR.X=0;UpInflectionR.Y=0;//右上拐点置零
+
+    /*debug*/
+//    lcd_showint32(0, 0, LostNum_LeftLine, 3);
+//    lcd_showint32(0, 1, LostNum_RightLine, 3);
+//    lcd_showint32(0, 2, DownInflectionL.X, 3);
+//    lcd_showint32(0, 3, RightLine[DownInflectionL.Y-5], 3);
+
     //左右两边大量丢线，并且左右下拐点都存在,并且中上是白点
     if(LostNum_LeftLine>30 && LostNum_RightLine>30 && DownInflectionR.X!=0 && DownInflectionL.X!=0 && BinaryImage[50][MT9V03X_W/2]==IMAGE_WHITE)
     {
@@ -90,11 +103,9 @@ uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR)
             FillingLine('R', DownInflectionR, UpInflectionR);
             return 1;//正入十字
         }
-        else
-            return 0;
     }
     //最下面一行丢线，并且左右拐点找不到，入十字中的状态
-    else if(LeftLine[MT9V03X_H-1]==0 && RightLine[MT9V03X_H-1]==MT9V03X_W-1 && DownInflectionL.X==0 && DownInflectionR.X==0)
+    else if(LeftLine[MT9V03X_H-10]==0 && RightLine[MT9V03X_H-10]==MT9V03X_W-1 && DownInflectionL.X==0 && DownInflectionR.X==0)
     {
         Point PointL,PointR;//临时的左右下拐点
         PointL.X=10;PointL.Y=MT9V03X_H;//给定一个左下角的点
@@ -103,18 +114,18 @@ uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR)
         GetCrossRoadsUpInflection(PointL, PointR, &UpInflectionL, &UpInflectionR);
         if(UpInflectionL.Y!=0 && UpInflectionR.Y!=0)
         {
-            PointL.X=LeftLine[UpInflectionL.Y-5];PointL.Y=UpInflectionL.Y-5;//寻找正确边线上跟左上拐点一起的点来补线
-            PointR.X=RightLine[UpInflectionR.Y-5];PointR.Y=UpInflectionR.Y-5;//寻找正确边线上跟右上拐点一起的点来补线
+            PointL.X=LeftLine[UpInflectionL.Y-7];PointL.Y=UpInflectionL.Y-7;//寻找正确边线上跟左上拐点一起的点来补线
+            PointR.X=RightLine[UpInflectionR.Y-7];PointR.Y=UpInflectionR.Y-7;//寻找正确边线上跟右上拐点一起的点来补线
             FillinLine_V2('L', MT9V03X_H, UpInflectionL.Y, UpInflectionL, PointL);
-            FillinLine_V2('L', MT9V03X_H, UpInflectionR.Y, UpInflectionR, PointR);
+            FillinLine_V2('R', MT9V03X_H, UpInflectionR.Y, UpInflectionR, PointR);
             return 1;//正入十字
         }
     }
     //左边丢线超过一半，右边也存在丢线，右拐点存在，并且右拐点上面一段对应的左边丢线，并且右拐点不能在最左边附近
-    else if(LostNum_LeftLine>70 && LostNum_RightLine>15 && DownInflectionR.X!=0 && LeftLine[DownInflectionR.Y-5]==0)
+    else if(LostNum_LeftLine>60 && LostNum_RightLine>10 && DownInflectionR.X!=0 && LeftLine[DownInflectionR.Y-5]==0)
     {
         //直接右下拐点往上冲找到黑色边缘
-        for(row=DownInflectionR.Y;row>1;row--)
+        for(row=DownInflectionR.Y-5;row>1;row--)
         {
             if(BinaryImage[row][DownInflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][DownInflectionR.X]==IMAGE_BLACK)  //由白到黑跳变
             {
@@ -128,18 +139,16 @@ uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR)
                         FillingLine('R', DownInflectionR, UpInflectionR);
                         return 2;//向右斜入十字
                     }
-                    else return 0;
                 }
             }
-            else return 0;
         }
     }
     //右边丢线超过一半，左边也存在丢线，左拐点存在，并且右拐点上面一段对应的左边丢线
-    else if(LostNum_RightLine>70 && LostNum_LeftLine>15 && DownInflectionL.X!=0 && RightLine[DownInflectionL.Y-5]==MT9V03X_W-1)
+    else if(LostNum_RightLine>60 && LostNum_LeftLine>10 && DownInflectionL.X!=0 && RightLine[DownInflectionL.Y-5]==MT9V03X_W-1)
     {
-        for(row=DownInflectionL.Y;row>1;row--)
+        for(row=DownInflectionL.Y-5;row>1;row--)//初始行就在之前的基础上减个5，毕竟拐点找的太严格又容易找不到，不严格很容易这个拐点的下一行就是白跳黑
         {
-            if(BinaryImage[row][UpInflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][UpInflectionL.X]==IMAGE_BLACK)  //由白到黑跳变
+            if(BinaryImage[row][DownInflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][DownInflectionL.X]==IMAGE_BLACK)  //由白到黑跳变
             {
                 //从白黑跳变点上几行再找黑跳白，得到很好的拐点去补线
                 //注意此处不能说遍历到一半就停下来了，因为斜入的时候上拐点本来就比较中间
@@ -152,13 +161,11 @@ uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR)
                         FillingLine('L', DownInflectionL, UpInflectionL);
                         return 3;//向左斜入十字
                     }
-                    else return 0;
                 }
             }
-            else return 0;
         }
     }
-    else return 0;
+    return 0;
 }
 /********************************************************************************************
  ** 函数功能: 十字的状态机转移
@@ -171,52 +178,99 @@ uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR)
 uint8 CrossRoadsStatusIdentify(Point DownInflectionL,Point DownInflectionR)
 {
     //十字状态变量，用来看状态是否跳转
-    static uint8 StatusChange;
+    static uint8 StatusChange,num1,num3;
     uint8 NowFlag=0;//十字识别的暂存标志变量
 
+    NowFlag=CrossRoadsIdentify(DownInflectionL, DownInflectionR);
     switch(StatusChange)
     {
-        //入口状态
+        //根据ICM为主判断是否完成十字元素
         case 0:
         {
-            NowFlag=CrossRoadsIdentify(DownInflectionL, DownInflectionR);
-            if(NowFlag!=0)
+            gpio_set(LED_BLUE, 0);
+            //如果是正入状态
+            if(NowFlag==1)
             {
-                StatusChange=1;//跳转到下一个状态十字内
+                gpio_set(LED_BLUE, 1);
+                StartIntegralAngle_Z(270);//开启陀螺仪作为出状态标志
+                StatusChange=1;//进入下一个状态，十字中途
             }
             break;
         }
-        //中途状态，开启陀螺仪积分，辅助出环
         case 1:
         {
-            NowFlag=CrossRoadsIdentify(DownInflectionL, DownInflectionR);
-            if(NowFlag==0)
-            {
-                StartIntegralAngle_Z(250);//开启陀螺仪,不能够完全转到270，会有一点偏差，就进入识别出口状态
-                StatusChange=2;
-            }
-            break;
-        }
-        //出口状态
-        case 2:
-        {
+            gpio_set(LED_GREEN, 0);
             if(icm_angle_z_flag==1)//陀螺仪积分达到出十字环状态进入下个状态
             {
-                StatusChange=3;
-            }
-            break;
-        }
-        //确保已经完全出了十字
-        case 3:
-        {
-            NowFlag=CrossRoadsIdentify(DownInflectionL, DownInflectionR);
-            if(NowFlag==0)
-            {
+                gpio_set(LED_GREEN, 1);
                 return 1;
             }
             break;
         }
-        default:break;
+        //根据摄像头为主来判断是否完成十字元素
+//        //入口状态
+//        case 0:
+//        {
+//            gpio_set(LED_BLUE, 0);
+//            NowFlag=CrossRoadsIdentify(DownInflectionL, DownInflectionR);
+//            if(NowFlag!=0)
+//            {
+//                gpio_set(LED_BLUE, 1);
+//                StatusChange=1;//跳转到下一个状态十字内
+//                //一般入十字都是正入的
+//                StartIntegralAngle_Z(250);//开启陀螺仪,不能够完全转到270，会有一点偏差，就进入识别出口状态
+//            }
+//            break;
+//        }
+//        //中途状态，开启陀螺仪积分，辅助出环
+//        case 1:
+//        {
+//            gpio_set(LED_GREEN, 0);
+//            //十字路口识别
+//            NowFlag=CrossRoadsIdentify(DownInflectionL, DownInflectionR);
+//            //此处延迟50帧防止由于哪一帧没有检测到而使得没有补到十字入口线
+//            //如果图像帧和控制帧同步的话需要修改此处的帧延迟，因为此时的帧增加可能不是50，赛道宽度为45cm
+//            if(num1<100)
+//            {
+//                num1++;
+//                break;
+//            }
+//            else if(NowFlag==0)
+//            {
+//                gpio_set(LED_GREEN, 1);
+//                StatusChange=2;
+//            }
+//            break;
+//        }
+//        //出口状态
+//        case 2:
+//        {
+//            gpio_set(LED_RED, 0);
+//            if(icm_angle_z_flag==1)//陀螺仪积分达到出十字环状态进入下个状态
+//            {
+//                gpio_set(LED_RED, 1);
+//                StatusChange=3;
+//            }
+//            break;
+//        }
+//        //确保已经完全出了十字
+//        case 3:
+//        {
+//            gpio_set(LED_WHITE, 0);
+//            NowFlag=CrossRoadsIdentify(DownInflectionL, DownInflectionR);
+//            if(num3<100)
+//            {
+//                num3++;
+//                break;
+//            }
+//            else if(NowFlag==0)
+//            {
+//                gpio_set(LED_WHITE, 1);
+//                return 1;
+//            }
+//            break;
+//        }
+//        default:break;
     }
     return 0;
 }
