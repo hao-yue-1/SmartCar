@@ -158,27 +158,36 @@ void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Po
         //遍历左线，求出先变小大后变小的点，多加三个点的判断是为了误判，左边丢线为0
         /*注意：这里如果判断条件是和相邻的1,3的值对比的话，会区间太小从而如果有相等的列数存在的话，会影响判断，所以需要改大比较的区间*/
         //加了个判断InflectionL->Y==0是为了从下往上遍历，找到了之后就不再继续往上找了，这样遍历时候的截距图片就不用刚刚好了
-        if(InflectionL->Y==0 && LeftLine[i]>LeftLine[i-3] && LeftLine[i]>LeftLine[i-5] && LeftLine[i]>LeftLine[i+3] && LeftLine[i]>LeftLine[i+5])
+        //2022年5月27日：加多一层条件，即：比>=相邻的点，随后再取筛选它是不是直线：大于比较远的点
+        if(InflectionL->Y==0 && LeftLine[i]>=LeftLine[i-1] && LeftLine[i]>=LeftLine[i-3] && LeftLine[i]>=LeftLine[i+1] && LeftLine[i]>=LeftLine[i+3])
         {
-            InflectionL->X=LeftLine[i];//存入拐点的（x,y）坐标
-            InflectionL->Y=i;
-            /*打印被判断为拐点的列坐标，用于调试*/
-//            lcd_showint32(0,6,InflectionL->X,3);
-//            systick_delay_ms(STM0, 1000);
+            if(LeftLine[i]>LeftLine[i-5] && LeftLine[i]>LeftLine[i-7] && LeftLine[i]>LeftLine[i+5] && LeftLine[i]>LeftLine[i+7])
+            {
+                InflectionL->X=LeftLine[i];//存入拐点的（x,y）坐标
+                InflectionL->Y=i;
+                /*debug*/
+//                lcd_showint32(0,6,InflectionL->X,3);
+//                systick_delay_ms(STM0, 1000);
+            }
         }
-        //遍历右线，求出列数最小的点就是右边的拐点，右边线丢线为MT9V03X_W
+
+        //遍历右线，求出列数最小的点就是右边的拐点，右边线丢线为MT9V03X_W-1
         //加了个判断InflectionR->Y==0是为了从下往上遍历，找到了之后就不再继续往上找了，这样遍历时候的截距图片就不用刚刚好了
-        if(InflectionR->Y==0 && RightLine[i]<RightLine[i-3] && RightLine[i]<RightLine[i-5] && RightLine[i]<RightLine[i+3] && RightLine[i]<RightLine[i+5])
+        if(InflectionR->Y==0 && RightLine[i]<=RightLine[i-1] && RightLine[i]<=RightLine[i-3] && RightLine[i]<=RightLine[i+1] && RightLine[i]<=RightLine[i+3])
         {
-            InflectionR->X=RightLine[i];//存入拐点的（x,y）坐标
-            InflectionR->Y=i;
-            /*打印被判断为拐点的列坐标，用于调试*/
-//            lcd_showint32(TFT_X_MAX-50,6,InflectionR->X,3);
-//            systick_delay_ms(STM0, 1000);
+            if(RightLine[i]<RightLine[i-5] && RightLine[i]<RightLine[i-7] && RightLine[i]<RightLine[i+5] && RightLine[i]<RightLine[i+7])
+            {
+                InflectionR->X=RightLine[i];//存入拐点的（x,y）坐标
+                InflectionR->Y=i;
+               /*打印被判断为拐点的列坐标，用于调试*/
+//                lcd_showint32(TFT_X_MAX-50,6,InflectionR->X,3);
+//                systick_delay_ms(STM0, 1000);
+            }
         }
+
         /*打印被判断为拐点的列坐标，用于调试*/
 //        lcd_drawpoint(RightLine[i],i,RED);
-//        lcd_showint32(0,0,RightLine[i],3);
+//        lcd_showint32(0,0,LeftLine[i],3);
 //        systick_delay_ms(STM0, 800);
     }
 }
