@@ -39,7 +39,7 @@
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
-int16 base_speed=180;        //基础速度
+int16 base_speed=180;            //基础速度
 kalman1_filter_t kalman_gyro;    //一阶卡尔曼结构体
 
 int core0_main(void)
@@ -68,8 +68,8 @@ int core0_main(void)
 	gpt12_init(LEFT_ENCODER, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);    //初始化左编码器
 	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
 	/**************************初始化参数****************************/
-	PID_init(&SteerK,&MotorK);          //初始化PID参数
-	kalman1_init(&kalman_gyro,1,100);   //初始化一阶卡尔曼
+	PID_init(&SteerK,&MotorK_L,&MotorK_R);  //初始化PID参数
+	kalman1_init(&kalman_gyro,1,100);       //初始化一阶卡尔曼
     //等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
@@ -78,6 +78,35 @@ int core0_main(void)
 
 	while (TRUE)
 	{
+//	    switch(KeyScan())
+//	    {
+//	        case KEY_S1_PRES:
+//	        {
+//	            gpio_toggle(LED_WHITE);
+//	            break;
+//	        }
+//	        case KEY_S2_PRES:
+//            {
+//                gpio_toggle(LED_BLUE);
+//                break;
+//            }
+//	        case KEY_S3_PRES:
+//            {
+//                gpio_toggle(LED_GREEN);
+//                break;
+//            }
+//	        case KEY_S4_PRES:
+//            {
+//                gpio_toggle(LED_RED);
+//                break;
+//            }
+//	        case KEY_S5_PRES:
+//            {
+//                gpio_toggle(LED_YELLOW);
+//                break;
+//            }
+//	    }
+
 	}
 }
 

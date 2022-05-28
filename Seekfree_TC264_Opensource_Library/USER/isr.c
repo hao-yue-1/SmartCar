@@ -43,6 +43,18 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 {
 	enableInterrupts();//开启中断嵌套
 
+	//记时器，用于停车
+//	static uint32 time6ms_num;
+//	if(time6ms_num<500)
+//	{
+//	    time6ms_num++;
+//	}
+//	else
+//	{
+//	    MotorSetPWM(0, 0);
+//	    while(1);
+//	}
+
 	//阿克曼结构差速，减速版
 	int diff_steerpwm=SteerPWM-STEER_MID;
 	double radian;
@@ -57,8 +69,8 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	    radian=0.00789426*diff_steerpwm;     //右轮与竖直线实际夹角    //若舵机阈值与实际最大打角改变，则需要修改此处
 	    speed_r=(41/(41+15*tan(radian)))*base_speed;    //右转右轮减速    //此处由前轮轮距和前后轮轴距决定，一般不需要改动
 	}
-	MotorSetTarget(speed_l, speed_r);
-	MotorCtrl(speed_l,speed_r);
+	MotorSetTarget(speed_l, speed_r);   //设置目标值
+	MotorCtrl(170,170);         //PID控制电机速度
 	//调试
 	gpio_set(P20_8,0);
 

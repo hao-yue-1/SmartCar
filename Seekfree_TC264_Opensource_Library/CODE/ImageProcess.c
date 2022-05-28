@@ -49,10 +49,10 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
     /*************************特殊元素判断*************************/
-    if(CrossRoadsStatusIdentify(LeftDownPoint, RightDownPoint)==1)
-    {
-        while(1);
-    }
+//    if(CrossRoadsStatusIdentify(LeftDownPoint, RightDownPoint)==1)
+//    {
+//        while(1);
+//    }
     /****************************状态机***************************/
 #if 0
     switch(flag)

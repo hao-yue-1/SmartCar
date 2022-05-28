@@ -172,8 +172,10 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
             SobelResult=SobelTest();//进行索贝尔计算
             if(SobelResult>ZebraTresholeR)
             {
-                MotorK.P=15;
-                MotorK.I=1.5;
+                MotorK_L.P=15;
+                MotorK_L.I=1.5;
+                MotorK_R.P=15;
+                MotorK_R.I=1.5;
                 /*方案一：右边打死入库，写个while循环把速度停掉打死入库*/
                 base_speed=130;
                 systick_delay_ms(STM0,15);//加10ms防止卡车库，如果速度提上去可以取消

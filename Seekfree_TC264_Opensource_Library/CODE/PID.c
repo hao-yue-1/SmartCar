@@ -8,9 +8,10 @@
 #include "PID.h"
 #include "Filter.h" //滤波算法
 #include "Steer.h"  //舵机
+#include "Motor.h"  //电机
 
-SteerPID SteerK;    //舵机PID参数
-MotorPID MotorK;    //电机PID参数
+SteerPID SteerK;            //舵机PID参数
+MotorPID MotorK_L,MotorK_R; //电机PID参数
 
 /********************************************************************************************
  ** 函数功能: 两个PID参数的赋值初始化
@@ -19,10 +20,11 @@ MotorPID MotorK;    //电机PID参数
  ** 返 回 值: 无
  ** 作    者: LJF
  *********************************************************************************************/
-void PID_init(SteerPID *SteerK,MotorPID *MotorK)
+void PID_init(SteerPID *SteerK,MotorPID *MotorK_L,MotorPID *MotorK_R)
 {
-    SteerK->P=19.25;SteerK->I=0;SteerK->D=5;    //初始化舵机的PID参数
-    MotorK->P=80;MotorK->I=0.5;MotorK->D=0;      //初始化电机的PID参数  4.22晚更新，之前的参数是15,1响应快但超调量大
+    SteerK->P=16.25;SteerK->I=0;SteerK->D=5;    //初始化舵机的PID参数   //校赛参数19.25 5
+    MotorK_L->P=202.25;MotorK_L->I=0.8;MotorK_L->D=0;     //初始化电机的PID参数   //校赛参数80 0.5
+    MotorK_R->P=183.28;MotorK_R->I=0.8;MotorK_R->D=0;     //初始化电机的PID参数   //校赛参数80 0.5
 }
 
 /*
@@ -76,6 +78,17 @@ int Speed_PI_Left(int16 left_encoder,int16 left_target,MotorPID K)
     Last_2_Bias=Last_Bias;    //保存上一次偏差
     Last_Bias=Bias;           //保存这一次偏差
 
+    //PID输出限幅，防止由于电机和PID工作不同步导致电机超调烧毁的问题
+    //注意：对PID输出限幅后会导致响应变慢
+//    if(PWM>MOTOR_PWM_MAX)
+//    {
+//        PWM=MOTOR_PWM_MAX;
+//    }
+//    else if(PWM<-MOTOR_PWM_MAX)
+//    {
+//        PWM=-MOTOR_PWM_MAX;
+//    }
+
     return PWM;         //返回可以直接赋值给电机的PWM
 }
 
@@ -101,6 +114,17 @@ int Speed_PI_Right(int16 right_encoder,int16 right_target,MotorPID K)
 
     Last_2_Bias=Last_Bias;    //保存上一次偏差
     Last_Bias=Bias;           //保存这一次偏差
+
+    //PID输出限幅，防止由于电机和PID工作不同步导致电机超调烧毁的问题
+    //注意：对PID输出限幅后会导致响应变慢
+//    if(PWM>MOTOR_PWM_MAX)
+//    {
+//        PWM=MOTOR_PWM_MAX;
+//    }
+//    else if(PWM<-MOTOR_PWM_MAX)
+//    {
+//        PWM=-MOTOR_PWM_MAX;
+//    }
 
     return PWM;         //返回可以直接赋值给电机的PWM
 }

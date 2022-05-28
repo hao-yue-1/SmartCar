@@ -47,7 +47,7 @@ void core1_main(void)
 
     //**********按键调参*************
     //*******************************
-//    pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化电机定时器中断
+    pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化电机定时器中断
     pit_interrupt_ms(CCU6_0,PIT_CH1,20);//初始化舵机定时器中断
 //    //完成出库
 //    if(outgarage_flag==0)
@@ -62,20 +62,20 @@ void core1_main(void)
         if(mt9v03x_finish_flag)
         {
             ImageBinary();      //图像二值化
-            lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
+//            lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
             //画110行在哪
-            for(int cloum=0;cloum<MT9V03X_W-1;cloum++)
-            {
-                lcd_drawpoint(cloum,110,PURPLE);
-            }
+//            for(int cloum=0;cloum<MT9V03X_W-1;cloum++)
+//            {
+//                lcd_drawpoint(cloum,110,PURPLE);
+//            }
             ImageProcess();     //图像处理、元素识别
             //把三线画出来
-            for(int i=MT9V03X_H-1;i>0;i--)
-            {
-                lcd_drawpoint(LeftLine[i],i,GREEN);
-                lcd_drawpoint(CentreLine[i],i,RED);
-                lcd_drawpoint(RightLine[i],i,BLUE);
-            }
+//            for(int i=MT9V03X_H-1;i>0;i--)
+//            {
+//                lcd_drawpoint(LeftLine[i],i,GREEN);
+//                lcd_drawpoint(CentreLine[i],i,RED);
+//                lcd_drawpoint(RightLine[i],i,BLUE);
+//            }
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
         }
         //调试
