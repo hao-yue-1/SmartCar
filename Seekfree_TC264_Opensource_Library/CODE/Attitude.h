@@ -30,6 +30,7 @@ typedef struct  //ÍÓÂÝÒÇÐ£×¼Öµ
 extern float values[6];
 extern eulerianAngles_t eulerAngle;
 
+void GyroOffsetInit(void);
 void IMUGetValues(float * values);
 void IMU_quaterToEulerianAngles(void);
 

@@ -54,6 +54,7 @@ int core0_main(void)
     /**************************传感器模块初始化**********************/
 	mt9v03x_init();     //初始化摄像头
 	icm20602_init();    //初始化陀螺仪ICM20602
+	GyroOffsetInit();   //初始化陀螺仪零漂
 	pit_interrupt_ms(CCU6_1,PIT_CH0,2);     //初始化陀螺仪积分中断2ms
     pit_disable_interrupt(CCU6_1,PIT_CH0);  //关闭陀积分螺仪中断
     /***************************驱动模块初始化***********************/
@@ -68,7 +69,7 @@ int core0_main(void)
 	gpt12_init(RIGHT_ENCODER, GPT12_T6INA_P20_3, GPT12_T6EUDA_P20_0);   //初始化右编码器
 	/**************************初始化参数****************************/
 	PID_init(&SteerK,&MotorK);          //初始化PID参数
-	kalman1_init(&kalman_gyro,1,100);       //初始化一阶卡尔曼
+	kalman1_init(&kalman_gyro,1,100);   //初始化一阶卡尔曼
     //等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
