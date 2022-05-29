@@ -86,6 +86,8 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
     SteerPWM=Steer_Position_PID(Bias,SteerK);
     SteerCtrl(SteerPWM);
 
+//    printf("%f,%d\n",Bias,SteerPWM);
+
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH1);
 }
 

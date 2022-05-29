@@ -197,21 +197,13 @@ float DifferentBias(int startline,int endline,int *CentreLine)
 
     for(int i=startline;i>endline;i--)
     {
-        if(BinaryImage[i][CentreLine[i]]==IMAGE_BLACK)
+        if(BinaryImage[i][CentreLine[i]]==IMAGE_BLACK)  //中线在赛道外的情况，跳出累积
         {
-//            if(i>70)
-//            {
-//                while(1)
-//                {
-//                    diff_speed_kp=0;
-//                    base_speed=0;
-//                }
-//            }
             break;
         }
         else
         {
-            bias+=(float)(MT9V03X_W/2-CentreLine[i]);  //累积偏差
+            bias+=(float)(MT9V03X_W/2-CentreLine[i]);  //累积偏差，Mid-Centre，右负左正
             rownum++;
         }
     }
