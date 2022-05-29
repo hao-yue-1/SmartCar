@@ -7,6 +7,9 @@
 
 #include "ImageSpecial.h"
 #include "PID.h"
+#include "LED.h" //debug
+#include "headfile.h"
+#include "ICM20602.h"           //陀螺仪积分完成标志变量以及开启积分函数
 
 //索贝尔计算超过阈值的次数当大于某个值就不再进行sobel测试
 uint8 SobelLCount=0;             //左边索贝尔
@@ -194,57 +197,223 @@ uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR)
     return 0;
 }
 /********************************************************************************************
+ ** 函数功能: 左车库识别补线函数
+ ** 参    数: char Choose : 选择是否要入库，'Y'or'N'
+ **           Point InflectionL:左拐点
+ **           Point InflectionR:右拐点
+ ** 返 回 值: 0：已经过了车库了
+ **           1：还未过完车库
+ ** 作    者: LJF
+ ** 注    意: 这个函数更多的是在于补线，找到上拐点，而不是在于识别，识别由Sobel做，并且Sobel放入状态机的第一层判断
+ *********************************************************************************************/
+uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR)
+{
+    Point UpInflection;//上拐点的变量
+    UpInflection.X=0,UpInflection.Y=0;//初始化为0
+    uint8 NoInflectionLFlag=0;//左库左拐点不存在的标志变量，用于选取哪种补线方式
+
+    /**********************debug************************/
+//    lcd_showint32(TFT_X_MAX-50, 0, InflectionL.X, 3);
+//    lcd_showint32(TFT_X_MAX-50, 1, InflectionR.X, 3);
+    /***************************************************/
+
+    //如果是在斑马线路段了并且左拐点不存在,或者左右拐点之间的横坐标差太多，因为扫线的混乱拐点可能出现在斑马线中间
+    //并且左拐点那行的图像最左边要是黑点
+    if(InflectionL.X==0 || (InflectionL.Y-InflectionR.Y)<10 || InflectionL.X>MT9V03X_H/2 || BinaryImage[InflectionL.Y+5][5]!=IMAGE_BLACK)
+    {
+        /**********************debug************************/
+//        lcd_showint32(0, 0, BinaryImage[MT9V03X_H/2+10][3], 3);
+        /***************************************************/
+
+        //中间左边的的点去找上拐点
+        if(BinaryImage[MT9V03X_H/2+10][3]==IMAGE_WHITE)
+        {
+            InflectionL.X=3;InflectionL.Y=MT9V03X_H/2+15;
+            NoInflectionLFlag=1;
+        }
+        else return 0;//否则说明左边都是黑的了直接返回已经过了左库
+    }
+    //开始遍历去寻找上拐点
+    for(int row=InflectionL.Y-10;row>10;row--)
+    {
+        /******************debug:把从下往上的找点轨迹画出来******************/
+//        lcd_drawpoint(InflectionL.X, row, YELLOW);
+        /******************************************************************/
+        //从下往上白调黑
+        if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)
+        {
+            //在这里分是否入库的情况，如果入库就去判断是否丢失拐点，丢失了的话补线要补右下角和左上角，为了打角大点
+            if(NoInflectionLFlag==1 && Choose=='Y')
+            {
+                UpInflection.X=InflectionL.X;
+                UpInflection.Y=row-3;//现在这个if是找到行所以要给行赋值才能补到线
+            }
+            else
+            {
+                for(int column=InflectionL.X;column<MT9V03X_W-10;column++)
+                {
+                    /******************debug:把从左往右的找点轨迹画出来******************/
+//                    lcd_drawpoint(column, row, YELLOW);
+                    /******************************************************************/
+                    //从左往右黑跳白
+                    if(BinaryImage[row-3][column]==IMAGE_BLACK && BinaryImage[row-3][column+1]==IMAGE_WHITE)
+                    {
+                        UpInflection.X=column;UpInflection.Y=row-3;
+                        break;
+                    }
+                }
+            }
+            break;//进去之后就退出循环，避免没必要的图像遍历，就算失败也退出说明确实是失败了
+        }
+    }
+    //判断是否找到上拐点，满足才补线
+    if(UpInflection.X!=0 && UpInflection.Y!=0)
+    {
+        switch(Choose)
+        {
+            //入左库
+            case 'Y':
+            {
+                Point RightDownPoint;
+                RightDownPoint.X=MT9V03X_W-5;RightDownPoint.Y=MT9V03X_H-5;
+                FillingLine('R', RightDownPoint, UpInflection);
+                //给偏差给舵机
+                Bias=Regression_Slope(RightDownPoint.Y, UpInflection.Y, RightLine);
+                //对斜率求出来的偏差进行个缩放
+                if(Bias<=1)
+                    Bias=Bias*1.75;//这里因为是入库，感觉跟左上拐点补线的时候太大了使得打到库边，所以手动减小打角，毕竟这个缩放是盲调的
+                                   //修改之后感觉良好，如果车头是正着开启ICM的话是可以的，但是问题就在于车头不正不能用ICM去判断
+                else
+                    Bias=Bias*1.5;
+                return 1;
+            }
+            //不入左库
+            case 'N':
+            {
+                //判断是否丢失下拐点
+               if(NoInflectionLFlag==1)
+               {
+                   Point LeftPoint;
+                   LeftPoint.X=LeftLine[UpInflection.Y-5];LeftPoint.Y=UpInflection.Y-5;
+                   FillinLine_V2('L', MT9V03X_H, UpInflection.Y, UpInflection, LeftPoint);
+                   //给偏差给舵机
+                   Bias=Regression_Slope(MT9V03X_H, UpInflection.Y, LeftLine);
+                   //对斜率求出来的偏差进行个缩放
+                   if(Bias<=1)
+                       Bias=Bias*2.25;
+                   else
+                       Bias=Bias*1.75;
+                   /******************debug*******************************************/
+//                   gpio_toggle(LED_BLUE);
+                   /******************************************************************/
+                   return 1;
+               }
+               else
+               {
+                   FillingLine('L', InflectionL, UpInflection);
+                   //给偏差给舵机
+                   Bias=Regression_Slope(InflectionL.Y, UpInflection.Y, LeftLine);
+                   //对斜率求出来的偏差进行个缩放
+                   if(Bias<=1)
+                       Bias=Bias*2.25;
+                   else
+                       Bias=Bias*1.75;
+                   /******************debug*******************************************/
+//                  gpio_toggle(LED_GREEN);
+                  /******************************************************************/
+                   return 1;
+               }
+            }
+            default :break;
+        }
+    }
+    return 0;
+}
+/********************************************************************************************
  ** 函数功能: 左车库的状态机转移
- ** 参    数: LeftLine：左线数组
+ ** 参    数: char Choose: 选择是入库状态机还是不入库状态机
+ **           LeftLine：左线数组
  **           RightLine：右线数组
- ** 返 回 值: 0：没有识别到环岛
- **           1：识别到环岛且在车身左侧
+ ** 返 回 值: 0：元素状态没结束
+ **           1：元素状态结束
  ** 作    者: LJF
  *********************************************************************************************/
-uint8 GarageLStatusIdentify(Point InflectionL,Point InflectionR,uint8 GarageLFlag)
+uint8 GarageLStatusIdentify(char Choose,Point InflectionL,Point InflectionR,uint8 GarageLFlag)
 {
-    static uint8 LastFlag,StatusChange,Statusnums;//上一次识别的结果和状态变量
+    static uint8 StatusChange;//上一次识别的结果和状态变量
     uint8 NowFlag=0;//这次的识别结果
-    NowFlag=GarageLFlag;
+    int64 SobelResult=0;//索贝尔计算的结果
     switch(StatusChange)
     {
+        //第一个状态Sobel检测，通过了再开启识别函数
         case 0:
         {
-            //从没有识别到左车库到识别到左车库
-            if(LastFlag==0 && NowFlag==2)
+            gpio_set(LED_BLUE, 0);
+            SobelResult=SobelTest();
+            if(SobelResult>ZebraTresholeL)
             {
+                gpio_set(LED_BLUE, 1);
                 StatusChange=1;
+                break;
             }
             break;
         }
         case 1:
         {
-            //从识别到左车库到识别不到左车库
-            if(LastFlag==2 && NowFlag==0)
+            gpio_set(LED_GREEN, 0);
+            switch(Choose)
             {
-                StatusChange=2;
+                case 'Y':
+                {
+                    gpio_set(LED_GREEN, 1);
+                    //开启陀螺仪积分判定是否入库成功
+                    StartIntegralAngle_Z(80);
+                    StatusChange=2;
+                    break;
+                }
+                case 'N':
+                {
+                    NowFlag=GarageLIdentify('N', InflectionL, InflectionR);
+                    if(NowFlag==0)
+                    {
+                        gpio_set(LED_GREEN, 1);
+                        StatusChange=3;//跳转到结束状态
+                        break;
+                    }
+                    break;
+                }
             }
             break;
         }
         case 2:
         {
-            //从识别不到左车库到识别不到左车库
-            if(LastFlag==0 && NowFlag==0 && Statusnums>1)
+            gpio_set(LED_WHITE, 0);
+            NowFlag=GarageLIdentify('Y', InflectionL, InflectionR);
+            //检测是否入库成功，入库成功停车
+            if(icm_angle_z_flag==1)
             {
-                StatusChange=3;
+                while(1);
+                return 1;
             }
-            Statusnums++;//延迟一帧，防止误判
             break;
         }
+        case 3:
+        {
+            gpio_set(LED_WHITE, 0);
+            SobelResult=SobelTest();
+            if(SobelResult<ZebraTresholeL)
+            {
+                gpio_set(LED_WHITE, 1);
+                return 1;//再次sobel一次确保状态机没出错
+            }
+            else
+            {
+                StatusChange=1;//否则回到状态1继续判断
+                break;
+            }
+        }
     }
-    LastFlag=NowFlag;
-    if(StatusChange==3)
-    {
-        StatusChange=0;
-        return 1;
-    }
-    else
-        return 0;
+    return 0;
 }
 /*
  *******************************************************************************************
