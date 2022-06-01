@@ -13,9 +13,9 @@
  *******************************************************************************************
  ** 函数功能: 识别环岛入口，左侧
  ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
+ **          RightLine：右线数组
  ** 返 回 值: 0：没有识别到环岛
- **           1：识别到环岛且在车身左侧
+ **          1：识别到环岛且在车身左侧
  ** 作    者: WBN
  ********************************************************************************************
  */
@@ -54,11 +54,11 @@ uint8 CircleIslandBegin_L(int *LeftLine,int *RightLine)
 
 /*
  *******************************************************************************************
- ** 函数功能: 识别环岛入口，左侧，补线直行忽略
+ ** 函数功能: 第二次识别环岛入口，左侧，补线直行忽略
  ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
+ **          RightLine：右线数组
  ** 返 回 值: 0：没有识别到环岛
- **           1：识别到环岛且在车身左侧
+ **          1：识别到环岛且在车身左侧
  ** 作    者: WBN
  ********************************************************************************************
  */
@@ -94,11 +94,11 @@ uint8 CircleIslandOverBegin_L(int *LeftLine,int *RightLine)
 
 /*
  *******************************************************************************************
- ** 函数功能: 识别环岛出口，左侧
+ ** 函数功能: 识别环岛结束标志出口，左侧
  ** 参    数: InflectionL：左下拐点
- **           InflectionR：右下拐点
+ **          InflectionR：右下拐点
  ** 返 回 值: 0：没有识别到环岛
- **           1：识别到环岛出口且在车身左侧
+ **          1：识别到环岛出口且在车身左侧
  ** 作    者: WBN
  ** 注    意：该函数调用时应确保小车已在环岛中
  ********************************************************************************************
@@ -125,17 +125,17 @@ uint8 CircleIslandEnd_L(void)
 
 /*
  *******************************************************************************************
- ** 函数功能: 判断环岛Flag1是否成立，左侧
+ ** 函数功能: 识别环岛出口，左侧，补线直行
  ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
- **           InflectionL：左下拐点
- **           InflectionR：右下拐点
- ** 返 回 值: 0：Flag1不成立
- **           1：Flag1成立且在左侧
+ **          RightLine：右线数组
+ **          InflectionL：左下拐点
+ **          InflectionR：右下拐点
+ ** 返 回 值: 0：没有识别到目标
+ **          1：识别到目标
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIsFlag_1_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+uint8 CircleIslandExit_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
     if(InflectionL.X!=0&&InflectionL.Y!=0)  //判断条件一：是否存在左拐点与右侧直道
     {
@@ -177,17 +177,15 @@ uint8 CircleIsFlag_1_L(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
 
 /*
  *******************************************************************************************
- ** 函数功能: 判断环岛Flag1_1是否成立，左侧
+ ** 函数功能: 第二次识别环岛出口，左侧，补线直行
  ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
- **           InflectionL：左下拐点
- **           InflectionR：右下拐点
- ** 返 回 值: 0：Flag1_1不成立
- **           1：Flag1_1成立且在左侧
+ **          RightLine：右线数组
+ ** 返 回 值: 0：没有识别到目标
+ **          1：识别到目标
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIsFlag_1_1_L(int *LeftLine,int *RightLine)
+uint8 CircleIslandOverExit_L(int *LeftLine,int *RightLine)
 {
         float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
         if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
@@ -206,7 +204,6 @@ uint8 CircleIsFlag_1_1_L(int *LeftLine,int *RightLine)
                             {
                                 if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
                                 {
-                                    lcd_showuint8(0, 3, 3);
                                     row=(row_f+row_s)/2;
                                     for(;column+1<MT9V03X_W;column++)   //向右扫
                                     {
@@ -237,15 +234,15 @@ uint8 CircleIsFlag_1_1_L(int *LeftLine,int *RightLine)
 
 /*
  *******************************************************************************************
- ** 函数功能: 判断环岛Flag2是否成立，左侧
+ ** 函数功能: 识别环岛中部，左侧
  ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
- ** 返 回 值: 0：Flag2不成立
- **           1：Flag2成立且在左侧
+ **          RightLine：右线数组
+ ** 返 回 值: 0：识别到目标
+ **          1：没有识别到目标
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIsFlag_2_L(int *LeftLine,int *RightLine)
+uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
 {
     if(LostNum_RightLine>55)   //防止误判十字入口
     {
@@ -292,7 +289,7 @@ uint8 CircleIsFlag_2_L(int *LeftLine,int *RightLine)
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIsFlag_3_L(void)
+uint8 CircleIslandInside_L(void)
 {
     if(LostNum_LeftLine>100)    //左边接近全丢线
     {
@@ -307,15 +304,14 @@ uint8 CircleIsFlag_3_L(void)
 
 /*
  *******************************************************************************************
- ** 函数功能: 识别环岛
+ ** 函数功能: 识别左环岛
  ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
- **           InflectionL：左下拐点
- **           InflectionR：右下拐点
+ **          RightLine：右线数组
+ **          InflectionL：左下拐点
+ **          InflectionR：右下拐点
  ** 返 回 值: 0：还未完成环岛
- **           1：完成环岛
+ **          1：完成环岛
  ** 作    者: WBN
- ** 注    意：这里只有环岛在小车左边的情况
  ********************************************************************************************
  */
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
@@ -325,36 +321,22 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
-            if(CircleIsFlag_1_L(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
+            if(CircleIslandExit_L(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，补线直行
             {
                 if(num_1<100)
                 {
                     num_1++;    //识别到flag1的帧数++
                 }
             }
-            else
+            else    //没有识别到出口的情况，可能是刚压过出口，也需要补线，这里应该加一个对num_1的判断更合理
             {
-                CircleIsFlag_1_1_L(LeftLine, RightLine);
+                CircleIslandOverExit_L(LeftLine, RightLine);    //第二次识别环岛出口，补线直行
             }
-//            else    //没有识别到环岛出口
-//            {
-//                if(num_2<100)
-//                {
-//                    num_2++;    //没有识别到flag1的帧数++
-//                }
-//                else    //超过100帧没有识别到环岛flag1
-//                {
-//                    num_1=0;
-//                    num_2=0;
-//                }
-//            }
-            if(CircleIsFlag_2_L(LeftLine, RightLine)==1)    //识别到环岛中部
+            if(CircleIslandMid_L(LeftLine, RightLine)==1)    //识别到环岛中部
             {
-                if(num_1>2) //在此之前有识别到环岛flag1
+                if(num_1>2) //在此之前有识别到环岛出口
                 {
-                    num_1=0;
-                    num_2=0;
-                    flag=1; //跳转到状态1
+                    num_1=0;num_2=0;flag=1; //跳转到状态1
                     base_speed=150; //降速准备入环
                     break;
                 }
@@ -363,14 +345,14 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
-            if(CircleIslandBegin_L(LeftLine, RightLine)==1)
+            if(CircleIslandBegin_L(LeftLine, RightLine)==1) //识别到环岛入口
             {
                 if(num_1<100)
                 {
                     num_1++;    //识别到环岛入口的帧数++
                 }
             }
-            else
+            else    //若连续多次没有识别到环岛入口，则是上一个状态误判，状态机回退
             {
                 if(num_2<30)
                 {
@@ -378,19 +360,15 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                 }
                 else    //超过30帧识别不到环岛入口
                 {
-                    num_1=0;
-                    num_2=0;
-                    flag=0; //跳转回到状态0
+                    num_1=0;num_2=0;flag=0; //跳转回到状态0
                     break;
                 }
             }
-            if(CircleIsFlag_3_L()==1)    //识别已经进入环岛
+            if(CircleIslandInside_L()==1)    //识别已经进入环岛
             {
                 if(num_2>2) //在此之前有识别到环岛入口
                 {
-                    num_1=0;
-                    num_2=0;
-                    flag=2;
+                    num_1=0;num_2=0;flag=2; //跳转到状态2
                     break;
                 }
             }
@@ -413,7 +391,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
             flag=3; //跳转到状态3
             break;
         }
-        case 3:
+        case 3: //此时小车已经出环，但是会再次进过环岛入口，需要补线直行
         {
             flag_begin=CircleIslandOverBegin_L(LeftLine, RightLine);     //识别环岛入口补线忽略
             if(flag_begin==0&&flag_last_begin==0&&flag_last2_begin==1)   //上上次识别到环岛入口而这两次都没有识别到环岛入口
@@ -483,7 +461,7 @@ uint8 CircleIslandBegin_R(int *LeftLine,int *RightLine)
 
 /*
  *******************************************************************************************
- ** 函数功能: 识别环岛入口，右侧，补线直行通过
+ ** 函数功能: 第二次识别环岛入口，右侧，补线直行通过
  ** 参    数: LeftLine：左线数组
  **           RightLine：右线数组
  ** 返 回 值: 0：没有识别到环岛
@@ -558,17 +536,17 @@ uint8 CircleIslandEnd_R(void)
 
 /*
  *******************************************************************************************
- ** 函数功能: 判断环岛Flag1是否成立，右侧
+ ** 函数功能: 识别环岛出口，补线直行，右侧
  ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
- **           InflectionL：左下拐点
- **           InflectionR：右下拐点
- ** 返 回 值: 0：Flag1不成立
- **           1：Flag1成立且在右侧
+ **          RightLine：右线数组
+ **          InflectionL：左下拐点
+ **          InflectionR：右下拐点
+ ** 返 回 值: 0：没有识别到目标
+ **          1：识别到目标
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIsFlag_1_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+uint8 CircleIslandExit_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
     if(InflectionR.Y<60)    //防止还在下坡时的误判
     {
@@ -613,15 +591,15 @@ uint8 CircleIsFlag_1_R(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
 
 /*
  *******************************************************************************************
- ** 函数功能: 判断环岛Flag1_1是否成立，右侧
+ ** 函数功能: 第二次识别环岛出口，补线直行，右侧
  ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
- ** 返 回 值: 0：Flag1_1不成立
- **           1：Flag1_1成立且在右侧
+ **          RightLine：右线数组
+ ** 返 回 值: 0：没有识别到目标
+ **          1：识别到目标
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIsFlag_1_1_R(int *LeftLine,int *RightLine)
+uint8 CircleIslandOverExit_R(int *LeftLine,int *RightLine)
 {
     float bias_left=Regression_Slope(119,0,LeftLine);   //求出左边界线斜率
     if(fabsf(bias_left)<G_LINEBIAS)    //左边界为直道
@@ -662,16 +640,16 @@ uint8 CircleIsFlag_1_1_R(int *LeftLine,int *RightLine)
 
 /*
  *******************************************************************************************
- ** 函数功能: 判断环岛Flag2是否成立，右侧
+ ** 函数功能: 是被环岛中部，右侧
  ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
- ** 返 回 值: 0：Flag2不成立
- **           1：Flag2成立且在右侧
+ **          RightLine：右线数组
+ ** 返 回 值: 0：没有识别到目标
+ **          1：识别到目标
  ** 作    者: WBN
  ** 注    意：上坡路段仍会误判
  ********************************************************************************************
  */
-uint8 CircleIsFlag_2_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+uint8 CircleIslandMid_R(int *LeftLine,int *RightLine)
 {
     float bias_left=Regression_Slope(119,0,LeftLine);   //求出左边界线斜率
     if(fabsf(bias_left)<G_LINEBIAS&&LostNum_RightLine<50)    //左边界为直道且右边丢线小于
@@ -707,15 +685,15 @@ uint8 CircleIsFlag_2_R(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
 
 /*
  *******************************************************************************************
- ** 函数功能: 判断环岛Flag3是否成立，右侧
+ ** 函数功能: 识别已经进入环岛
  ** 参    数: LeftLine：左线数组
- **           RightLine：右线数组
- ** 返 回 值: 0：Flag3不成立
- **           1：Flag3成立且在右侧
+ **          RightLine：右线数组
+ ** 返 回 值: 0：没有识别到目标
+ **          1：识别到目标
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIsFlag_3_R(void)
+uint8 CircleIslandInside_R(void)
 {
     if(LostNum_RightLine>100)    //右边接近全丢线
     {
@@ -730,7 +708,7 @@ uint8 CircleIsFlag_3_R(void)
 
 /*
  *******************************************************************************************
- ** 函数功能: 识别环岛
+ ** 函数功能: 识别右环岛
  ** 参    数: LeftLine：左线数组
  **           RightLine：右线数组
  **           InflectionL：左下拐点
@@ -738,18 +716,16 @@ uint8 CircleIsFlag_3_R(void)
  ** 返 回 值: 0：还未完成环岛
  **           1：完成环岛
  ** 作    者: WBN
- ** 注    意：这里只有环岛在小车右边的情况
  ********************************************************************************************
  */
 uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
     static uint8 flag,num_1,num_2,flag_begin,flag_last_begin,flag_last2_begin;
-    //使用switch实现简单的状态机机制
     switch(flag)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
-            if(CircleIsFlag_1_R(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
+            if(CircleIslandExit_R(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，进行补线
             {
                 if(num_1<100)
                 {
@@ -758,27 +734,13 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
             }
             else
             {
-                CircleIsFlag_1_1_R(LeftLine, RightLine);
+                CircleIslandOverExit_R(LeftLine, RightLine);
             }
-            // else    //没有识别到环岛出口
-            // {
-            //     if(num_2<100)
-            //     {
-            //         num_2++;    //没有识别到flag1的帧数++
-            //     }
-            //     else    //超过100帧没有识别到环岛flag1
-            //     {
-            //         num_1=0;
-            //         num_2=0;
-            //     }
-            // }
-            if(CircleIsFlag_2_R(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别到环岛中部
+            if(CircleIslandMid_R(LeftLine, RightLine)==1)    //识别到环岛中部
             {
                 if(num_1>0) //在此之前有识别到环岛flag1
                 {
-                    num_1=0;
-                    num_2=0;
-                    flag=1; //跳转到状态1
+                    num_1=0;num_2=0;flag=1; //跳转到状态1
                 }
             }
             break;
@@ -800,18 +762,14 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
                 }
                 else    //超过100帧识别不到环岛入口
                 {
-                    num_1=0;
-                    num_2=0;
-                    flag=0; //跳转回到状态0
+                    num_1=0;num_2=0;flag=0; //跳转回到状态0
                 }
             }
-            if(CircleIsFlag_3_R()==1)    //识别已经进入环岛
+            if(CircleIslandInside_R()==1)    //识别已经进入环岛
             {
                 if(num_2>2) //在此之前有识别到环岛入口
                 {
-                    num_1=0;
-                    num_2=0;
-                    flag=2;
+                    num_1=0;num_2=0; flag=2;
                 }
             }
             break;

@@ -40,18 +40,18 @@ void OutGarage(void);       //出库
 uint8 CircleIslandBegin_L(int *LeftLine,int *RightLine);
 uint8 CircleIslandOverBegin_L(int *LeftLine,int *RightLine);
 uint8 CircleIslandEnd_L(void);
-uint8 CircleIsFlag_1_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
-uint8 CircleIsFlag_1_1_L(int *LeftLine,int *RightLine);
-uint8 CircleIsFlag_2_L(int *LeftLine,int *RightLine);
-uint8 CircleIsFlag_3_L(void);
+uint8 CircleIslandExit_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CircleIslandOverExit_L(int *LeftLine,int *RightLine);
+uint8 CircleIslandMid_L(int *LeftLine,int *RightLine);
+uint8 CircleIslandInside_L(void);
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //左环岛状态机
 uint8 CircleIslandBegin_R(int *LeftLine,int *RightLine);
 uint8 CircleIslandOverBegin_R(int *LeftLine,int *RightLine);
 uint8 CircleIslandEnd_R(void);
-uint8 CircleIsFlag_1_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
-uint8 CircleIsFlag_1_1_R(int *LeftLine,int *RightLine);
-uint8 CircleIsFlag_2_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
-uint8 CircleIsFlag_3_R(void);
+uint8 CircleIslandExit_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CircleIslandOverExit_R(int *LeftLine,int *RightLine);
+uint8 CircleIslandMid_R(int *LeftLine,int *RightLine);
+uint8 CircleIslandInside_R(void);
 uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //右环岛状态机
 /*三岔相关函数*/
 void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC);     //搜寻出三岔上拐点
