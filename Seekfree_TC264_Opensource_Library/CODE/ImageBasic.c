@@ -191,7 +191,70 @@ void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Po
 //        systick_delay_ms(STM0, 800);
     }
 }
+/************************************************************************
+ ** 函数功能: 根据左右边界得到上拐点
+ ** 参    数: char Choose：选择遍历左线还是右线
+ **           int startline：起始行
+ **           int endline：结束行
+ **           Point *UpInflection：上拐点
+ ** 返 回 值: 无
+ ** 说    明: 使用了三线数组全局变量
+ ** 作    者: LJF
+ ***********************************************************************/
+void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection)
+{
+    int row=0;
+    switch(Choose)
+    {
+        case 'L':
+        {
+            for(row=startline;row>endline;row--)
+            {
+                //下三行的列坐标-这行列坐标大于阈值，不用ABS是为了速度更快
+                if(LeftLine[row-3]-LeftLine[row]>=UPINFLECTION_THRESHOLD)
+                {
+                    UpInflection->X=LeftLine[row-3];UpInflection->Y=row-3;
 
+                    /**************debug***********/
+                    lcd_drawpoint(UpInflection->X,UpInflection->Y,PURPLE);
+                    lcd_showint32(TFT_X_MAX-50,0,UpInflection->X,3);
+                    lcd_showint32(TFT_X_MAX-50,1,UpInflection->Y,3);
+                    systick_delay_ms(STM0, 800);
+                    /*****************************/
+
+                    break;
+                }
+                /**************debug***********/
+                lcd_showint32(0,0,LeftLine[row],3);
+                systick_delay_ms(STM0, 800);
+                /*****************************/
+            }
+            break;
+        }
+        case 'R':
+        {
+            for(row=startline;row>endline;row--)
+            {
+                //这行列坐标-下三行的列坐标大于阈值，不用ABS是为了速度更快
+                if(RightLine[row]-RightLine[row-3]>=UPINFLECTION_THRESHOLD)
+                {
+                    UpInflection->X=RightLine[row-3];UpInflection->Y=row-3;
+
+                   /**************debug***********/
+                   lcd_drawpoint(UpInflection->X,UpInflection->Y,PURPLE);
+                   lcd_showint32(TFT_X_MAX-50,0,UpInflection->X,3);
+                   lcd_showint32(TFT_X_MAX-50,1,UpInflection->Y,3);
+                   systick_delay_ms(STM0, 800);
+                   /*****************************/
+
+                    break;
+                }
+            }
+            break;
+        }
+        default:break;
+    }
+}
 /*---------------------------------------------------------------
  【函    数】Bin_Image_Filter
  【功    能】过滤噪点

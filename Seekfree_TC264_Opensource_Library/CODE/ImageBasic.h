@@ -16,6 +16,7 @@
 //宏定义
 #define BORDER_BIAS 1   //扫线误差
 #define INFLECTION_WIDTH  10    //拐点赛道宽度
+#define UPINFLECTION_THRESHOLD  50  //上拐点列坐标的差值阈值
 //全局变量
 extern int Lost_Row;                    //中线丢失的行坐标(扫线到赛道外)
 extern int LostNum_LeftLine,LostNum_RightLine; //记录左右边界丢线数
@@ -29,6 +30,7 @@ typedef struct Point
 
 void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine);  //扫线提取左中右三线
 void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR);//根据左右边界线来得到下拐点（十字、三岔、环岛）
+void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection);//根据遍历左右线得到行与行之间的列坐标的差值，大于设定的阈值则判断为是上拐点
 void Bin_Image_Filter(void);
 void EdgeTrack(void);   //八领域扫线
 
