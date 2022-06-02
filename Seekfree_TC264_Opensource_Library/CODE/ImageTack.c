@@ -203,7 +203,7 @@ float DifferentBias(int startline,int endline,int *CentreLine)
         }
         else
         {
-            bias+=(float)(MT9V03X_W/2-CentreLine[i]);  //累积偏差，Mid-Centre，右负左正
+            bias+=(float)(MT9V03X_W/2-CentreLine[i]);  //累积偏差，Mid-Centre，左正右负（中线在车头的左/右，应该往左/右）
             rownum++;
         }
     }

@@ -791,7 +791,7 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
             flag=3;
             break;
         }
-        case 3:
+        case 3: //此时小车已经出环，但是会再次进过环岛入口，需要补线直行
         {
             flag_begin=CircleIslandOverBegin_R(LeftLine, RightLine);
             if(flag_begin==0&&flag_last_begin==0&&flag_last2_begin==1)   //上上次识别到环岛入口而这两次都没有识别到环岛入口

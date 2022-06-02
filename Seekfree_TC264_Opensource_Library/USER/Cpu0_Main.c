@@ -39,7 +39,6 @@
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
-int16 base_speed=180;            //基础速度
 kalman1_filter_t kalman_gyro;    //一阶卡尔曼结构体
 
 int core0_main(void)
