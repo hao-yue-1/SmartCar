@@ -198,7 +198,7 @@ void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Po
  **           int endline：结束行
  **           Point *UpInflection：上拐点
  ** 返 回 值: 无
- ** 说    明: 使用了三线数组全局变量
+ ** 说    明: 起始行要小于结束行，从上往下遍历左右线
  ** 作    者: LJF
  ***********************************************************************/
 void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection)
@@ -208,45 +208,43 @@ void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection)
     {
         case 'L':
         {
-            for(row=startline;row>endline;row--)
+            //从上往下遍历
+            for (row = startline; row < endline; row++)
             {
                 //下三行的列坐标-这行列坐标大于阈值，不用ABS是为了速度更快
-                if(LeftLine[row-3]-LeftLine[row]>=UPINFLECTION_THRESHOLD)
+                if (LeftLine[row] - LeftLine[row+UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_THRESHOLD)
                 {
-                    UpInflection->X=LeftLine[row-3];UpInflection->Y=row-3;
-
+                    UpInflection->X = LeftLine[row]; UpInflection->Y = row;
                     /**************debug***********/
-                    lcd_drawpoint(UpInflection->X,UpInflection->Y,PURPLE);
-                    lcd_showint32(TFT_X_MAX-50,0,UpInflection->X,3);
-                    lcd_showint32(TFT_X_MAX-50,1,UpInflection->Y,3);
-                    systick_delay_ms(STM0, 800);
+//                    lcd_drawpoint(UpInflection->X,UpInflection->Y,PURPLE);
+//                    lcd_showint32(TFT_X_MAX-50,0,UpInflection->X,3);
+//                    lcd_showint32(TFT_X_MAX-50,1,UpInflection->Y,3);
+//                    systick_delay_ms(STM0, 800);
                     /*****************************/
-
                     break;
                 }
                 /**************debug***********/
-                lcd_showint32(0,0,LeftLine[row],3);
-                systick_delay_ms(STM0, 800);
+//                lcd_showint32(0,0,LeftLine[row],3);
+//                lcd_showint32(0,1,LeftLine[row+UPINFLECTION_COMPARE_INTERVAL],3);
+//                systick_delay_ms(STM0, 800);
                 /*****************************/
             }
             break;
         }
         case 'R':
         {
-            for(row=startline;row>endline;row--)
+            for(row = startline; row < endline; row++)
             {
                 //这行列坐标-下三行的列坐标大于阈值，不用ABS是为了速度更快
-                if(RightLine[row]-RightLine[row-3]>=UPINFLECTION_THRESHOLD)
+                if(RightLine[row+ UPINFLECTION_COMPARE_INTERVAL] - RightLine[row] >= UPINFLECTION_THRESHOLD)
                 {
-                    UpInflection->X=RightLine[row-3];UpInflection->Y=row-3;
-
+                    UpInflection->X=RightLine[row];UpInflection->Y=row;
                    /**************debug***********/
-                   lcd_drawpoint(UpInflection->X,UpInflection->Y,PURPLE);
-                   lcd_showint32(TFT_X_MAX-50,0,UpInflection->X,3);
-                   lcd_showint32(TFT_X_MAX-50,1,UpInflection->Y,3);
-                   systick_delay_ms(STM0, 800);
+//                   lcd_drawpoint(UpInflection->X,UpInflection->Y,PURPLE);
+//                   lcd_showint32(TFT_X_MAX-50,0,UpInflection->X,3);
+//                   lcd_showint32(TFT_X_MAX-50,1,UpInflection->Y,3);
+//                   systick_delay_ms(STM0, 800);
                    /*****************************/
-
                     break;
                 }
             }
