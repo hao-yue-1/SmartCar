@@ -217,55 +217,69 @@ uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR)
 //    lcd_showint32(TFT_X_MAX-50, 1, InflectionR.X, 3);
     /***************************************************/
 
-    //如果是在斑马线路段了并且左拐点不存在,或者左右拐点之间的横坐标差太多，因为扫线的混乱拐点可能出现在斑马线中间
-    //并且左拐点那行的图像最左边要是黑点
+    //此处使用直角黑白跳变找上拐点法
+//    //如果是在斑马线路段了并且左拐点不存在,或者左右拐点之间的横坐标差太多，因为扫线的混乱拐点可能出现在斑马线中间
+//    //并且左拐点那行的图像最左边要是黑点
+//    if(InflectionL.X==0 || (InflectionL.Y-InflectionR.Y)<10 || InflectionL.X>MT9V03X_H/2 || BinaryImage[InflectionL.Y+5][5]!=IMAGE_BLACK)
+//    {
+//        /**********************debug************************/
+////        lcd_showint32(0, 0, BinaryImage[MT9V03X_H/2+10][3], 3);
+//        /***************************************************/
+//
+//        //中间左边的的点去找上拐点
+//        if(BinaryImage[MT9V03X_H/2+10][3]==IMAGE_WHITE)
+//        {
+//            InflectionL.X=3;InflectionL.Y=MT9V03X_H/2+15;
+//            NoInflectionLFlag=1;
+//        }
+//        else return 0;//否则说明左边都是黑的了直接返回已经过了左库
+//    }
+//    //开始遍历去寻找上拐点
+//    for(int row=InflectionL.Y-10;row>10;row--)
+//    {
+//        /******************debug:把从下往上的找点轨迹画出来******************/
+////        lcd_drawpoint(InflectionL.X, row, YELLOW);
+//        /******************************************************************/
+//        //从下往上白调黑
+//        if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)
+//        {
+//            //在这里分是否入库的情况，如果入库就去判断是否丢失拐点，丢失了的话补线要补右下角和左上角，为了打角大点
+//            if(NoInflectionLFlag==1 && Choose=='Y')
+//            {
+//                UpInflection.X=InflectionL.X;
+//                UpInflection.Y=row-3;//现在这个if是找到行所以要给行赋值才能补到线
+//            }
+//            else
+//            {
+//                for(int column=InflectionL.X;column<MT9V03X_W-10;column++)
+//                {
+//                    /******************debug:把从左往右的找点轨迹画出来******************/
+////                    lcd_drawpoint(column, row, YELLOW);
+//                    /******************************************************************/
+//                    //从左往右黑跳白
+//                    if(BinaryImage[row-3][column]==IMAGE_BLACK && BinaryImage[row-3][column+1]==IMAGE_WHITE)
+//                    {
+//                        UpInflection.X=column;UpInflection.Y=row-3;
+//                        break;
+//                    }
+//                }
+//            }
+//            break;//进去之后就退出循环，避免没必要的图像遍历，就算失败也退出说明确实是失败了
+//        }
+//    }
+    //此处使用遍历数组找上拐点的方法
     if(InflectionL.X==0 || (InflectionL.Y-InflectionR.Y)<10 || InflectionL.X>MT9V03X_H/2 || BinaryImage[InflectionL.Y+5][5]!=IMAGE_BLACK)
     {
-        /**********************debug************************/
-//        lcd_showint32(0, 0, BinaryImage[MT9V03X_H/2+10][3], 3);
-        /***************************************************/
-
-        //中间左边的的点去找上拐点
         if(BinaryImage[MT9V03X_H/2+10][3]==IMAGE_WHITE)
         {
-            InflectionL.X=3;InflectionL.Y=MT9V03X_H/2+15;
+            //从上往下遍历数组找到上拐点
+            GetUpInflection('L', 20, MT9V03X_H/2+15, &UpInflection);
             NoInflectionLFlag=1;
         }
         else return 0;//否则说明左边都是黑的了直接返回已经过了左库
     }
-    //开始遍历去寻找上拐点
-    for(int row=InflectionL.Y-10;row>10;row--)
-    {
-        /******************debug:把从下往上的找点轨迹画出来******************/
-//        lcd_drawpoint(InflectionL.X, row, YELLOW);
-        /******************************************************************/
-        //从下往上白调黑
-        if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)
-        {
-            //在这里分是否入库的情况，如果入库就去判断是否丢失拐点，丢失了的话补线要补右下角和左上角，为了打角大点
-            if(NoInflectionLFlag==1 && Choose=='Y')
-            {
-                UpInflection.X=InflectionL.X;
-                UpInflection.Y=row-3;//现在这个if是找到行所以要给行赋值才能补到线
-            }
-            else
-            {
-                for(int column=InflectionL.X;column<MT9V03X_W-10;column++)
-                {
-                    /******************debug:把从左往右的找点轨迹画出来******************/
-//                    lcd_drawpoint(column, row, YELLOW);
-                    /******************************************************************/
-                    //从左往右黑跳白
-                    if(BinaryImage[row-3][column]==IMAGE_BLACK && BinaryImage[row-3][column+1]==IMAGE_WHITE)
-                    {
-                        UpInflection.X=column;UpInflection.Y=row-3;
-                        break;
-                    }
-                }
-            }
-            break;//进去之后就退出循环，避免没必要的图像遍历，就算失败也退出说明确实是失败了
-        }
-    }
+    else//下拐点存在
+        GetUpInflection('L', 20, InflectionL.Y+15, &UpInflection);
     //判断是否找到上拐点，满足才补线
     if(UpInflection.X!=0 && UpInflection.Y!=0)
     {
