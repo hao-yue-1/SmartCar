@@ -3,8 +3,14 @@
 #include <stdlib.h>
 #include "zf_assert.h"
 
-uint8 BinaryImage[MT9V03X_H][MT9V03X_W]={0};
-uint32 use_time;
+#define IMAGECOMPRESS 0//是否开启图像压缩的二值化，1：是 0：否 压缩图像帧率记得调成230
+
+uint8 CompressImage[IMAGE_COMPRESS_H][IMAGE_COMPRESS_W]={0};//存储压缩之后的灰度图
+#if IMAGECOMPRESS
+uint8 BinaryImage[IMAGE_COMPRESS_H][IMAGE_COMPRESS_W]={0};//压缩图像之后的二值化图像
+#else
+uint8 BinaryImage[MT9V03X_H][MT9V03X_W]={0};//二值化图像
+#endif
 
 /*
  *  @brief  大津法二值化0.8ms程序（实际测试4ms在TC264中）
@@ -170,15 +176,26 @@ uint8 OneDimensionalThreshold(uint16 width, uint16 height)
 //根据场地条件调用大津法或谷底最小值得到二值化阈值然后根据灰度图得到黑白图像
 void ImageBinary()
 {
-//    uint8 Image_Threshold = 130;//固定阈值
+#if IMAGECOMPRESS
+    //压缩图像的二值化
+    uint8 Image_Threshold = otsuThreshold(CompressImage[0],IMAGE_COMPRESS_W,IMAGE_COMPRESS_H);//使用大津法得到二值化阈值
+    for (int i = 0; i < IMAGE_COMPRESS_H; ++i)
+    {
+        for (int j = 0; j < IMAGE_COMPRESS_W; ++j)
+        {
+            if (CompressImage[i][j] <= Image_Threshold)//进行二值化之前只是得到阈值
+                Binary2Image[i][j] = IMAGE_BLACK;//0是黑色  //图像原点不变
+            else
+                Binary2Image[i][j] = IMAGE_WHITE;//1是白色  //图像原点不变
+        }
+    }
+#else
 //    systick_start(STM1);
 //    uint8 Image_Threshold = GuDiThreshold(MT9V03X_W,MT9V03X_H);//使用谷底最小值得到二值化阈值
     uint8 Image_Threshold = otsuThreshold(mt9v03x_image[0],MT9V03X_W,MT9V03X_H);//使用大津法得到二值化阈值
 //    uint8 Image_Threshold = OneDimensionalThreshold(MT9V03X_W,MT9V03X_H);//使用一维means法得到二值化阈值
-//    use_time = systick_getval_us(STM1);
-//    lcd_showint32(60, 0, use_time, 5);
-//      lcd_showuint8(8, 0, Image_Threshold);
-
+//    lcd_showint32(60, 0, systick_getval_us(STM1), 5);
+//    lcd_showuint8(8, 0, Image_Threshold);
     for (int i = 0; i < MT9V03X_H; ++i)
     {
         for (int j = 0; j < MT9V03X_W; ++j)
@@ -189,6 +206,7 @@ void ImageBinary()
                 BinaryImage[i][j] = IMAGE_WHITE;//1是白色  //图像原点不变
         }
     }
+#endif
 }
 
 /********************************************************************************************
@@ -226,4 +244,33 @@ void adaptiveThreshold(uint8 *img_data, uint8 *output_data, int width, int heigh
       output_data[x+y*width] = img_data[x+y*width]>thres ? 255 : 0;
     }
   }
+}
+
+/*************************************************************************
+ *  函数名称：void Get_Use_Image (void)
+ *  功能说明：把摄像头采集到原始图像，缩放到赛道识别所需大小
+ *  参数说明：无
+ *  函数返回：无
+ *  修改时间：2022年6月4日
+ *  备    注： IMAGE_COMPRESS_H:为图像压缩之后的高度120/2=60
+ *             IMAGE_COMPRESS_W:为图像压缩之后的高度160/2=80
+ *             帧率230的条件下压缩完之后二值化搜线找拐点采集图像的时间为2.3~2.5ms，未压缩：8.0ms，帧率400的时候为5ms
+ *             顺便在压缩的时候进行了个均值滤波，对灰度图滤波这个像素点和旁边那个滤去的求均值
+ *             看起来跟原来没太大差别，因为环境不恶劣，可以删去，耗时加了0.2ms
+ *************************************************************************/
+void Get_Compress_Image(void)
+{
+    short i = 0, j = 0, row = 0, line = 0;
+
+    for (i = 0; i < MT9V03X_H; i += 2)          //神眼高 120 / 2  = 60，
+    {
+        for (j = 0; j <= MT9V03X_W; j += 2)     //神眼宽188 / 2  = 94，
+        {
+            CompressImage[row][line]=mt9v03x_image[i][j];
+//            CompressImage[row][line] = (mt9v03x_image[i][j]+mt9v03x_image[i][j-1])/2;
+            line++;
+        }
+        line = 0;
+        row++;
+    }
 }
