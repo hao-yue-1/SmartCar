@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include "zf_assert.h"
 
-#define IMAGECOMPRESS 0//是否开启图像压缩的二值化，1：是 0：否 压缩图像帧率记得调成230
-
 uint8 CompressImage[IMAGE_COMPRESS_H][IMAGE_COMPRESS_W]={0};//存储压缩之后的灰度图
 #if IMAGECOMPRESS
 uint8 BinaryImage[IMAGE_COMPRESS_H][IMAGE_COMPRESS_W]={0};//压缩图像之后的二值化图像
@@ -184,9 +182,9 @@ void ImageBinary()
         for (int j = 0; j < IMAGE_COMPRESS_W; ++j)
         {
             if (CompressImage[i][j] <= Image_Threshold)//进行二值化之前只是得到阈值
-                Binary2Image[i][j] = IMAGE_BLACK;//0是黑色  //图像原点不变
+                BinaryImage[i][j] = IMAGE_BLACK;//0是黑色  //图像原点不变
             else
-                Binary2Image[i][j] = IMAGE_WHITE;//1是白色  //图像原点不变
+                BinaryImage[i][j] = IMAGE_WHITE;//1是白色  //图像原点不变
         }
     }
 #else
