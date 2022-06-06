@@ -212,7 +212,8 @@ void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection)
             for (row = startline; row < endline; row++)
             {
                 //下三行的列坐标-这行列坐标大于阈值，不用ABS是为了速度更快
-                if (LeftLine[row] - LeftLine[row+UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_THRESHOLD)
+                if (LeftLine[row] - LeftLine[row+UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_THRESHOLD
+                 && LeftLine[row - UPINFLECTION_COMPARE_INTERVAL] - LeftLine[row + UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_THRESHOLD)
                 {
                     UpInflection->X = LeftLine[row]; UpInflection->Y = row;
                     /**************debug***********/
@@ -236,7 +237,8 @@ void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection)
             for(row = startline; row < endline; row++)
             {
                 //这行列坐标-下三行的列坐标大于阈值，不用ABS是为了速度更快
-                if(RightLine[row+ UPINFLECTION_COMPARE_INTERVAL] - RightLine[row] >= UPINFLECTION_THRESHOLD)
+                if (RightLine[row+UPINFLECTION_COMPARE_INTERVAL] - RightLine[row] >= UPINFLECTION_THRESHOLD
+                 && RightLine[row+UPINFLECTION_COMPARE_INTERVAL] - RightLine[row-UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_THRESHOLD)
                 {
                     UpInflection->X=RightLine[row];UpInflection->Y=row;
                    /**************debug***********/

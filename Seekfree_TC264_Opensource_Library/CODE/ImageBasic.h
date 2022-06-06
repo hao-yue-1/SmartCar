@@ -16,7 +16,7 @@
 //宏定义
 #define BORDER_BIAS 1   //扫线误差
 #define INFLECTION_WIDTH  10    //拐点赛道宽度
-#define UPINFLECTION_THRESHOLD  40  //上拐点列坐标的差值阈值
+#define UPINFLECTION_THRESHOLD  30  //上拐点列坐标的差值阈值
 #define UPINFLECTION_COMPARE_INTERVAL 3 //上拐点两点之间比较间隔
 //全局变量
 extern int Lost_Row;                    //中线丢失的行坐标(扫线到赛道外)

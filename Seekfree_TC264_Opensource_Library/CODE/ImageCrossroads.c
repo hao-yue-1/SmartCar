@@ -10,6 +10,8 @@
 #include "LED.h"                //debug
 #include "headfile.h"
 
+#define CROSSROADSIDENTIFYMODE 0    //那种模式找上拐点
+
 /*********************************************************************************
  ** 函数功能: 根据左右下拐点搜寻出十字路口的左右上拐点
  ** 参    数: 左右线数组已经是全局变量
@@ -110,9 +112,12 @@ uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR)
     if(LostNum_LeftLine>30 && LostNum_RightLine>30 && DownInflectionR.X!=0 && DownInflectionL.X!=0 && BinaryImage[50][MT9V03X_W/2]==IMAGE_WHITE)
     {
         //搜寻十字上拐点
+#if CROSSROADSIDENTIFYMODE
         GetUpInflection('L', 20, DownInflectionL.Y-15, &UpInflectionL);
         GetUpInflection('R', 20, DownInflectionR.Y-15, &UpInflectionR);
-//        GetCrossRoadsUpInflection(DownInflectionL, DownInflectionR, &UpInflectionL, &UpInflectionR);
+#else
+        GetCrossRoadsUpInflection(DownInflectionL, DownInflectionR, &UpInflectionL, &UpInflectionR);
+#endif
         if(UpInflectionL.Y!=0 && UpInflectionR.Y!=0)
         {
             FillingLine('L', DownInflectionL, UpInflectionL);
@@ -127,9 +132,12 @@ uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR)
         PointL.X=10;PointL.Y=MT9V03X_H;//给定一个左下角的点
         PointR.X=MT9V03X_W-10;PointR.Y=MT9V03X_H;//给定一个右下角的点
         //丢失左右下拐点的时候根据边沿去找上拐点
+#if CROSSOIADSIDENTIFYMODE
         GetUpInflection('L', 20, PointL.Y-15, &UpInflectionL);
         GetUpInflection('R', 20, PointR.Y-15, &UpInflectionR);
-//        GetCrossRoadsUpInflection(PointL, PointR, &UpInflectionL, &UpInflectionR);
+#else
+        GetCrossRoadsUpInflection(PointL, PointR, &UpInflectionL, &UpInflectionR);
+#endif
         if(UpInflectionL.Y!=0 && UpInflectionR.Y!=0)
         {
             PointL.X=LeftLine[UpInflectionL.Y-7];PointL.Y=UpInflectionL.Y-7;//寻找正确边线上跟左上拐点一起的点来补线
