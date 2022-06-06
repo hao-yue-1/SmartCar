@@ -44,16 +44,16 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	enableInterrupts();//开启中断嵌套
 
 	//记时器，用于停车
-	static uint32 time6ms_num;
-	if(time6ms_num<500)
-	{
-	    time6ms_num++;
-	}
-	else
-	{
-	    MotorSetPWM(0, 0);
-	    while(1);
-	}
+//	static uint32 time6ms_num;
+//	if(time6ms_num<800)
+//	{
+//	    time6ms_num++;
+//	}
+//	else
+//	{
+//	    MotorSetPWM(0, 0);
+//	    while(1);
+//	}
 
 	//阿克曼结构差速，减速版
 	int diff_steerpwm=SteerPWM-STEER_MID;
@@ -86,7 +86,30 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
     SteerPWM=Steer_Position_PID(Bias,SteerK);
     SteerCtrl(SteerPWM);
 
-//    printf("%f,%d\n",Bias,SteerPWM);
+    printf("%f,%d\n",Bias,SteerPWM);
+
+//	static uint32 test_data=STEER_LEFT;
+//	static uint8 flag=0;
+//	if(test_data>STEER_RIGHT&&flag==0)
+//    {
+//        test_data--;
+//        flag=0;
+//    }
+//	else if(test_data==STEER_RIGHT)
+//	{
+//	    flag=1;
+//	}
+//    if(test_data<STEER_LEFT&&flag==1)
+//    {
+//        test_data++;
+//        flag=1;
+//    }
+//    else if(test_data==STEER_LEFT)
+//    {
+//        flag=0;
+//    }
+//	SteerCtrl(test_data);
+//	pwm_duty(STEER_PIN,STEER_MID*2);
 
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH1);
 }
@@ -104,6 +127,7 @@ IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)
 	}
 
 //	printf("%f\n",angle_z);
+//	lcd_showfloat(0, 0, angle_z, 3, 3);
 
 	PIT_CLEAR_FLAG(CCU6_1, PIT_CH0);
 }

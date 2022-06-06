@@ -57,7 +57,7 @@ int core0_main(void)
 	pit_interrupt_ms(CCU6_1,PIT_CH0,2);     //初始化陀螺仪积分中断2ms
     pit_disable_interrupt(CCU6_1,PIT_CH0);  //关闭陀积分螺仪中断
     /***************************驱动模块初始化***********************/
-	gtm_pwm_init(STEER_PIN, 50, STEER_MID);       //初始化舵机
+	gtm_pwm_init(STEER_PIN, 100, STEER_MID);      //初始化舵机
 	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);      //初始化左电机
 //	gpio_init(P02_6, GPO, 1, PUSHPULL);           //逐飞驱动：左电机
 	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);      //自制驱动：左电机
