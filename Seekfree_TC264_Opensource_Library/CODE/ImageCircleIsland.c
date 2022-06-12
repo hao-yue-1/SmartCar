@@ -114,7 +114,7 @@ uint8 CircleIslandEnd_L(Point InflectionL,Point InflectionR)
     static uint8 flag=0;
     if(flag==1) //已经识别到环岛出口，跳过各种判断，保证补线的连续性
     {
-        if(InflectionR.X>MT9V03X_W/2&&InflectionL.Y>MT9V03X_H/2)    //右拐点真实存在
+        if(InflectionR.X>MT9V03X_W/2&&InflectionR.Y>MT9V03X_H/2)    //右拐点真实存在
         {
             //沿着右边界线补线
             for(uint8 row=MT9V03X_H/2;row-1>0;row--)  //向上扫
@@ -153,7 +153,7 @@ uint8 CircleIslandEnd_L(Point InflectionL,Point InflectionR)
     if(LostNum_LeftLine>55&&LostNum_RightLine>55&&fabsf(Bias)<1.5)  //约束条件，识别到环岛出口
     {
         /*校赛过后使用补线配合陀螺仪的方法出环*/
-        if(InflectionR.X>MT9V03X_W/2&&InflectionL.Y>MT9V03X_H/2)    //右拐点真实存在
+        if(InflectionR.X>MT9V03X_W/2&&InflectionR.Y>MT9V03X_H/2)    //右拐点真实存在
         {
             //沿着右边界线补线
             for(uint8 row=MT9V03X_H/2;row-1>0;row--)  //向上扫
