@@ -77,34 +77,6 @@ int core0_main(void)
 
 	while (TRUE)
 	{
-//	    switch(KeyScan())
-//	    {
-//	        case KEY_S1_PRES:
-//	        {
-//	            gpio_toggle(LED_WHITE);
-//	            break;
-//	        }
-//	        case KEY_S2_PRES:
-//            {
-//                gpio_toggle(LED_BLUE);
-//                break;
-//            }
-//	        case KEY_S3_PRES:
-//            {
-//                gpio_toggle(LED_GREEN);
-//                break;
-//            }
-//	        case KEY_S4_PRES:
-//            {
-//                gpio_toggle(LED_RED);
-//                break;
-//            }
-//	        case KEY_S5_PRES:
-//            {
-//                gpio_toggle(LED_YELLOW);
-//                break;
-//            }
-//	    }
 
 	}
 }

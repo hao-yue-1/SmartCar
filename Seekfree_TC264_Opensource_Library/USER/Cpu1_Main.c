@@ -32,7 +32,7 @@
 
 uint8 outgarage_flag=0;     //出库的flag
 uint8 key_flag=0;           //按键调参的flag
-int16 base_speed=140;       //基础速度
+int16 base_speed=210;       //基础速度
 
 void core1_main(void)
 {

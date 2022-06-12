@@ -13,6 +13,7 @@
 #include "zf_gpio.h"
 #include "ImageProcess.h"
 #include "zf_stm_systick.h"
+#include <stdio.h>
 
 /*
  *******************************************************************************************
@@ -313,8 +314,7 @@ uint8 CircleIslandOverExit_L(int *LeftLine,int *RightLine)
  */
 uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
 {
-    float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
-    if(fabsf(bias_right)<G_LINEBIAS&&LostNum_LeftLine<35)    //右边界为直道且左边丢线小于
+    if(LostNum_LeftLine<35)    //左边丢线小于
     {
         if(BinaryImage[100][10]==IMAGE_BLACK)    //经验位置为黑
         {
@@ -387,21 +387,20 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
-            gpio_set(LED_BLUE, 0);
             if(CircleIslandExit_L(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，补线直行
             {
                 if(num_1<100)   //限幅
                 {
                     num_1++;    //识别到flag1的帧数++
+                    printf("num_1=%d\r\n",num_1);
                 }
-                gpio_set(P21_5, 0);
             }
             if(CircleIslandMid_L(LeftLine, RightLine)==1)    //识别到环岛中部
             {
                 if(num_1>0) //在此之前有识别到环岛出口
                 {
                     num_1=0;flag=1; //跳转到状态1
-                    gpio_set(LED_BLUE, 1);
+                    printf("to 1\r\n");
                     break;
                 }
             }
@@ -413,7 +412,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
-            gpio_set(LED_GREEN, 0);
             if(CircleIslandBegin_L(LeftLine, RightLine)==1) //识别到环岛入口
             {
                 if(num_1<100)   //限幅
@@ -425,31 +423,28 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                     StartIntegralAngle_Z(20);   //开启陀螺仪辅助入环
                     flag_in=1;
                 }
-                gpio_set(P21_4, 0);
             }
             if(icm_angle_z_flag==1) //陀螺仪判断入环
             {
                 num_1=0;num_2=0;flag=2; //跳转到状态2
-                gpio_set(LED_GREEN, 1);
+                printf("to 2\r\n");
                 break;
             }
             break;
         }
         case 2: //此时小车已经在环岛中，开始判断环岛出口
         {
-            gpio_set(LED_RED, 0);
             if(CircleIslandEnd_L(InflectionL, InflectionR)==1&&flag_end==0)  //第一次检测到环岛出口
             {
-                StartIntegralAngle_Z(80);   //开启积分
+                StartIntegralAngle_Z(65);   //开启积分
                 flag_end=1;
-                gpio_set(LED_BLUE, 0);
             }
             if(flag_end==1)  //积分已经开启
             {
                 if(icm_angle_z_flag==1) //检测积分状态
                 {
                     flag_end=0;flag=3; //跳转到状态3
-                    gpio_set(LED_RED, 1);
+                    printf("to 3\r\n");
                     break;
                 }
             }
@@ -457,11 +452,11 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         }
         case 3: //此时小车已经出环，但是会再次进过环岛入口，需要补线直行
         {
-            gpio_set(LED_WHITE, 0);
             flag_begin=CircleIslandOverBegin_L(LeftLine, RightLine);     //识别环岛入口补线忽略
             if(flag_begin==0&&flag_last_begin==0&&flag_last2_begin==1)   //上上次识别到环岛入口而这两次都没有识别到环岛入口
             {
                 flag=4;     //跳转到未知状态，状态机作废
+                printf("to 4\r\n");
                 return 1;   //退出状态机
             }
             flag_last2_begin=flag_last_begin;   //保存上上次的状态

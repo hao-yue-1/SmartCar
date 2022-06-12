@@ -53,10 +53,7 @@ void ImageProcess()
 //    {
 //        Stop();
 //    }
-//    if(CircleIslandEnd_L(LeftDownPoint, RightDownPoint)==1)
-//    {
-//        lcd_showuint8(0, 0, 0);
-//    }
+    CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
     /****************************状态机***************************/
 #if 0
     switch(flag)
@@ -234,6 +231,5 @@ void ImageProcess()
     else
     {
         Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//无特殊处理时的偏差计算
-//        lcd_showfloat(0, 7, Bias, 2, 3);
     }
 }
