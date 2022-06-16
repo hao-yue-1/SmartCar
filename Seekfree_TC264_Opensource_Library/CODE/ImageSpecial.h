@@ -24,14 +24,11 @@
 #define BinaryImage(i, j)    BinaryImage[i][j]
 #define ZebraTresholeL 1500  //索贝尔测试的阈值
 #define ZebraTresholeR 2200  //索贝尔测试车库在右边的阈值
-#define SobelLTestStop 3     //索贝尔左边关闭的阈值
 //十字回环出口
 #define L_LOSTNUM   60
 
 /*起跑线相关函数*/
 int64 SobelTest(void);      //Sobel算子检测起跑线
-uint8 GarageIdentify(char Direction,Point InflectionL,Point InflectionR);            //起跑线识别
-uint8 DealGarageLSpecial(void);     //左车库特殊情况处理，左斜情况
 uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR);              //左车库识别
 uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR);             //右车库识别
 uint8 GarageLStatusIdentify(char Choose,Point InflectionL,Point InflectionR,uint8* GarageLFlag);  //左车库的状态机转移
