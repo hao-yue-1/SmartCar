@@ -120,6 +120,65 @@ uint8 CrossLoopBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
 
 /*
  *******************************************************************************************
+ ** 函数功能: 第二次识别左十字回环入口
+ ** 参    数: LeftLine：左线数组
+ **           RightLine：右线数组
+ **           InflectionL：左下拐点
+ **           InflectionR：右下拐点
+ ** 返 回 值: 0：没有识别到十字回环入口
+ **          1：识别到十字回环入口
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+uint8 CrossLoopOverBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
+{
+    float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
+    if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
+    {
+        for(uint8 row=MT9V03X_H-30,column=20;row-1>0;row--)    //向上扫
+        {
+            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+            {
+                uint8 row_f=row;
+                for(;row-1>0;row--)
+                {
+                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)
+                    {
+                        uint8 row_s=row;
+                        for(;row-1>0;row--)
+                        {
+                            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+                            {
+                                row=(row_f+row_s)/2;
+                                for(;column+1<MT9V03X_W;column++)   //向右扫
+                                {
+                                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column+1]==IMAGE_WHITE)
+                                    {
+                                        /*补线操作*/
+                                        Point end,start;
+                                        end.Y=row;
+                                        end.X=column;
+                                        start.Y=MT9V03X_H-2;
+                                        start.X=1;
+                                        FillingLine('L', start, end);   //补线
+                                        return 1;
+                                    }
+                                }
+                                return 0;
+                            }
+                        }
+                        return 0;
+                    }
+                }
+                return 0;
+            }
+        }
+    }
+    return 0;
+}
+
+/*
+ *******************************************************************************************
  ** 函数功能: 识别左十字回环出口
  ** 参    数: 无
  ** 返 回 值: 0：没有识别到十字回环出口
@@ -144,9 +203,8 @@ uint8 CrossLoopEnd_L(void)
     {
         if(fabsf(Bias)<1.5)
         {
-            //舵机向右打死并加上一定的延时实现出弯
-            Bias=-10;
-            systick_delay_ms(STM0,300);
+            //补线右转
+
             return 1;
         }
     }
@@ -179,8 +237,13 @@ uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point I
             }
             else if(num_1>0) //没有识别到入口但之前有识别到，对应刚压过入口的情况
             {
-                CrossLoopOverBegin_L(LeftLine, RightLine, InflectionL, InflectionR);
+                CrossLoopOverBegin_L(LeftLine, RightLine, InflectionL, InflectionR);    //第二次识别回环入口，补线直行
                 num_2++;
+            }
+            if(num_2>/*某个阈值*/)  //代表已经进入回环
+            {
+                flag=1; //跳转到状态1
+                break;
             }
             break;
         }
@@ -195,11 +258,13 @@ uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point I
             {
                 if(icm_angle_z_flag==1) //检测积分状态
                 {
-                    flag_end=0;flag=3; //跳转到状态3
+                    flag_end=0;flag=2; //跳转到状态2
+                    return 1;
                     break;
                 }
             }
             break;
         }
     }
+    return 0;
 }
