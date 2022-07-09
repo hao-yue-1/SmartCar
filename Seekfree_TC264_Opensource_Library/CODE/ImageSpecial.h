@@ -29,7 +29,7 @@
 
 /*起跑线相关函数*/
 int64 SobelTest(void);      //Sobel算子检测起跑线
-uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR);              //左车库识别
+uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR);             //左车库识别
 uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR);             //右车库识别
 uint8 GarageLStatusIdentify(char Choose,Point InflectionL,Point InflectionR,uint8* GarageLFlag);  //左车库的状态机转移
 uint8 GarageROStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag);//车库右边不入库状态机
@@ -58,13 +58,14 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
 uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag);           //第一遍三岔状态跳转判断函数
 uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag);           //第二遍三岔状态跳转判断函数
 /*十字回环相关函数*/
-uint8 CrossLoopEnd_F(void); //第一个十字回环出口
-uint8 CrossLoopEnd_S(void); //第二个十字回环出口
-uint8 CrossLoopBegin_F(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //第一个十字回环入口
-uint8 CrossLoopBegin_S(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //第二个十字回环入口
-uint8 CrossLoopIn_S(void);  //进入第二个十字回环
+uint8 CrossLoopBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CrossLoopEnd_L(void);
+uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);    //左十字回环状态机
+uint8 CrossLoopBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CrossLoopEnd_R(void);
+uint8 CrossLoopIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);    //右十字回环状态机
 /*十字相关函数*/
 void GetCrossRoadsUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionL,Point *UpInflectionR);//十字路口找寻上拐点函数
-uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR); //十字路口识别函数
+uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR);      //十字路口识别函数
 uint8 CrossRoadsStatusIdentify(Point DownInflectionL,Point DownInflectionR);//十字状态机
 #endif /* CODE_IMAGESPECIAL_H_ */
