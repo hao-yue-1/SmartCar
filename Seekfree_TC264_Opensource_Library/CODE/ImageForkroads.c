@@ -8,9 +8,12 @@
 #include "ImageSpecial.h"
 #include "PID.h"
 #include <stdlib.h> //abs函数，fabs在math.h
+#include "LED.h"
 
 #define L_FINDWHIDE_THRE  10 //Y拐点中间找左边白色区域停止的阈值
 #define R_FINDWHIDE_THRE  150//Y拐点中间找右边白色区域停止的阈值
+#define INFLECTION_WIDTH  110//打开三岔debug,当拐点在60行附近左右拐点的差值，补全的时候，依据没有丢失的拐点的行数做一个简单的比例关系到单边循迹思路上
+#define FORK_DEBUG  0
 
 /*********************************************************************************
  ** 函数功能: 根据左右下拐点搜寻出三岔上拐点
@@ -30,11 +33,17 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
     //从下往上找到那个跳变的点即为上拐点
     for(i=starline;i>1;i--)
     {
+#if FORK_DEBUG
+        lcd_drawpoint(UpInflectionC->X, i, PURPLE);
+#endif
         //图像数组是[高][宽]
         if(BinaryImage[i][UpInflectionC->X]==IMAGE_WHITE && BinaryImage[i-1][UpInflectionC->X]==IMAGE_BLACK)
         {
             for(cloumnL=UpInflectionC->X;cloumnL>L_FINDWHIDE_THRE;cloumnL--)
             {
+#if FORK_DEBUG
+                lcd_drawpoint(cloumnL, i-1, PURPLE);
+#endif
                 if(BinaryImage[i-1][cloumnL]==IMAGE_WHITE)
                     break;
                 if(cloumnL==L_FINDWHIDE_THRE+1)//如果起始的列就小于了11，那么则不会return，会直接到后面的赋值
@@ -42,6 +51,9 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
             }
             for(cloumnR=UpInflectionC->X;cloumnR<R_FINDWHIDE_THRE;cloumnR++)
             {
+#if FORK_DEBUG
+                lcd_drawpoint(cloumnR, i-1, PURPLE);
+#endif
                 if(BinaryImage[i-1][cloumnR]==IMAGE_WHITE)
                     break;
                 if(cloumnR==R_FINDWHIDE_THRE-1)
@@ -68,6 +80,14 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
  *********************************************************************************************/
 uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR)
 {
+#if FORK_DEBUG
+    lcd_showint32(0, 0, LostNum_RightLine, 3);
+    lcd_showint32(0, 1, LostNum_LeftLine, 3);
+    lcd_showint32(TFT_X_MAX-50, 0, DownInflectionL.X, 3);
+    lcd_showint32(TFT_X_MAX-50, 1, DownInflectionL.Y, 3);
+    lcd_showint32(TFT_X_MAX-50, 2, DownInflectionR.X, 3);
+    lcd_showint32(TFT_X_MAX-50, 3, DownInflectionR.Y, 3);
+#endif
     Point UpInflectionC;
     //当左右拐点存在,并且两个拐点要在图像下半部分
     if(DownInflectionL.X!=0 && DownInflectionL.Y>60 && DownInflectionR.X!=0 && DownInflectionR.Y>60)
@@ -100,11 +120,13 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             return 1;//三岔正入丢失左右拐点那一帧
         }
     }
-    //右边丢线超过60，左拐点存在
-    else if(LostNum_RightLine>=60 && DownInflectionL.X!=0)
+    //右边丢线超过60，左拐点存在，并且左拐点不能在上半平屏防止误判
+    else if(LostNum_RightLine>=60 && DownInflectionL.X!=0 && DownInflectionL.Y>60)
     {
         Point ImageDownPointR;//以左拐点对称的点去补线和找拐点
-        ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=DownInflectionL.Y;
+        //给自己设定的右拐点去找上拐点
+//        ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.YDownInflectionL.Y=DownInflectionL.Y;
+        ImageDownPointR.X=DownInflectionL.X+INFLECTION_WIDTH+DownInflectionL.Y/10,ImageDownPointR.Y=DownInflectionL.Y;//运用单边循迹法的思想给拐点，赛道宽度
         GetForkUpInflection(DownInflectionL, ImageDownPointR, &UpInflectionC);
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
@@ -113,11 +135,12 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             return 1;//三岔左斜入三岔
         }
     }
-    //左边丢线超过60，右拐点存在
-    else if(LostNum_LeftLine>=60 && DownInflectionR.X!=0)
+    //左边丢线超过60,右拐点存在,并且右拐点不能在上半平屏防止误判
+    else if(LostNum_LeftLine>=60 && DownInflectionR.X!=0 && DownInflectionR.Y>60)
     {
         Point ImageDownPointL;//以左拐点对称的点去补线和找拐点
-        ImageDownPointL.X=5,ImageDownPointL.Y=DownInflectionR.Y;
+        //与拐点行数做一个比例关系，越靠近底部了拐点宽度越大
+        ImageDownPointL.X=DownInflectionR.X-INFLECTION_WIDTH-DownInflectionL.X/10,ImageDownPointL.Y=DownInflectionR.Y;
         GetForkUpInflection(ImageDownPointL, DownInflectionR, &UpInflectionC);
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
