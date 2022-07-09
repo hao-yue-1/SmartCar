@@ -9,6 +9,9 @@
 #include "PID.h"
 #include <stdlib.h> //abs函数，fabs在math.h
 
+#define L_FINDWHIDE_THRE  10 //Y拐点中间找左边白色区域停止的阈值
+#define R_FINDWHIDE_THRE  150//Y拐点中间找右边白色区域停止的阈值
+
 /*********************************************************************************
  ** 函数功能: 根据左右下拐点搜寻出三岔上拐点
  ** 参    数: Point InflectionL: 左边拐点
@@ -30,18 +33,18 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
         //图像数组是[高][宽]
         if(BinaryImage[i][UpInflectionC->X]==IMAGE_WHITE && BinaryImage[i-1][UpInflectionC->X]==IMAGE_BLACK)
         {
-            for(cloumnL=UpInflectionC->X;cloumnL>10;cloumnL--)
+            for(cloumnL=UpInflectionC->X;cloumnL>L_FINDWHIDE_THRE;cloumnL--)
             {
                 if(BinaryImage[i-1][cloumnL]==IMAGE_WHITE)
                     break;
-                if(cloumnL==11)//如果起始的列就小于了11，那么则不会return，会直接到后面的赋值
+                if(cloumnL==L_FINDWHIDE_THRE+1)//如果起始的列就小于了11，那么则不会return，会直接到后面的赋值
                     return;//遍历完了都没有找到白的即不是三岔，退出判断
             }
-            for(cloumnR=UpInflectionC->X;cloumnR<MT9V03X_W-10;cloumnR++)
+            for(cloumnR=UpInflectionC->X;cloumnR<R_FINDWHIDE_THRE;cloumnR++)
             {
                 if(BinaryImage[i-1][cloumnR]==IMAGE_WHITE)
                     break;
-                if(cloumnR==MT9V03X_W-11)
+                if(cloumnR==R_FINDWHIDE_THRE-1)
                     return;//遍历完了都没有找到白的即不是三岔，退出判断
             }
             UpInflectionC->Y=i;//Y坐标是行数
@@ -52,13 +55,11 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
 
 /********************************************************************************************
  ** 函数功能: 识别三岔
- ** 参    数: int startline:用户决定的起始行
- **           int endline:用户决定的结束行（表示对前几段的识别，根据速度不同进行调整）
+ ** 参    数:
  **           int *LeftLine：左线
  **           int *RightLine:右线
  **           Point *InflectionL:左边拐点
  **           Point *InflectionR:右边拐点
- **           Point *InflectionC:中间拐点
  ** 返 回 值:  0：没有识别到环岛
  **           1：正入三岔
  ** 作    者: LJF
@@ -68,9 +69,10 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
 uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR)
 {
     Point UpInflectionC;
-    if(DownInflectionL.X!=0 && DownInflectionL.Y>60 && DownInflectionR.X!=0 && DownInflectionR.Y>60)//当左右拐点存在,且左右拐点不会太快出现丢线情况
+    //当左右拐点存在,并且两个拐点要在图像下半部分
+    if(DownInflectionL.X!=0 && DownInflectionL.Y>60 && DownInflectionR.X!=0 && DownInflectionR.Y>60)
     {
-          //取消这个左右拐点行数的判断，增加运算速率
+        //取消这个左右拐点行数的判断，增加运算速率
         if(abs((DownInflectionL.Y-DownInflectionR.Y))<40)//左右两个拐点的行数小于30，才进行判断
         {
             GetForkUpInflection(DownInflectionL, DownInflectionR, &UpInflectionC);//去搜索上拐点
@@ -98,7 +100,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             return 1;//三岔正入丢失左右拐点那一帧
         }
     }
-    //左拐点x[0,70),加上列数不能太右边，避免极端情况影响了
+    //右边丢线超过60，左拐点存在
     else if(LostNum_RightLine>=60 && DownInflectionL.X!=0)
     {
         Point ImageDownPointR;//以左拐点对称的点去补线和找拐点
@@ -111,7 +113,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             return 1;//三岔左斜入三岔
         }
     }
-    //右拐点x[0,70)
+    //左边丢线超过60，右拐点存在
     else if(LostNum_LeftLine>=60 && DownInflectionR.X!=0)
     {
         Point ImageDownPointL;//以左拐点对称的点去补线和找拐点
