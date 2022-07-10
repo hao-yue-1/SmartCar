@@ -3,6 +3,7 @@
  * Created on: 2022年5月25日
  * Author: 30516
  * Effect: 存放三岔路口相关的源代码
+ * 三岔测试最高速度为200，路径不好是参数问题，速度200，舵机PID：KP14.25 KD40测的
  */
 
 #include "ImageSpecial.h"
@@ -12,7 +13,7 @@
 
 #define L_FINDWHIDE_THRE  10 //Y拐点中间找左边白色区域停止的阈值
 #define R_FINDWHIDE_THRE  150//Y拐点中间找右边白色区域停止的阈值
-#define INFLECTION_WIDTH  110//打开三岔debug,当拐点在60行附近左右拐点的差值，补全的时候，依据没有丢失的拐点的行数做一个简单的比例关系到单边循迹思路上
+#define FORK_INFLECTION_WIDTH  110//打开三岔debug,当拐点在60行附近左右拐点的差值，补全的时候，依据没有丢失的拐点的行数做一个简单的比例关系到单边循迹思路上
 #define FORK_DEBUG  0
 
 /*********************************************************************************
@@ -126,7 +127,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         Point ImageDownPointR;//以左拐点对称的点去补线和找拐点
         //给自己设定的右拐点去找上拐点
 //        ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.YDownInflectionL.Y=DownInflectionL.Y;
-        ImageDownPointR.X=DownInflectionL.X+INFLECTION_WIDTH+DownInflectionL.Y/10,ImageDownPointR.Y=DownInflectionL.Y;//运用单边循迹法的思想给拐点，赛道宽度
+        ImageDownPointR.X=DownInflectionL.X+FORK_INFLECTION_WIDTH+DownInflectionL.Y/10,ImageDownPointR.Y=DownInflectionL.Y;//运用单边循迹法的思想给拐点，赛道宽度
         GetForkUpInflection(DownInflectionL, ImageDownPointR, &UpInflectionC);
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
@@ -140,7 +141,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
     {
         Point ImageDownPointL;//以左拐点对称的点去补线和找拐点
         //与拐点行数做一个比例关系，越靠近底部了拐点宽度越大
-        ImageDownPointL.X=DownInflectionR.X-INFLECTION_WIDTH-DownInflectionL.X/10,ImageDownPointL.Y=DownInflectionR.Y;
+        ImageDownPointL.X=DownInflectionR.X-FORK_INFLECTION_WIDTH-DownInflectionL.X/10,ImageDownPointL.Y=DownInflectionR.Y;
         GetForkUpInflection(ImageDownPointL, DownInflectionR, &UpInflectionC);
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
