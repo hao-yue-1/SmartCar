@@ -12,6 +12,7 @@
 #include "SEEKFREE_MT9V03X.h"   //为了要uint8这种定义,二值化算法中的某些数学计算,摄像头图像的全局变量
 #include "ImageBasic.h"         //获取图像基本处理之后的数据
 #include "ImageTack.h"
+#include "common.h"
 
 //起跑线识别
 #define G_LINEBIAS  0.8     //判定车库另一边的直道斜率
@@ -59,7 +60,8 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
 uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag);           //第二遍三岔状态跳转判断函数
 /*十字回环相关函数*/
 uint8 CrossLoopBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
-uint8 CrossLoopEnd_L(void);
+uint8 CrossLoopOverBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CrossLoopEnd_L(Point InflectionL,Point InflectionR);
 uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);    //左十字回环状态机
 uint8 CrossLoopBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
 uint8 CrossLoopEnd_R(void);

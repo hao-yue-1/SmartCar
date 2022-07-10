@@ -10,21 +10,15 @@
 #include "PID.h"
 #include "Motor.h"
 #include "LED.h"
+#include <stdio.h>
 
 uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
+uint8 CrossLoop_flag=0;         //十字回环识别标志变量
 uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=160,speed_case_6=160,speed_case_7=170;
 
 uint32 SobelResult=0;
-
-void Stop(void)
-{
-    while(1)
-    {
-        base_speed=0;
-    }
-}
 
 /********************************************************************************************
  ** 函数功能: 对图像的各个元素之间的逻辑处理函数，最终目的是为了得出Bias给中断去控制
@@ -36,24 +30,27 @@ void Stop(void)
 void ImageProcess()
 {
     /***************************变量定义****************************/
-    static uint8 flag;
-    static uint8 case_5,case_0,case_2,case_1,case_4,case_6,case_3;
-    Point LeftDownPoint,RightDownPoint;     //左右下拐点
-    LeftDownPoint.X=0;LeftDownPoint.Y=0;RightDownPoint.X=0;RightDownPoint.Y=0;
-    Point ForkUpPoint;
+    static uint8 flag;  //状态机跳转标志位
+    static uint8 case_5,case_0,case_2,case_1,case_4,case_6,case_3;  //数帧数
+    Point InflectionL,InflectionR;     //左右下拐点
+    InflectionL.X=0;InflectionL.Y=0;InflectionR.X=0;InflectionR.Y=0;
+    Point ForkUpPoint;  //三岔
     ForkUpPoint.X=0;ForkUpPoint.Y=0;
-    Point CrossRoadUpLPoint,CrossRoadUpRPoint;
+    Point CrossRoadUpLPoint,CrossRoadUpRPoint;  //十字路口
     CrossRoadUpLPoint.X=0;CrossRoadUpLPoint.Y=0;CrossRoadUpRPoint.X=0;CrossRoadUpRPoint.Y=0;
     /*****************************扫线*****************************/
     GetImagBasic(LeftLine,CentreLine,RightLine);
     /*************************搜寻左右下拐点***********************/
-    GetDownInflection(110,45,LeftLine,RightLine,&LeftDownPoint,&RightDownPoint);
+    GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-//    if(CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint)==1)
+//    if(CrossLoopEnd_L(InflectionL,InflectionR)==1)
 //    {
-//        Stop();
+//        CrossLoop_flag=1;
 //    }
-    CircleIslandIdentify_L(LeftLine, RightLine, LeftDownPoint, RightDownPoint);
+//    else
+//    {
+//        CrossLoop_flag=0;
+//    }
     /****************************状态机***************************/
 #if 0
     switch(flag)
@@ -103,11 +100,6 @@ void ImageProcess()
                         case_1++;
                         base_speed=150; //分段减速
                     }
-                }
-                if(CircleIsFlag_3_L()==1)
-                {
-                    base_speed=140;         //入环降速，为出环做准备
-                    bias_startline=100;     //入环调整动态前瞻
                 }
             }
             break;
@@ -223,13 +215,51 @@ void ImageProcess()
     }
 #endif
     /***************************偏差计算**************************/
-    if(Fork_flag!=0 || Garage_flag!=0)  //在识别函数里面已经计算了Bias
+    if(Fork_flag!=0 || Garage_flag!=0||CrossLoop_flag!=0)  //在识别函数里面已经计算了Bias
     {
-        Garage_flag=0;Fork_flag=0;
+        Garage_flag=0;Fork_flag=0;CrossLoop_flag=0;
         return;
     }
     else
     {
         Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//无特殊处理时的偏差计算
+    }
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 停车
+ ** 参    数: 无InflectionL：左下拐点
+ **           InflectionR：右下拐点
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+void Stop(void)
+{
+    while(1)
+    {
+        base_speed=0;
+    }
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 以xy轴交点的方式，在LCD上定位一个坐标
+ ** 参    数: Inflection：坐标
+ **           color：颜色
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+void LcdDrawPoint(Point Inflection,uint16 color)
+{
+    for(int cloum=0;cloum<MT9V03X_W-1;cloum++)
+    {
+        lcd_drawpoint(cloum,Inflection.Y,color);
+    }
+    for(int row=0;row<MT9V03X_H-1;row++)
+    {
+        lcd_drawpoint(Inflection.X,row,color);
     }
 }

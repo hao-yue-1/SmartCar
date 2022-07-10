@@ -257,49 +257,49 @@ uint8 CircleIslandExit_L(int *LeftLine,int *RightLine,Point InflectionL,Point In
  */
 uint8 CircleIslandOverExit_L(int *LeftLine,int *RightLine)
 {
-        float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
-        if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
+    float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
+    if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
+    {
+        for(uint8 row=MT9V03X_H-30,column=20;row-1>0;row--)    //向上扫
         {
-            for(uint8 row=MT9V03X_H-30,column=20;row-1>0;row--)    //向上扫
+            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
             {
-                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+                uint8 row_f=row;
+                for(;row-1>0;row--)
                 {
-                    uint8 row_f=row;
-                    for(;row-1>0;row--)
+                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)
                     {
-                        if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)
+                        uint8 row_s=row;
+                        for(;row-1>0;row--)
                         {
-                            uint8 row_s=row;
-                            for(;row-1>0;row--)
+                            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
                             {
-                                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+                                row=(row_f+row_s)/2;
+                                for(;column+1<MT9V03X_W;column++)   //向右扫
                                 {
-                                    row=(row_f+row_s)/2;
-                                    for(;column+1<MT9V03X_W;column++)   //向右扫
+                                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column+1]==IMAGE_WHITE)
                                     {
-                                        if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column+1]==IMAGE_WHITE)
-                                        {
-                                            /*补线操作*/
-                                            Point end,start;
-                                            end.Y=row;
-                                            end.X=column;
-                                            start.Y=MT9V03X_H-2;
-                                            start.X=1;
-                                            FillingLine('L', start, end);   //补线
-                                            return 1;
-                                        }
+                                        /*补线操作*/
+                                        Point end,start;
+                                        end.Y=row;
+                                        end.X=column;
+                                        start.Y=MT9V03X_H-2;
+                                        start.X=1;
+                                        FillingLine('L', start, end);   //补线
+                                        return 1;
                                     }
-                                    return 0;
                                 }
+                                return 0;
                             }
-                            return 0;
                         }
+                        return 0;
                     }
-                    return 0;
                 }
+                return 0;
             }
         }
-    return 0;
+    }
+return 0;
 }
 
 /*
@@ -437,6 +437,8 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         {
             if(CircleIslandEnd_L(InflectionL, InflectionR)==1&&flag_end==0)  //第一次检测到环岛出口
             {
+                /*关于积分重复开启问题，由于flag_end的存在，积分只会开启一次；而CircleIslandEnd_L则会多次执行进行补线；
+                  这里的逻辑看起来不够直观清晰，但是没有错误*/
                 StartIntegralAngle_Z(70);   //开启积分
                 flag_end=1;
             }
@@ -584,7 +586,7 @@ uint8 CircleIslandEnd_R(Point InflectionL,Point InflectionR)
                 }
             }
         }
-        else    //不存在右拐点
+        else    //不存在左拐点
         {
             //图像右下角补线到赛道中间顶部
             for(uint8 row=MT9V03X_H-20;row-1>0;row--)  //向上扫
@@ -607,9 +609,9 @@ uint8 CircleIslandEnd_R(Point InflectionL,Point InflectionR)
     if(LostNum_LeftLine>55&&LostNum_RightLine>55&&fabsf(Bias)<1.5)  //约束条件，识别到环岛出口
     {
         /*校赛过后使用补线配合陀螺仪的方法出环*/
-        if(InflectionL.X>MT9V03X_W/2&&InflectionL.Y>MT9V03X_H/2)    //右拐点真实存在
+        if(InflectionL.X>MT9V03X_W/2&&InflectionL.Y>MT9V03X_H/2)    //左拐点真实存在
         {
-            //沿着右边界线补线
+            //沿着左边界线补线
             for(uint8 row=MT9V03X_H/2;row-1>0;row--)  //向上扫
             {
                 if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)

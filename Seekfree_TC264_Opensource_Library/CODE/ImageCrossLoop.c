@@ -8,6 +8,9 @@
 #include "ImageSpecial.h"
 #include "PID.h"
 #include "ICM20602.h"
+#include <stdio.h>
+#include "SEEKFREE_18TFT.h"
+#include "ImageProcess.h"
 
 /*
  *******************************************************************************************
@@ -180,32 +183,64 @@ uint8 CrossLoopOverBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point 
 /*
  *******************************************************************************************
  ** 函数功能: 识别左十字回环出口
- ** 参    数: 无
+ ** 参    数: InflectionL：左下拐点
+ **           InflectionR：右下拐点
  ** 返 回 值: 0：没有识别到十字回环出口
  **          1：识别到十字回环出口
  ** 作    者: WBN
+ ** 注    意：没有对车子在环中贴边行驶的情况作出分析，若是贴内环不会有太大问题（右拐不会压角）；
+ **           若是车子贴外环行驶会有压角风险。预计处理方法是通过右拐点的位置来判断极端情况
  ********************************************************************************************
  */
-uint8 CrossLoopEnd_L(void)
+uint8 CrossLoopEnd_L(Point InflectionL,Point InflectionR)
 {
-    for(uint8 row=10;row+1<40;row++)  //向下扫
-    {
-        if(BinaryImage[row][30]==IMAGE_BLACK&&BinaryImage[row+1][30]==IMAGE_WHITE)
-        {
-            return 0;
-        }
-    }
-    if(LostNum_LeftLine>110)    //防止还未出环的误判
-    {
-        return 0;
-    }
-    if(LostNum_LeftLine>L_LOSTNUM&&LostNum_RightLine>L_LOSTNUM)  //左右边界均丢线
-    {
-        if(fabsf(Bias)<1.5)
-        {
-            //补线右转
+    static uint8 flag=0;    //连续补线flag，依赖第一次补线判断
 
-            return 1;
+    if(flag==1) //已经补过线，避免不可预知干扰打断补线
+    {
+        for(uint8 row=MT9V03X_H-1;row-1>0;row--)  //中间列向上扫
+        {
+            if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
+            {
+                uint8 EndX=0;
+                if(row>70)  //根据逼近边界程度来决定补线矫正程度
+                {
+                    EndX=MT9V03X_W-1;
+                }
+                else
+                {
+                    EndX=MT9V03X_W/2;
+                }
+                //补左线，右转
+                Point StartPoint,EndPoint;
+                StartPoint.Y=MT9V03X_H-1;   //起点：最底行的左边界点
+                StartPoint.X=LeftLine[MT9V03X_H-1];
+                EndPoint.Y=row;             //终点：分界线
+                EndPoint.X=EndX;
+                FillingLine('L', StartPoint, EndPoint);
+                Bias=DifferentBias(StartPoint.Y,EndPoint.Y,CentreLine);
+                return 1;
+            }
+        }
+        //若在上面的for循环中没有发现，下面实施补救
+    }
+    else if(LostNum_LeftLine>55&&LostNum_RightLine>55&&fabsf(Bias)<1.5) //出口判断的约束条件
+    {
+        for(uint8 row=MT9V03X_H/2;row-1>0;row--)  //中间列向上扫
+        {
+            if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
+            {
+                //补左线，右转
+                Point StartPoint,EndPoint;
+                StartPoint.Y=MT9V03X_H-1;   //起点：最底行的左边界点
+                StartPoint.X=LeftLine[MT9V03X_H-1];
+                EndPoint.Y=row;             //终点：分界行中点
+                EndPoint.X=MT9V03X_W/2;
+                FillingLine('L', StartPoint, EndPoint);
+                flag=1; //连续补线标记
+                Bias=DifferentBias(StartPoint.Y,EndPoint.Y,CentreLine);
+                return 1;
+            }
         }
     }
     return 0;
@@ -240,16 +275,16 @@ uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point I
                 CrossLoopOverBegin_L(LeftLine, RightLine, InflectionL, InflectionR);    //第二次识别回环入口，补线直行
                 num_2++;
             }
-            if(num_2>/*某个阈值*/)  //代表已经进入回环
-            {
-                flag=1; //跳转到状态1
-                break;
-            }
+//            if(num_2>/*某个阈值*/)  //代表已经进入回环
+//            {
+//                flag=1; //跳转到状态1
+//                break;
+//            }
             break;
         }
         case 1: //小车识别十字回环的出口，右转出环
         {
-            if(CrossLoopEnd_L()==1&&flag_end==0)  //第一次检测到回环出口
+            if(CrossLoopEnd_L(InflectionL, InflectionR)==1&&flag_end==0)  //第一次检测到回环出口
             {
                 StartIntegralAngle_Z(70);   //开启积分
                 flag_end=1;
