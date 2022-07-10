@@ -45,7 +45,6 @@ int core0_main(void)
 {
 	get_clk();//获取时钟频率  务必保留
 	/***************************交互的初始化**************************/
-//	uart_init(UART_0, 115200, UART0_TX_P14_0, UART0_RX_P14_1);      //初始化串口0与电脑上位机通讯
 	uart_init(UART_2, 115200, UART2_TX_P10_5, UART2_RX_P10_6);      //初始化蓝牙模块所用的串口2
 	lcd_init();     //初始化TFT屏幕
 	LEDInit();      //初始化LED
@@ -57,7 +56,7 @@ int core0_main(void)
 	pit_interrupt_ms(CCU6_1,PIT_CH0,2);     //初始化陀螺仪积分中断2ms
     pit_disable_interrupt(CCU6_1,PIT_CH0);  //关闭陀积分螺仪中断
     /***************************驱动模块初始化***********************/
-	gtm_pwm_init(STEER_PIN, 100, STEER_MID);      //初始化舵机
+	gtm_pwm_init(STEER_PIN, 50, STEER_MID);      //初始化舵机
 	gtm_pwm_init(LEFT_MOTOR_PIN1,17*1000,0);      //初始化左电机
 //	gpio_init(P02_6, GPO, 1, PUSHPULL);           //逐飞驱动：左电机
 	gtm_pwm_init(LEFT_MOTOR_PIN2,17*1000,0);      //自制驱动：左电机
@@ -73,7 +72,6 @@ int core0_main(void)
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
 	enableInterrupts();
-
 
 	while (TRUE)
 	{

@@ -11,9 +11,9 @@
 #define CODE_STEER_H_
 
 #define STEER_PIN   ATOM1_CH1_P33_9     //输出舵机PWM引脚
-#define STEER_MID   738*2                 //舵机居中值
-#define STEER_LEFT  802*2                 //舵机向左打死值   //根据大一字头螺丝刀测量
-#define STEER_RIGHT 675*2                 //舵机向右打死值   //根据大一字头螺丝刀测量
+#define STEER_MID   750                 //舵机居中值
+#define STEER_LEFT  814                 //舵机向左打死值   //根据大一字头螺丝刀测量
+#define STEER_RIGHT 687                 //舵机向右打死值   //根据大一字头螺丝刀测量
 
 void SteerCtrl(uint32 pwm);     //控制舵机
 

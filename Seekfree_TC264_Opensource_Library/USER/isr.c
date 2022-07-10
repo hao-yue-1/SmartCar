@@ -24,7 +24,6 @@
 #include "isr.h"
 #include "motor.h"
 #include "steer.h"
-#include "protocol.h"
 #include "PID.h"
 #include "ImageTack.h"
 #include "zf_gpio.h"
@@ -32,6 +31,7 @@
 #include "Filter.h"
 #include "ICM20602.h"
 #include "LED.h"
+#include  "zf_stm_systick.h"
 
 uint32 SteerPWM=0;            //舵机PWM
 float icm_target_angle_z=0;   //陀螺仪Z轴积分目标角度
@@ -86,7 +86,31 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
     SteerPWM=Steer_Position_PID(Bias,SteerK);
     SteerCtrl(SteerPWM);
 
-//    printf("%f,%d\n",Bias,SteerPWM);
+//    printf("%f,%d\n",Bias,SteerPWM);  //调参
+
+	//舵机演示
+//	static int16 pwm=STEER_LEFT,flag=0;
+//	if(pwm>STEER_RIGHT&&flag==0)    //右摆
+//	{
+//	    pwm--;
+//	}
+//	else    //切换方向
+//	{
+//	    flag=1;
+//	}
+//	if(pwm<STEER_LEFT&&flag==1)     //左摆
+//	{
+//	    pwm++;
+//	}
+//	else    //切换方向
+//	{
+//	    flag=0;
+//	}
+//	SteerCtrl(pwm);
+//	if(pwm==STEER_MID)  //暂停查看中值
+//	{
+//	    systick_delay_ms(STM0,3000);
+//	}
 
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH1);
 }
