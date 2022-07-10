@@ -3,7 +3,7 @@
  * Created on: 2022年5月25日
  * Author: 30516
  * Effect: 存放车库相关的源代码
- * *右边不入库：180 入库：170
+ * *右边不入库：200 入库：170
  * 左边不入库：200 入库：180但是感觉停不下来
  */
 
@@ -16,6 +16,7 @@
 #define GARAGE_IDENTIFY_MODE 0    //哪种模式找上拐点
 #define IN_L_GARAGE_ANGLE   50  //入左库开启陀螺仪积分的目标角度
 #define IN_R_GARAGE_ANGLE   60  //入右库开启陀螺仪积分的目标角度
+#define GARAGE_DEBUG    0       //是否需要开启车库的DEBUG
 
 /********************************************************************************************
  ** 函数功能: Sobel算子检测起跑线
@@ -145,11 +146,11 @@ uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR)
             {
                 if(NoInflectionLFlag==0)//如果没丢失下拐点则用下拐点下面巡线
                 {
-                    Bias=DifferentBias(InflectionL.Y+5, InflectionL.Y, CentreLine);
+                    Bias=DifferentBias(InflectionL.Y+5, InflectionL.Y+2, CentreLine);
                 }
                 else
                 {
-                    Bias=DifferentBias(UpInflection.Y, UpInflection.Y-5, CentreLine);//直接以上拐点的上面正常的线去循迹
+                    Bias=DifferentBias(UpInflection.Y-2, UpInflection.Y-5, CentreLine);//直接以上拐点的上面正常的线去循迹
                 }
                 return 1;
             }
@@ -363,26 +364,25 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
             {
                if(NoInflectionLFlag==0)//如果没丢失下拐点则用下拐点下面巡线
                {
-                    /******************debug*******************************************/
-//                    for(int i=0;i<MT9V03X_W-1;i++)
-//                    {
-//                        lcd_drawpoint(i, InflectionR.Y+5, PURPLE);
-//                        lcd_drawpoint(i, InflectionR.Y, PURPLE);
-//                    }
-                    /******************************************************************/
-                    Bias=DifferentBias(InflectionR.Y+5, InflectionR.Y, CentreLine);
+#if GARAGE_DEBUG
+                    for(int i=0;i<MT9V03X_W-1;i++)
+                    {
+                        lcd_drawpoint(i, InflectionR.Y+5, PURPLE);
+                        lcd_drawpoint(i, InflectionR.Y+2, PURPLE);
+                    }
+#endif
+                   Bias=DifferentBias(InflectionR.Y+5, InflectionR.Y+2, CentreLine);
                }
                else
                {
-                  /******************debug*******************************************/
-//                  for(int i=0;i<MT9V03X_W-1;i++)
-//                  {
-//                      lcd_drawpoint(i, UpInflection.Y, PURPLE);
-//                      lcd_drawpoint(i, UpInflection.Y-5, PURPLE);
-//                  }
-                  /******************************************************************/
-                   //莫名其妙的BUG就是补线看到的是斑马线中的点和最上面的点进行了补线，暂未查明原因
-                   Bias=DifferentBias(UpInflection.Y, UpInflection.Y-5, CentreLine);//直接以上拐点的上面正常的线去循迹
+#if GARAGE_DEBUG
+                  for(int i=0;i<MT9V03X_W-1;i++)
+                  {
+                      lcd_drawpoint(i, UpInflection.Y-2, PURPLE);
+                      lcd_drawpoint(i, UpInflection.Y-5, PURPLE);
+                  }
+#endif
+                   Bias=DifferentBias(UpInflection.Y-2, UpInflection.Y-5, CentreLine);//直接以上拐点的上面正常的线去循迹
                }
                return 1;
             }
