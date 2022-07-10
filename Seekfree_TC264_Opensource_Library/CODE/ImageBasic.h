@@ -32,6 +32,7 @@ typedef struct Point
 void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine);  //扫线提取左中右三线
 void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR);//根据左右边界线来得到下拐点（十字、三岔、环岛）
 void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection);//根据遍历左右线得到行与行之间的列坐标的差值，大于设定的阈值则判断为是上拐点
+void GetRightangleUPInflection(char Choose,Point DowmInflection,Point *UpInflection,int ROWTHR,int CLOUMNTHR);//根据二值化图像找直角上拐点
 void Bin_Image_Filter(void);
 void EdgeTrack(void);   //八领域扫线
 

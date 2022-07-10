@@ -98,38 +98,25 @@ uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR)
         }
         else return 0;//否则说明左边都是黑的了直接返回已经过了左库
     }
-    //开始遍历去寻找上拐点
-    for(int row=InflectionL.Y-10;row>10;row--)
+    if(NoInflectionLFlag==1 && Choose=='Y')//入库的上拐点不一定是直角，当进去的时候就是里面那个直角了
     {
-        /******************debug:把从下往上的找点轨迹画出来******************/
-//        lcd_drawpoint(InflectionL.X, row, YELLOW);
-        /******************************************************************/
-        //从下往上白调黑
-        if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)
+        for(int row=InflectionL.Y-10;row>10;row--)
         {
-            //在这里分是否入库的情况，如果入库就去判断是否丢失拐点，丢失了的话补线要补右下角和左上角，为了打角大点
-            if(NoInflectionLFlag==1 && Choose=='Y')
+            /******************debug:把从下往上的找点轨迹画出来******************/
+        //        lcd_drawpoint(InflectionL.X, row, YELLOW);
+            /******************************************************************/
+            //从下往上白调黑
+            if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)
             {
                 UpInflection.X=InflectionL.X;
                 UpInflection.Y=row-3;//现在这个if是找到行所以要给行赋值才能补到线
+                break;
             }
-            else
-            {
-                for(int column=InflectionL.X;column<MT9V03X_W-10;column++)
-                {
-                    /******************debug:把从左往右的找点轨迹画出来******************/
-//                    lcd_drawpoint(column, row, YELLOW);
-                    /******************************************************************/
-                    //从左往右黑跳白
-                    if(BinaryImage[row-3][column]==IMAGE_BLACK && BinaryImage[row-3][column+1]==IMAGE_WHITE)
-                    {
-                        UpInflection.X=column;UpInflection.Y=row-3;
-                        break;
-                    }
-                }
-            }
-            break;//进去之后就退出循环，避免没必要的图像遍历，就算失败也退出说明确实是失败了
         }
+    }
+    else
+    {
+        GetRightangleUPInflection('L',InflectionL,&UpInflection,10,MT9V03X_W-10);
     }
 #endif
     //判断是否找到上拐点，满足才补线
@@ -156,7 +143,6 @@ uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR)
             //不入左库
             case 'N':
             {
-#if 1   //1:上拐点取上面那几行作为循迹 0：补线斜率作为循迹偏差
                 if(NoInflectionLFlag==0)//如果没丢失下拐点则用下拐点下面巡线
                 {
                     Bias=DifferentBias(InflectionL.Y+5, InflectionL.Y, CentreLine);
@@ -166,37 +152,6 @@ uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR)
                     Bias=DifferentBias(UpInflection.Y, UpInflection.Y-5, CentreLine);//直接以上拐点的上面正常的线去循迹
                 }
                 return 1;
-#else
-                //判断是否丢失下拐点
-               if(NoInflectionLFlag==1)
-               {
-                   Point LeftPoint;
-                   LeftPoint.X=LeftLine[UpInflection.Y-5];LeftPoint.Y=UpInflection.Y-5;
-                   FillinLine_V2('L', MT9V03X_H, UpInflection.Y, UpInflection, LeftPoint);
-                   //给偏差给舵机
-                   Bias=Regression_Slope(MT9V03X_H, UpInflection.Y, LeftLine);
-                   //对斜率求出来的偏差进行个缩放
-                   if(Bias<=1) Bias=Bias*2.25;
-                   else Bias=Bias*1.75;
-                   /******************debug*******************************************/
-//                   gpio_toggle(LED_BLUE);
-                   /******************************************************************/
-                   return 1;
-               }
-               else
-               {
-                   FillingLine('L', InflectionL, UpInflection);
-                   //给偏差给舵机
-                   Bias=Regression_Slope(InflectionL.Y, UpInflection.Y, LeftLine);
-                   //对斜率求出来的偏差进行个缩放
-                   if(Bias<=1) Bias=Bias*2.25;
-                   else Bias=Bias*1.75;
-                   /******************debug*******************************************/
-//                  gpio_toggle(LED_GREEN);
-                  /******************************************************************/
-                   return 1;
-               }
-#endif
             }
             default :break;
         }
@@ -339,11 +294,11 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
 #else
     //此处使用直角黑白跳变找上拐点法
     //如果是在斑马线路段了并且右拐点不存在,或者左右拐点之间的横坐标差太多，因为扫线的混乱拐点可能出现在斑马线中间
-    //并且右拐点那行的图像最右边要是黑点
+    //并且右拐点那行的图像最右边-5要是黑点
     /**********************debug************************/
 //    lcd_showuint8(30, 1, BinaryImage[InflectionR.Y+5][MT9V03X_W-1]);
     /***************************************************/
-    if(InflectionR.X==0 || InflectionR.X<MT9V03X_W/2 || BinaryImage[InflectionR.Y+5][MT9V03X_W-1]==IMAGE_WHITE)
+    if(InflectionR.X==0 || InflectionR.X<MT9V03X_W/2 || BinaryImage[InflectionR.Y+5][MT9V03X_W-5]==IMAGE_WHITE)
     {
         /**********************debug************************/
 //        lcd_showint32(0, 0, BinaryImage[MT9V03X_H/2+10][3], 3);
@@ -361,38 +316,25 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
         }
         if(NoInflectionLFlag!=1) return 0;//否则说明左边都是黑的了直接返回已经过了左库
     }
-    //开始遍历去寻找上拐点
-    for(int row=InflectionR.Y-10;row>10;row--)
+    if(NoInflectionLFlag==1 && Choose=='Y')
     {
-        /******************debug:把从下往上的找点轨迹画出来******************/
-//        lcd_drawpoint(InflectionL.X, row, YELLOW);
-        /******************************************************************/
-        //从下往上白调黑
-        if(BinaryImage[row][InflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionR.X]==IMAGE_BLACK)
+        for(int row=InflectionR.Y-10;row>10;row--)
         {
-            //在这里分是否入库的情况，如果入库就去判断是否丢失拐点，丢失了的话补线要补右下角和左上角，为了打角大点
-            if(NoInflectionLFlag==1 && Choose=='Y')
+            /******************debug:把从下往上的找点轨迹画出来******************/
+//          lcd_drawpoint(InflectionL.X, row, YELLOW);
+            /******************************************************************/
+            //从下往上白调黑
+            if(BinaryImage[row][InflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionR.X]==IMAGE_BLACK)
             {
                 UpInflection.X=InflectionR.X;
                 UpInflection.Y=row-4;//现在这个if是找到行所以要给行赋值才能补到线
+                break;
             }
-            else
-            {
-                for(int column=InflectionR.X;column>10;column--)
-                {
-                    /******************debug:把从左往右的找点轨迹画出来******************/
-//                    lcd_drawpoint(column, row, YELLOW);
-                    /******************************************************************/
-                    //从左往右黑跳白
-                    if(BinaryImage[row-4][column]==IMAGE_BLACK && BinaryImage[row-4][column-1]==IMAGE_WHITE)
-                    {
-                        UpInflection.X=column;UpInflection.Y=row-4;
-                        break;
-                    }
-                }
-            }
-            break;//进去之后就退出循环，避免没必要的图像遍历，就算失败也退出说明确实是失败了
         }
+    }
+    else
+    {
+        GetRightangleUPInflection('R',InflectionR,&UpInflection,10,10);
     }
 #endif
     //判断是否找到上拐点，满足才补线
@@ -419,7 +361,6 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
             //不入左库
             case 'N':
             {
-#if 1   //1:上拐点取上面那几行作为循迹 0：补线斜率作为循迹偏差
                if(NoInflectionLFlag==0)//如果没丢失下拐点则用下拐点下面巡线
                {
                     /******************debug*******************************************/
@@ -444,41 +385,6 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
                    Bias=DifferentBias(UpInflection.Y, UpInflection.Y-5, CentreLine);//直接以上拐点的上面正常的线去循迹
                }
                return 1;
-#else
-               //判断是否丢失下拐点
-               if(NoInflectionLFlag==1)
-               {
-                   Point RightPoint;
-                   RightPoint.X=RightLine[UpInflection.Y-5];RightPoint.Y=UpInflection.Y-5;
-                   /*****DEBUG******/
-//                   lcd_drawpoint(RightPoint.X, RightPoint.Y, PURPLE);
-//                   systick_delay_ms(STM0,800);
-                   /************/
-                   FillinLine_V2('R', MT9V03X_H, UpInflection.Y, UpInflection, RightPoint);
-                   //给偏差给舵机
-                   Bias=Regression_Slope(MT9V03X_H, UpInflection.Y, RightLine);
-                   //对斜率求出来的偏差进行个缩放
-                   if(Bias<=1) Bias=Bias*2.25;
-                   else Bias=Bias*1.75;
-                   /******************debug*******************************************/
-//                   gpio_toggle(LED_BLUE);
-                   /******************************************************************/
-                   return 1;
-               }
-               else
-               {
-                   FillingLine('R', InflectionR, UpInflection);
-                   //给偏差给舵机
-                   Bias=Regression_Slope(InflectionR.Y, UpInflection.Y, RightLine);
-                   //对斜率求出来的偏差进行个缩放
-                   if(Bias<=1) Bias=Bias*2.25;
-                   else Bias=Bias*1.75;
-                   /******************debug*******************************************/
-//                  gpio_toggle(LED_GREEN);
-                  /******************************************************************/
-                   return 1;
-               }
-#endif
             }
             default :break;
         }

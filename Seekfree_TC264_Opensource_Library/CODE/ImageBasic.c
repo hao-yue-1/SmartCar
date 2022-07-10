@@ -2,6 +2,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define FINE_RIGHT_ANGLE_INFLECTION_DEBUG   0   //遍历图像黑白跳变找直角拐点预编译的宏定义1：开启 0：关闭
+
 //变量定义
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 int Mid=MT9V03X_W/2;                        //初始化扫线的中点为图像中点
@@ -253,6 +255,67 @@ void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection)
             break;
         }
         default:break;
+    }
+}
+/************************************************************************
+ ** 函数功能: 根据图像黑白跳变寻找上直角拐点
+ ** 参    数: char Choose：选择是左上还是右上
+ **           Point DowmInflection：基准点
+ **           Point *UpInflection：找到的上拐点
+ **           int RowThr:遍历图像行的阈值（找跳变点到哪里停下）
+ **           int CloumnThr:遍历图像列的阈值
+ ** 返 回 值: 无
+ ** 说    明: 起始行要小于结束行，从上往下遍历左右线
+ ** 作    者: LJF
+ ***********************************************************************/
+void GetRightangleUPInflection(char Choose,Point DowmInflection,Point *UpInflection,int ROWTHR,int CLOUMNTHR)
+{
+    int row=0,cloumn=0;//起始行,列
+    UpInflection->X=0;UpInflection->Y=0;//左上拐点置零
+    //从下往上找白跳黑
+    for(row=DowmInflection.Y;row>ROWTHR;row--)
+    {
+#if FINE_RIGHT_ANGLE_INFLECTION_DEBUG
+        lcd_drawpoint(DowmInflection.X, row, PURPLE);
+#endif
+        if(BinaryImage[row][DowmInflection.X]==IMAGE_WHITE&&BinaryImage[row-1][DowmInflection.X]==IMAGE_BLACK)
+        {
+            row=row-3;//多往上面跳点
+            switch(Choose)
+            {
+               case 'L':
+               {
+                   //左往右找到黑跳白
+                   for(cloumn=DowmInflection.X;cloumn<CLOUMNTHR;cloumn++)
+                   {
+#if FINE_RIGHT_ANGLE_INFLECTION_DEBUG
+                       lcd_drawpoint(cloumn, row, PURPLE);
+#endif
+                       if(BinaryImage[row][cloumn]==IMAGE_BLACK&&BinaryImage[row][cloumn+1]==IMAGE_WHITE)
+                       {
+                           UpInflection->X=cloumn;UpInflection->Y=row;
+                           break;
+                       }
+                   }
+                   break;
+               }
+               case 'R':
+               {
+                   //右往左找到黑跳白
+                   for(cloumn=DowmInflection.X;cloumn>CLOUMNTHR;cloumn--)
+                   {
+                       if(BinaryImage[row][cloumn]==IMAGE_BLACK&&BinaryImage[row][cloumn-1]==IMAGE_WHITE)
+                       {
+                           UpInflection->X=cloumn;UpInflection->Y=row;
+                           break;
+                       }
+                   }
+                   break;
+               }
+               default:break;
+            }
+            break;//跳出行循环,没必要继续行循环下去
+        }
     }
 }
 /*---------------------------------------------------------------
