@@ -13,7 +13,7 @@
 #include "SEEKFREE_18TFT.h"
 
 int16 speed_l,speed_r;      //电机左右速度目标值的全局变量
-uint8 encoder_dis_flag=1;   //编码器测距flag（赋初值=1，避免自己开启检测导致int溢出）
+uint8 encoder_dis_flag=2;   //编码器测距flag（赋初值=2，避免自己开启检测导致int溢出）
 
 /*
 *********************************************************************************************************
@@ -193,7 +193,7 @@ void MotorSetTarget(int16 target_l,int16 target_r)
 ** 功能说明: 编码器测距，该函数将在编码器中断中被调用于采集编码器的值（flag=0）；
 **           在主进程中被调用于设置目标距离和开启检测，开启后需要用户手动查询encoder_dis_flag==1?
 **           从而检测是否达到目标值
-** 形    参: flag：选择函数功能（0：采集编码器数据；1：设置目标值）
+** 形    参: flag：选择函数功能（0：采集编码器数据；1：设置目标值，从此处开始测距）
 **           dis：目标距离，单位m（只有flag=1时，此项才起作用）
 **           encoder_l：左编码器值（只有flag=0时，此项才起作用）
 **           encoder_r：右编码器值（只有flag=0时，此项才起作用）
@@ -216,7 +216,7 @@ void EncoderDistance(uint8 flag,float target_dis,int16 encoder_l,int16 encoder_r
     //设置目标值
     else if(flag==1)
     {
-        encoder_target=11772*target_dis;    //根据目标距离计算目标编码器值
+        encoder_target=11731*target_dis;    //根据目标距离计算目标编码器值
         encoder_dis_flag=0;                 //编码器测距flag置0，开启编码器采集
         encoder_nowsum=0;                   //清空编码器累积值
     }
