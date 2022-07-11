@@ -1,6 +1,7 @@
 #include "ImageBasic.h"
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #define FINE_RIGHT_ANGLE_INFLECTION_DEBUG   0   //遍历图像黑白跳变找直角拐点预编译的宏定义1：开启 0：关闭
 
@@ -346,84 +347,19 @@ void Bin_Image_Filter(void)
 }
 
 /************************************************************************
- ** 函数功能: 八领域边缘扫线
- ** 参    数: 无
+ ** 函数功能: 测量赛道宽度函数
+ ** 参    数: int startline:要测量的起始行
+ **           int endline:要测量的结束行
  ** 返 回 值: 无
- ** 说    明: 使用了三线数组全局变量
+ ** 说    明: 用于赛前测试使用，赛道宽度可以给拐弯的时候单边巡线
  ** 作    者: LJF
  ***********************************************************************/
-void EdgeTrack(void)
+void MeasureWidth(int startline,int endline)
 {
-    int num=0,row=MT9V03X_H,cloum=MT9V03X_W/2;//八邻域的标号，行，列
-    uint8 left_seed=0,right_seed=0;//左右两边种子是否被找到的标志变量
-    Point seed;//存放种子的点
-    for(row=MT9V03X_H;row>0;row--)//行从下往上
+    int row=0,width=0;
+    for(row=startline;row>endline;row--)
     {
-        //如果种子不存在就要播种
-        if(left_seed==0)
-        {
-            for(cloum=MT9V03X_W/2;cloum>0;cloum--)//列从中间往左，找到左边种子
-            {
-                if(BinaryImage[row][cloum]==IMAGE_BLACK)
-                {
-                    LeftLine[row]=cloum;//记录左边界的行列位置
-                    seed.X=cloum;seed.Y=row;//种子标记
-                    left_seed=1;//标记左边的种子已经被找到
-                    break;//跳出循环
-                }
-                else
-                    left_seed=0;//给左边种子一个置零的机会，防止左边播种到了右边没有播种到，然后重新播种时出现误判
-            }
-        }
-        //遍历八域
-        for(num=0;num<5;num++)
-        {
-            switch(num)
-            {
-            case 0:
-                if(BinaryImage[seed.Y][seed.X+1]==IMAGE_BLACK)
-                {
-                    left_seed=0;//种子消失
-                    num=5;//为了跳出for循环
-                }
-                break;
-            case 1:
-                if(BinaryImage[seed.Y-1][seed.X+1]==IMAGE_BLACK)
-                {
-                    seed.X+=1;seed.Y-=1;//找到了下一个黑点以下一个黑点为八领域中心
-                    row--;
-                    LeftLine[row]=seed.X;//把找到的左边界存入左线数组中
-                    num=5;//为了跳出for循环
-                }
-                break;
-            case 2:
-               if(BinaryImage[seed.Y-1][seed.X]==IMAGE_BLACK)
-               {
-                   seed.Y-=1;//找到了下一个黑点以下一个黑点为八领域中心
-                   row--;
-                   LeftLine[row]=seed.X;//把找到的左边界存入左线数组中
-                   num=5;//为了跳出for循环
-               }
-               break;
-            case 3:
-                if(BinaryImage[seed.Y-1][seed.X-1]==IMAGE_BLACK)
-                 {
-                    seed.X-=1;seed.Y-=1;//找到了下一个黑点以下一个黑点为八领域中心
-                    row--;
-                    LeftLine[row]=seed.X;//把找到的左边界存入左线数组中
-                    num=5;//为了跳出for循环
-                 }
-                 break;
-            case 4:
-                if(BinaryImage[seed.Y][seed.X-1]==IMAGE_BLACK)
-                 {
-                    left_seed=0;//种子消失
-                    num=5;//为了跳出for循环
-                 }
-                 break;
-            //虽然是八领域但是出现了拐点之后就不扫了，说明此处是拐点，需要重新播种下一行
-            default:break;
-            }
-        }
+        width=RightLine[row]-LeftLine[row];
+        printf("%d\r\n",width);//测到赛道宽度与行的函数关系为y=135-(119-nowline)*1.1
     }
 }

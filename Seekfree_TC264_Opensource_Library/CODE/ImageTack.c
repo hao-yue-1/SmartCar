@@ -179,16 +179,14 @@ void FillinLine_V2(char Choose,int startline,int endline,Point Point1,Point Poin
         }
     }
 }
-/*
- *******************************************************************************************
+/********************************************************************************************
  ** 函数功能: 根据中线数组所在离散的点计算出离中线的偏差Bias
  ** 参    数: int starline:    离散点的起始行
  **           int endline:     离散点的结束行
  **           int *CentreLine： 中线数组
  ** 返 回 值: 偏差Bias
  ** 作    者: WBN
- ********************************************************************************************
- */
+ *********************************************************************************************/
 float DifferentBias(int startline,int endline,int *CentreLine)
 {
     static float last_bias;
@@ -226,5 +224,37 @@ float DifferentBias(int startline,int endline,int *CentreLine)
     else
     {
         return last_bias;   //计算错误，忽略此次计算，返回上一次的值
+    }
+}
+/********************************************************************************************
+ ** 函数功能: 根据赛道宽度单边巡线消除中线失真
+ ** 参    数: int starline:    离散点的起始行
+ **           int endline:     离散点的结束行
+ ** 返 回 值: 偏差Bias
+ ** 作    者: LJF
+ *********************************************************************************************/
+void Unilaterally_Plan_CenterLine(int startline,int endline)
+{
+    int row=0,test=0;
+    lcd_showint32(TFT_X_MAX-50, 0, LeftLine[60], 3);
+    lcd_showint32(TFT_X_MAX-50, 1, RightLine[60], 3);
+    for(row=startline;row>endline;row--)
+    {
+        //左边丢线右边不丢
+        if(LeftLine[row]==0 && RightLine[row]!=MT9V03X_W-1)
+        {
+            CentreLine[row]=RightLine[row]-(135-(119+row)*1.1)/2;
+            if(CentreLine[row]<0) CentreLine[row]=0;
+            else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
+//            lcd_drawpoint(test, row, PURPLE);
+        }
+        //右边丢线左边不丢
+        else if(LeftLine[row]!=0 && RightLine[row]==MT9V03X_W-1)
+        {
+            CentreLine[row]=LeftLine[row]+(135-(119-row)*1.1)/2;
+            if(CentreLine[row]<0) CentreLine[row]=0;
+            else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
+//            lcd_drawpoint(test, row, PURPLE);
+        }
     }
 }
