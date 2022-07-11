@@ -332,11 +332,27 @@ return 0;
  */
 uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
 {
-    /*两种情况：1.正常的左下角是黑色，而在进入中部前绝对不会有，所以这个单独作为一个条件可行
-     *          2.当车子在很靠左的地方时，左下角是白色的，而且和未进入中部的图像很相似；这里的唯一的区别在于右边黑洞部分的高度不同
-     *            通过识别黑白跳变点来确定黑洞高度，从而确定是哪种情况*/
-
-    if(BinaryImage[MT9V03X_H-1][0]==IMAGE_BLACK)    //经验位置为黑
+    uint8 flag=0;  //环岛中部约束条件
+    if(BinaryImage[MT9V03X_H-1][0]==IMAGE_BLACK||BinaryImage[MT9V03X_H-2][1]==IMAGE_BLACK)    //正常情况，左下为黑
+    {
+        flag=1; //符合约束条件
+    }
+    else    //判断是否满足车子靠右的情况
+    {
+        for(uint8 row=MT9V03X_H-1;row>0;row--)  //向上扫
+        {
+            if(LeftLine[row]==0&&LeftLine[row+1]!=0)    //丢线-不丢线（黑洞下边界）
+            {
+                if(row>80)  //黑洞下边界位于图像底部三分之一处
+                {
+                    flag=1; //符合约束条件
+                }
+                break;
+            }
+        }
+    }
+    //满足约束条件下的进一步判断
+    if(flag==1)
     {
         //下面这个for防止在环岛出口时误判为环岛中部
         for(uint8 row=MT9V03X_H/2;row+1<MT9V03X_H-1;row++) //向下扫
