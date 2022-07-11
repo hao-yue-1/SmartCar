@@ -3,7 +3,7 @@
  * Created on: 2022年5月25日
  * Author: 30516
  * Effect: 存放三岔路口相关的源代码
- * 三岔测试最高速度为200，路径不好是参数问题，速度200，舵机PID：KP14.25 KD40测的
+ * 三岔测试最高速度为220，从环岛那边能入的比较好，从车库这边不行出界了，没跑状态机，是单独元素识别
  */
 
 #include "ImageSpecial.h"
@@ -13,8 +13,10 @@
 
 #define L_FINDWHIDE_THRE  10 //Y拐点中间找左边白色区域停止的阈值
 #define R_FINDWHIDE_THRE  150//Y拐点中间找右边白色区域停止的阈值
-#define FORK_INFLECTION_WIDTH  110//打开三岔debug,当拐点在60行附近左右拐点的差值，补全的时候，依据没有丢失的拐点的行数做一个简单的比例关系到单边循迹思路上
+#define FORK_INFLECTION_WIDTH  120//打开三岔debug,当拐点在60行附近左右拐点的差值，补全的时候，依据没有丢失的拐点的行数做一个简单的比例关系到单边循迹思路上
 #define FORK_DEBUG  0
+
+extern uint8 bias_startline,bias_endline;        //动态前瞻
 
 /*********************************************************************************
  ** 函数功能: 根据左右下拐点搜寻出三岔上拐点
@@ -45,7 +47,7 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
 #if FORK_DEBUG
                 lcd_drawpoint(cloumnL, i-1, PURPLE);
 #endif
-                if(BinaryImage[i-1][cloumnL]==IMAGE_WHITE)
+                if(BinaryImage[i-1][cloumnL]==IMAGE_WHITE && BinaryImage[i-1][cloumnL-3]==IMAGE_WHITE)//多跳三格也是白防止噪点误判
                     break;
                 if(cloumnL==L_FINDWHIDE_THRE+1)//如果起始的列就小于了11，那么则不会return，会直接到后面的赋值
                     return;//遍历完了都没有找到白的即不是三岔，退出判断
@@ -55,7 +57,7 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
 #if FORK_DEBUG
                 lcd_drawpoint(cloumnR, i-1, PURPLE);
 #endif
-                if(BinaryImage[i-1][cloumnR]==IMAGE_WHITE)
+                if(BinaryImage[i-1][cloumnR]==IMAGE_WHITE && BinaryImage[i-1][cloumnR+3]==IMAGE_WHITE)//多跳三格也是白防止噪点误判
                     break;
                 if(cloumnR==R_FINDWHIDE_THRE-1)
                     return;//遍历完了都没有找到白的即不是三岔，退出判断
@@ -91,7 +93,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
 #endif
     Point UpInflectionC;
     //当左右拐点存在,并且两个拐点要在图像下半部分
-    if(DownInflectionL.X!=0 && DownInflectionL.Y>60 && DownInflectionR.X!=0 && DownInflectionR.Y>60)
+    if(DownInflectionL.X!=0 && DownInflectionR.X!=0 && BinaryImage[MT9V03X_H-5][5]==IMAGE_BLACK && BinaryImage[MT9V03X_H-5][MT9V03X_W-5]==IMAGE_BLACK)
     {
         //取消这个左右拐点行数的判断，增加运算速率
         if(abs((DownInflectionL.Y-DownInflectionR.Y))<40)//左右两个拐点的行数小于30，才进行判断
@@ -100,14 +102,22 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
             {
                 FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
-                Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
+                if(UpInflectionC.Y<bias_endline)//上拐点在正常巡线前瞻的还要前面
+                {
+                    Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
+                }
+                else
+                {
+                    Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                }
+                gpio_set(LED_BLUE, 0);
                 return 1;//三个拐点存在三岔成立：正入三岔
             }
         }
         else
             return 0;
     }
-    else if(DownInflectionL.X==0 && DownInflectionR.X==0)//如果左右下拐点不存在并且下面一段出现就丢线的话的话,我们就去看存不存在正上的拐点
+    else if(DownInflectionL.X==0 && DownInflectionR.X==0 || (BinaryImage[MT9V03X_H-5][5]==IMAGE_WHITE && BinaryImage[MT9V03X_H-5][MT9V03X_W-5]==IMAGE_WHITE))//如果左右下拐点不存在并且下面一段出现就丢线的话的话,我们就去看存不存在正上的拐点
     {
         Point ImageDownPointL,ImageDownPointR;//以画面的左下角和右下角作为左右补线的点
         ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H,ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H;
@@ -117,36 +127,55 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             FillingLine('R',ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
             //在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
             //这一次是越过了三岔很接近冲出三岔的拐角，我们手动把补到的线计算出来的bias扩大
-            Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine)*1.5;
+            Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine)*1.2;
+            gpio_set(LED_GREEN, 0);
             return 1;//三岔正入丢失左右拐点那一帧
         }
     }
     //右边丢线超过60，左拐点存在，并且左拐点不能在上半平屏防止误判
-    else if(LostNum_RightLine>=60 && DownInflectionL.X!=0 && DownInflectionL.Y>60)
+    else if(LostNum_RightLine>55 && DownInflectionL.X!=0 && DownInflectionL.Y>60)
     {
         Point ImageDownPointR;//以左拐点对称的点去补线和找拐点
         //给自己设定的右拐点去找上拐点
 //        ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.YDownInflectionL.Y=DownInflectionL.Y;
-        ImageDownPointR.X=DownInflectionL.X+FORK_INFLECTION_WIDTH+DownInflectionL.Y/10,ImageDownPointR.Y=DownInflectionL.Y;//运用单边循迹法的思想给拐点，赛道宽度
+        //运用单边循迹法的思想给拐点，赛道宽度，左斜找上拐点右边的多往右一点
+        ImageDownPointR.X=DownInflectionL.X+(145-(119-DownInflectionL.Y)*1.1);ImageDownPointR.Y=DownInflectionL.Y;
         GetForkUpInflection(DownInflectionL, ImageDownPointR, &UpInflectionC);
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
             FillingLine('R',ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
-            Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
+            if(UpInflectionC.Y<bias_endline)//上拐点在正常巡线前瞻的还要前面
+            {
+                Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
+            }
+            else
+            {
+                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
+            }
+            gpio_set(LED_RED, 0);
             return 1;//三岔左斜入三岔
         }
     }
     //左边丢线超过60,右拐点存在,并且右拐点不能在上半平屏防止误判
-    else if(LostNum_LeftLine>=60 && DownInflectionR.X!=0 && DownInflectionR.Y>60)
+    else if(LostNum_LeftLine>55 && DownInflectionR.X!=0 && DownInflectionR.Y>60)
     {
         Point ImageDownPointL;//以左拐点对称的点去补线和找拐点
-        //与拐点行数做一个比例关系，越靠近底部了拐点宽度越大
-        ImageDownPointL.X=DownInflectionR.X-FORK_INFLECTION_WIDTH-DownInflectionL.X/10,ImageDownPointL.Y=DownInflectionR.Y;
+        //与拐点行数做一个比例关系，越靠近底部了拐点宽度越大.左斜多往左一点
+//        ImageDownPointL.X=DownInflectionR.X-(145-(119-DownInflectionL.Y)*1.1);ImageDownPointL.Y=DownInflectionR.Y;
+        ImageDownPointL.X=DownInflectionR.X-FORK_INFLECTION_WIDTH;ImageDownPointL.Y=DownInflectionR.Y;
         GetForkUpInflection(ImageDownPointL, DownInflectionR, &UpInflectionC);
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
             FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
-            Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
+            if(UpInflectionC.Y<bias_endline)//上拐点在正常巡线前瞻的还要前面
+            {
+                Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
+            }
+            else
+            {
+                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
+            }
+            gpio_set(LED_WHITE, 0);
             return 1;//三岔右斜入三岔
         }
     }
