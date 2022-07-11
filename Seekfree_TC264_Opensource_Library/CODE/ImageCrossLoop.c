@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include "SEEKFREE_18TFT.h"
 #include "ImageProcess.h"
+#include "Motor.h"
+#include "LED.h"
 
 /*
  *******************************************************************************************
@@ -203,7 +205,7 @@ uint8 CrossLoopEnd_L(Point InflectionL,Point InflectionR)
             if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
             {
                 uint8 EndX=0;
-                if(row>70)  //根据逼近边界程度来决定补线矫正程度
+                if(row>60)  //根据逼近边界程度来决定补线矫正程度
                 {
                     EndX=MT9V03X_W-1;
                 }
@@ -219,6 +221,7 @@ uint8 CrossLoopEnd_L(Point InflectionL,Point InflectionR)
                 EndPoint.X=EndX;
                 FillingLine('L', StartPoint, EndPoint);
                 Bias=DifferentBias(StartPoint.Y,EndPoint.Y,CentreLine);
+                CrossLoop_flag=1;   //内部求Bias
                 return 1;
             }
         }
@@ -239,6 +242,7 @@ uint8 CrossLoopEnd_L(Point InflectionL,Point InflectionR)
                 FillingLine('L', StartPoint, EndPoint);
                 flag=1; //连续补线标记
                 Bias=DifferentBias(StartPoint.Y,EndPoint.Y,CentreLine);
+                CrossLoop_flag=1;   //内部求Bias
                 return 1;
             }
         }
@@ -257,29 +261,26 @@ uint8 CrossLoopEnd_L(Point InflectionL,Point InflectionR)
  */
 uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    static uint8 flag,flag_end,num_1,num_2;
+    static uint8 flag,flag_in,flag_end;
 
     switch(flag)
     {
         case 0: //小车识别十字回环的入口，进行补线直行
         {
-            if(CrossLoopBegin_L(LeftLine, RightLine, InflectionL, InflectionR)==1)  //识别到回环入口，补线直行
+            if(CrossLoopBegin_L(LeftLine, RightLine, InflectionL, InflectionR)==1&&flag_in==0)  //第一次识别到回环入口
             {
-                if(num_1<100) //num限幅
+                StartIntegralAngle_Z(20);   //开启陀螺仪辅助入环
+                flag_in=1;                  //避免重复开启积分
+            }
+            if(flag_in==1)  //积分已开启，之前已识别到回环入口
+            {
+                if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
                 {
-                    num_1++;
+                    flag_in=0;flag=1;   //跳转到状态1
+                    break;
                 }
+                CrossLoopOverBegin_L(LeftLine, RightLine, InflectionL, InflectionR);    //未入环，补线直行
             }
-            else if(num_1>0) //没有识别到入口但之前有识别到，对应刚压过入口的情况
-            {
-                CrossLoopOverBegin_L(LeftLine, RightLine, InflectionL, InflectionR);    //第二次识别回环入口，补线直行
-                num_2++;
-            }
-//            if(num_2>/*某个阈值*/)  //代表已经进入回环
-//            {
-//                flag=1; //跳转到状态1
-//                break;
-//            }
             break;
         }
         case 1: //小车识别十字回环的出口，右转出环
@@ -287,15 +288,14 @@ uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point I
             if(CrossLoopEnd_L(InflectionL, InflectionR)==1&&flag_end==0)  //第一次检测到回环出口
             {
                 StartIntegralAngle_Z(70);   //开启积分
-                flag_end=1;
+                flag_end=1;                 //避免重复开启积分
             }
-            if(flag_end==1)  //积分已经开启
+            if(flag_end==1)  //积分已开启
             {
-                if(icm_angle_z_flag==1) //检测积分状态
+                if(icm_angle_z_flag==1) //陀螺仪识别到已经出环
                 {
-                    flag_end=0;flag=2; //跳转到状态2
+                    flag_end=0;flag=2;  //跳转到未知状态，作废
                     return 1;
-                    break;
                 }
             }
             break;
