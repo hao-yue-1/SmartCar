@@ -27,29 +27,47 @@
  */
 uint8 CircleIslandBegin_L(int *LeftLine,int *RightLine)
 {
-    if(BinaryImage[115][5]==IMAGE_BLACK)    //防止提前拐入环岛
-    {
-        return 0;
-    }
-    //环岛入口在左边
-    if(LostNum_LeftLine>C_LOSTLINE)   //左边丢线：环岛入口在左边
+    static uint8 flag=0;  //连续补线flag，依赖于第一次补线判断
+
+    if(flag==1) //已经补过线，避免不可预知干扰打断补线
     {
         for(int row=MT9V03X_H;row-1>0;row--)  //从下往上检查左边界线
         {
             if(LeftLine[row]==0&&LeftLine[row-1]!=0)    //该行丢线而下一行不丢线
             {
-                //下面这个防止进入环岛后误判
-                for(int column=0;column+1<MT9V03X_W-1;column++) //向右扫
+                Point StarPoint,EndPoint;   //定义补线的起点和终点
+                EndPoint.Y=row;             //终点赋值
+                EndPoint.X=LeftLine[row];
+                StarPoint.Y=MT9V03X_H-1;    //起点赋值
+                StarPoint.X=MT9V03X_W-1;
+                FillingLine('R',StarPoint,EndPoint);    //补线
+                return 1;
+            }
+        }
+        //若在上面的for循环中没有发现，下面实施补救
+    }
+    else if(BinaryImage[115][5]!=IMAGE_BLACK)   //补线约束条件
+    {
+        if(LostNum_LeftLine>C_LOSTLINE)   //左边丢线：环岛入口在左边
+        {
+            for(int row=MT9V03X_H;row-1>0;row--)  //从下往上检查左边界线
+            {
+                if(LeftLine[row]==0&&LeftLine[row-1]!=0)    //该行丢线而下一行不丢线
                 {
-                    if(BinaryImage[10][column]!=BinaryImage[10][column+1])
+                    //下面这个防止进入环岛后误判
+                    for(int column=0;column+1<MT9V03X_W-1;column++) //向右扫
                     {
-                        Point StarPoint,EndPoint;   //定义补线的起点和终点
-                        EndPoint.Y=row;             //终点赋值
-                        EndPoint.X=LeftLine[row];
-                        StarPoint.Y=MT9V03X_H-1;    //起点赋值
-                        StarPoint.X=MT9V03X_W-1;
-                        FillingLine('R',StarPoint,EndPoint);    //补线
-                        return 1;
+                        if(BinaryImage[10][column]!=BinaryImage[10][column+1])
+                        {
+                            Point StarPoint,EndPoint;   //定义补线的起点和终点
+                            EndPoint.Y=row;             //终点赋值
+                            EndPoint.X=LeftLine[row];
+                            StarPoint.Y=MT9V03X_H-1;    //起点赋值
+                            StarPoint.X=MT9V03X_W-1;
+                            FillingLine('R',StarPoint,EndPoint);    //补线
+                            flag=1; //连续补线标记
+                            return 1;
+                        }
                     }
                 }
             }
@@ -314,32 +332,33 @@ return 0;
  */
 uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
 {
-    if(LostNum_LeftLine<35)    //左边丢线小于
+    /*两种情况：1.正常的左下角是黑色，而在进入中部前绝对不会有，所以这个单独作为一个条件可行
+     *          2.当车子在很靠左的地方时，左下角是白色的，而且和未进入中部的图像很相似；这里的唯一的区别在于右边黑洞部分的高度不同
+     *            通过识别黑白跳变点来确定黑洞高度，从而确定是哪种情况*/
+
+    if(BinaryImage[MT9V03X_H-1][0]==IMAGE_BLACK)    //经验位置为黑
     {
-        if(BinaryImage[100][10]==IMAGE_BLACK)    //经验位置为黑
+        //下面这个for防止在环岛出口时误判为环岛中部
+        for(uint8 row=MT9V03X_H/2;row+1<MT9V03X_H-1;row++) //向下扫
         {
-            //下面这个for防止在环岛出口时误判为环岛中部
-            for(uint8 row=MT9V03X_H/2;row+1<MT9V03X_H-1;row++) //向下扫
+            if(LeftLine[row]==0&&LeftLine[row+1]!=0)    //丢线-不丢线
             {
-                if(LeftLine[row]==0&&LeftLine[row+1]!=0)    //丢线-不丢线
-                {
-                    return 0;
-                }
+                return 0;
             }
-            //判断环岛中部的依据
-            for(uint8 row=60;row-1>0;row--)  //向上扫
+        }
+        //判断环岛中部的依据
+        for(uint8 row=60;row-1>0;row--)  //向上扫
+        {
+            if(LeftLine[row]!=0&&LeftLine[row-1]==0)    //不丢线-丢线
             {
-                if(LeftLine[row]!=0&&LeftLine[row-1]==0)    //不丢线-丢线
+                for(;row-1>0;row--)    //继续向上扫
                 {
-                    for(;row-1>0;row--)    //继续向上扫
+                    if(LeftLine[row]==0&&LeftLine[row-1]!=0)    //丢线-不丢线
                     {
-                        if(LeftLine[row]==0&&LeftLine[row-1]!=0)    //丢线-不丢线
-                        {
-                            return 1;
-                        }
+                        return 1;
                     }
-                    break;
                 }
+                break;
             }
         }
     }
@@ -382,54 +401,46 @@ uint8 CircleIslandInside_L(void)
  */
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    static uint8 flag,num_1,num_2,flag_begin,flag_last_begin,flag_last2_begin,flag_end,flag_in;
+    static uint8 flag,flag_exit,flag_in,flag_begin,flag_last_begin,flag_last2_begin,flag_end;
     switch(flag)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
-            if(CircleIslandExit_L(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别环岛出口，补线直行
+            if(flag_exit==0)    //还未识别到环岛出口
             {
-                if(num_1<100)   //限幅
+                if(CircleIslandExit_L(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别到环岛出口部分路段
                 {
-                    num_1++;    //识别到flag1的帧数++
-                    printf("num_1=%d\r\n",num_1);
+                    flag_exit=1;
                 }
             }
-            if(CircleIslandMid_L(LeftLine, RightLine)==1)    //识别到环岛中部
+            if(flag_exit==1)   //之前已识别到环岛出口
             {
-                if(num_1>0) //在此之前有识别到环岛出口
+                if(CircleIslandMid_L(LeftLine, RightLine)==1)   //识别到环岛中部
                 {
-                    num_1=0;flag=1; //跳转到状态1
-                    printf("to 1\r\n");
+                    flag_exit=0;flag=1; //跳转到状态1
+                    gpio_set(LED_GREEN, 0);
                     break;
                 }
-            }
-            if(num_1>0)   //没有识别到出口，应对刚压过出口的情况，也需要补线，优先级最低
-            {
                 CircleIslandOverExit_L(LeftLine, RightLine);    //第二次识别环岛出口，补线直行
             }
             break;
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
-            if(CircleIslandBegin_L(LeftLine, RightLine)==1) //识别到环岛入口
+            if(CircleIslandBegin_L(LeftLine, RightLine)==1&&flag_in==0) //识别到环岛入口
             {
-                if(num_1<100)   //限幅
-                {
-                    num_1++;    //识别到环岛入口的帧数++
-                    printf("num_1=%d\r\n",num_1);
-                }
-                if(flag_in==0)  //避免重复开启陀螺仪
-                {
-                    StartIntegralAngle_Z(20);   //开启陀螺仪辅助入环
-                    flag_in=1;
-                }
+                StartIntegralAngle_Z(20);   //开启陀螺仪辅助入环
+                flag_in=1;                  //避免重复开启陀螺仪
+                gpio_set(LED_WHITE, 0);
             }
-            if(icm_angle_z_flag==1) //陀螺仪判断入环
+            if(flag_in==1)  //之前已经识别到环岛入口
             {
-                num_1=0;num_2=0;flag=2; //跳转到状态2
-                printf("to 2\r\n");
-                break;
+                if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
+                {
+                    flag_in=0;flag=2;   //跳转到状态2
+                    gpio_set(LED_YELLOW,0);
+                    break;
+                }
             }
             break;
         }
@@ -437,8 +448,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
         {
             if(CircleIslandEnd_L(InflectionL, InflectionR)==1&&flag_end==0)  //第一次检测到环岛出口
             {
-                /*关于积分重复开启问题，由于flag_end的存在，积分只会开启一次；而CircleIslandEnd_L则会多次执行进行补线；
-                  这里的逻辑看起来不够直观清晰，但是没有错误*/
                 StartIntegralAngle_Z(70);   //开启积分
                 flag_end=1;
             }
@@ -447,7 +456,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                 if(icm_angle_z_flag==1) //检测积分状态
                 {
                     flag_end=0;flag=3; //跳转到状态3
-                    printf("to 3\r\n");
                     break;
                 }
             }
@@ -459,7 +467,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
             if(flag_begin==0&&flag_last_begin==0&&flag_last2_begin==1)   //上上次识别到环岛入口而这两次都没有识别到环岛入口
             {
                 flag=4;     //跳转到未知状态，状态机作废
-                printf("to 4\r\n");
                 return 1;   //退出状态机
             }
             flag_last2_begin=flag_last_begin;   //保存上上次的状态
