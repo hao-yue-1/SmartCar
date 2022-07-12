@@ -10,6 +10,7 @@
 #include "PID.h"
 #include <stdlib.h> //abs函数，fabs在math.h
 #include "LED.h"
+#include "zf_gpio.h"
 
 #define L_FINDWHIDE_THRE  10 //Y拐点中间找左边白色区域停止的阈值
 #define R_FINDWHIDE_THRE  150//Y拐点中间找右边白色区域停止的阈值
@@ -93,7 +94,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
 #endif
     Point UpInflectionC;
     //当左右拐点存在,并且两个拐点要在图像下半部分
-    if(DownInflectionL.X!=0 && DownInflectionR.X!=0 && BinaryImage[MT9V03X_H-5][5]==IMAGE_BLACK && BinaryImage[MT9V03X_H-5][MT9V03X_W-5]==IMAGE_BLACK)
+    if(DownInflectionL.X!=0 && DownInflectionR.X!=0 && BinaryImage[MT9V03X_H-3][3]==IMAGE_BLACK && BinaryImage[MT9V03X_H-3][MT9V03X_W-3]==IMAGE_BLACK)
     {
         //取消这个左右拐点行数的判断，增加运算速率
         if(abs((DownInflectionL.Y-DownInflectionR.Y))<40)//左右两个拐点的行数小于30，才进行判断
@@ -117,7 +118,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         else
             return 0;
     }
-    else if(DownInflectionL.X==0 && DownInflectionR.X==0 || (BinaryImage[MT9V03X_H-5][5]==IMAGE_WHITE && BinaryImage[MT9V03X_H-5][MT9V03X_W-5]==IMAGE_WHITE))//如果左右下拐点不存在并且下面一段出现就丢线的话的话,我们就去看存不存在正上的拐点
+    else if((DownInflectionL.X==0 && DownInflectionR.X==0) || (BinaryImage[MT9V03X_H-5][5]==IMAGE_WHITE && BinaryImage[MT9V03X_H-5][MT9V03X_W-5]==IMAGE_WHITE))//如果左右下拐点不存在并且下面一段出现就丢线的话的话,我们就去看存不存在正上的拐点
     {
         Point ImageDownPointL,ImageDownPointR;//以画面的左下角和右下角作为左右补线的点
         ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H,ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H;
