@@ -422,11 +422,32 @@ return 0;
 uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
 {
     uint8 flag=0;  //环岛中部约束条件
-    if(BinaryImage[MT9V03X_H-1][0]==IMAGE_BLACK||BinaryImage[MT9V03X_H-2][1]==IMAGE_BLACK)    //正常情况，左下为黑
+    if(BinaryImage[MT9V03X_H-1][0]==IMAGE_BLACK||BinaryImage[MT9V03X_H-3][2]==IMAGE_BLACK)    //正常情况，左下为黑
     {
-        flag=1; //符合约束条件
+        flag=1;
+        //下面的程序防止在Exit处误判
+        for(uint8 row=MT9V03X_H-1;row-1>0;row--)
+        {
+            if(BinaryImage[row][1]==IMAGE_BLACK&&BinaryImage[row-1][1]==IMAGE_WHITE)    //黑-白
+            {
+                for(;row-1>0;row--) //继续向上扫
+                {
+                    if(BinaryImage[row][1]==IMAGE_WHITE&&BinaryImage[row-1][1]==IMAGE_BLACK)    //白-黑
+                    {
+                        for(;row-1>0;row--) //继续向上扫
+                        {
+                            if(BinaryImage[row][1]==IMAGE_BLACK&&BinaryImage[row-1][1]==IMAGE_WHITE)    //黑-白
+                            {
+                                flag=0; //不符合约束条件
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+        }
     }
-    else    //判断是否满足车子靠右的情况
+    else    //判断是否满足车子靠右的情况（左边有一个接近正中间的，极小的黑洞）
     {
         for(uint8 row=MT9V03X_H-1;row-1>0;row--)  //向上扫
         {
@@ -434,7 +455,28 @@ uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
             {
                 if(row>80)  //黑洞下边界位于图像底部三分之一处
                 {
-                    flag=1; //符合约束条件
+                    uint8 row_low=row;  //记录黑洞下边界
+                    for(;row-1>0;row--)   //继续向上扫
+                    {
+                        if(LeftLine[row]!=0&&LeftLine[row-1]==0)    //不丢线-丢线（黑洞上边界）
+                        {
+                            row=(row+row_low)/2;    //计算出黑洞中点
+                            for(uint8 column=0;column+1<MT9V03X_W-1;column++)   //向右扫，黑洞中点
+                            {
+                                if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column+1]==IMAGE_WHITE)  //黑-白（黑洞右边界）
+                                {
+                                    if(column<MT9V03X_W/4)  //黑洞右边界位于图像左部
+                                    {
+                                        lcd_showuint8(0, 1, column);
+                                        lcd_showuint8(0, 2, row);
+                                        flag=1; //符合约束条件
+                                    }
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
                 }
                 break;
             }
@@ -443,29 +485,7 @@ uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
     //满足约束条件下的进一步判断
     if(flag==1)
     {
-        //下面这个for防止在环岛出口时误判为环岛中部
-        for(uint8 row=MT9V03X_H/2;row+1<MT9V03X_H-1;row++) //向下扫
-        {
-            if(LeftLine[row]==0&&LeftLine[row+1]!=0)    //丢线-不丢线
-            {
-                return 0;
-            }
-        }
-        //判断环岛中部的依据
-        for(uint8 row=60;row-1>0;row--)  //向上扫
-        {
-            if(LeftLine[row]!=0&&LeftLine[row-1]==0)    //不丢线-丢线
-            {
-                for(;row-1>0;row--)    //继续向上扫
-                {
-                    if(LeftLine[row]==0&&LeftLine[row-1]!=0)    //丢线-不丢线
-                    {
-                        return 1;
-                    }
-                }
-                break;
-            }
-        }
+        lcd_showuint8(0, 0, 0);
     }
     return 0;
 }
@@ -506,27 +526,28 @@ uint8 CircleIslandInside_L(void)
  */
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    static uint8 flag=1,flag_exit,flag_in,flag_begin,flag_last_begin,flag_last2_begin,flag_end;
+    static uint8 flag=0,flag_exit,flag_in,flag_begin,flag_last_begin,flag_last2_begin,flag_end;
     switch(flag)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
-            if(flag_exit==0)    //还未识别到环岛出口
-            {
-                if(CircleIslandExit_L(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别到环岛出口部分路段
-                {
-                    flag_exit=1;
-                }
-            }
-            if(flag_exit==1)   //之前已识别到环岛出口
+            if(flag_exit==1)        //之前已识别到环岛出口
             {
                 if(CircleIslandMid_L(LeftLine, RightLine)==1)   //识别到环岛中部
                 {
                     flag_exit=0;flag=1; //跳转到状态1
                     gpio_set(LED_GREEN, 0);
+                    Stop();
                     break;
                 }
                 CircleIslandOverExit_L(LeftLine, RightLine);    //第二次识别环岛出口，补线直行
+            }
+            else if(flag_exit==0)    //还未识别到环岛出口
+            {
+                if(CircleIslandExit_L(LeftLine, RightLine, InflectionL, InflectionR)==1)    //识别到环岛出口部分路段
+                {
+                    flag_exit=1;
+                }
             }
             break;
         }
