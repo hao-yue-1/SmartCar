@@ -243,18 +243,24 @@ void Unilaterally_Plan_CenterLine(int startline,int endline)
         //×ó±ß¶ªÏßÓÒ±ß²»¶ª
         if(LeftLine[row]==0 && RightLine[row]!=MT9V03X_W-1)
         {
-            CentreLine[row]=RightLine[row]-(135-(119+row)*1.1)/2;
-            if(CentreLine[row]<0) CentreLine[row]=0;
-            else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
-//            lcd_drawpoint(test, row, PURPLE);
+//            CentreLine[row]=RightLine[row]-(137-(119-row)*1.1)/2;
+//            if(CentreLine[row]<0) CentreLine[row]=0;
+//            else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
+            test=RightLine[row]-(137-(119-row)*1.1)/2;
+            if(test<0) test=0;
+            else if(test>MT9V03X_W-1) test=MT9V03X_W-1;
+            lcd_drawpoint(test, row, PURPLE);
         }
         //ÓÒ±ß¶ªÏß×ó±ß²»¶ª
         else if(LeftLine[row]!=0 && RightLine[row]==MT9V03X_W-1)
         {
-            CentreLine[row]=LeftLine[row]+(135-(119-row)*1.1)/2;
-            if(CentreLine[row]<0) CentreLine[row]=0;
-            else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
-//            lcd_drawpoint(test, row, PURPLE);
+//            CentreLine[row]=LeftLine[row]+(137-(119-row)*1.1)/2;
+//            if(CentreLine[row]<0) CentreLine[row]=0;
+//            else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
+              test=LeftLine[row]+(137-(119-row)*1.1)/2;
+              if(test<0) test=0;
+              else if(test>MT9V03X_W-1) test=MT9V03X_W-1;
+              lcd_drawpoint(test, row, PURPLE);
         }
     }
 }

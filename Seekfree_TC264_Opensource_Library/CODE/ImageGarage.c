@@ -4,7 +4,7 @@
  * Author: 30516
  * Effect: 存放车库相关的源代码
  * *右边不入库：200 入库：170
- * 左边不入库：230（从三岔的直角弯发车）240：从过了直角弯发车 入库：180但是感觉停不下来
+ * 左边不入库：230（从三岔的直角弯发车）250：从过了直角弯发车 入库：180但是感觉停不下来
  */
 
 #include "ImageSpecial.h"
@@ -17,7 +17,9 @@
 
 #define GARAGE_IDENTIFY_MODE 0    //哪种模式找上拐点
 #define IN_L_GARAGE_ANGLE   50  //入左库开启陀螺仪积分的目标角度
-#define IN_R_GARAGE_ANGLE   60  //入右库开启陀螺仪积分的目标角度
+#define IN_R_GARAGE_ANGLE   50  //入右库开启陀螺仪积分的目标角度
+#define L_GARAGE_LOSTLLINE_THR 30   //左边车库开启索贝尔的左边丢线阈值
+#define R_GARAGE_LOSTRLINE_THR 45   //右边车库开启索贝尔的右边丢线阈值
 #define GARAGE_DEBUG    0       //是否需要开启车库的DEBUG
 #define GARAGE_LED_DEBUG 1
 
@@ -189,7 +191,7 @@ uint8 GarageLStatusIdentify(char Choose,Point InflectionL,Point InflectionR,uint
         case 0:
         {
 //            lcd_showuint8(0, 1, LostNum_LeftLine);
-            if(LostNum_LeftLine>30)
+            if(LostNum_LeftLine>L_GARAGE_LOSTLLINE_THR)
             {
                 SobelResult=SobelTest();
 //            lcd_showint32(0, 0, SobelResult, 5);
@@ -275,10 +277,10 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
     UpInflection.X=0,UpInflection.Y=0;//初始化为0
     uint8 NoInflectionLFlag=0;//左库左拐点不存在的标志变量，用于选取哪种补线方式
 
-    /**********************debug************************/
-//    lcd_showint32(TFT_X_MAX-50, 0, InflectionL.X, 3);
-//    lcd_showint32(TFT_X_MAX-50, 1, InflectionR.X, 3);
-    /***************************************************/
+#if GARAGE_DEBUG
+    lcd_showint32(TFT_X_MAX-50, 0, InflectionL.X, 3);
+    lcd_showint32(TFT_X_MAX-50, 1, InflectionR.X, 3);
+#endif
 
 #if GARAGEIDENTIFYMODE
     //此处使用遍历数组找上拐点的方法
@@ -298,15 +300,8 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
     //此处使用直角黑白跳变找上拐点法
     //如果是在斑马线路段了并且右拐点不存在,或者左右拐点之间的横坐标差太多，因为扫线的混乱拐点可能出现在斑马线中间
     //并且右拐点那行的图像最右边-5要是黑点
-    /**********************debug************************/
-//    lcd_showuint8(30, 1, BinaryImage[InflectionR.Y+5][MT9V03X_W-1]);
-    /***************************************************/
     if(InflectionR.X==0 || InflectionR.X<MT9V03X_W/2 || BinaryImage[InflectionR.Y+5][MT9V03X_W-5]==IMAGE_WHITE)
     {
-        /**********************debug************************/
-//        lcd_showint32(0, 0, BinaryImage[MT9V03X_H/2+10][3], 3);
-//        gpio_toggle(LED_BLUE);
-        /***************************************************/
         //中间右边的的点去找上拐点,此处不随机播种，而是让它一定要找到白点作为找上拐点的种子
         for(int row=MT9V03X_H/2+15;row<MT9V03X_H;row++)
         {
@@ -413,7 +408,7 @@ uint8 GarageROStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
         case 0:
         {
             gpio_set(LED_BLUE, 0);
-            if(LostNum_RightLine>25)
+            if(LostNum_RightLine>R_GARAGE_LOSTRLINE_THR)
             {
                 SobelResult=SobelTest();
             }
@@ -474,13 +469,13 @@ uint8 GarageRIStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
         //第一个状态Sobel检测，通过了再开启识别函数
         case 0:
         {
-//            gpio_set(LED_BLUE, 0);
-            if(LostNum_RightLine>25)
+            if(LostNum_RightLine>R_GARAGE_LOSTRLINE_THR)
             {
                 SobelResult=SobelTest();
             }
             if(SobelResult>ZebraTresholeR)
             {
+                base_speed=100;//提前降速防止MCU复位
                 StatusChange=1;
                 break;
             }
@@ -488,7 +483,6 @@ uint8 GarageRIStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
         }
         case 1:
         {
-//            gpio_set(LED_GREEN, 0);
             //开启陀螺仪积分判定是否入库成功
             StartIntegralAngle_Z(IN_R_GARAGE_ANGLE);
             StatusChange=2;
@@ -507,6 +501,10 @@ uint8 GarageRIStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
             //检测是否入库成功，入库成功停车
             if(icm_angle_z_flag==1)
             {
+                while(1)
+                {
+                    base_speed=0;
+                }
                 return 1;
             }
             break;
