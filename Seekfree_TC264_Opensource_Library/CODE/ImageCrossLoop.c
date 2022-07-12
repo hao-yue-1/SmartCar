@@ -319,59 +319,61 @@ uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point I
 uint8 CrossLoopBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
     if(InflectionR.X!=0&&InflectionR.Y!=0&&InflectionL.X==0&&InflectionL.Y==0)    //存在右拐点且不存在左拐点
-   {
-       uint8 row_up=0;
-       for(uint8 row=InflectionR.Y+2,column=InflectionR.X+2;row-1>0;row--)  //左拐点往上扫
-       {
-           if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)  //黑-白
-           {
-               for(;row-1>0;row--)   //继续向上扫
-               {
-                   if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
-                   {
-                       row_up=row; //保存补线的终点Y坐标
-                       for(;row-1>0;row--)   //继续向上扫
-                       {
-                           if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)  //黑-白
-                           {
-                               for(;row-1;row--)   //继续向上扫
-                               {
-                                   if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
-                                   {
-                                       for(row_up-=5;column>0;column--) //向左扫
-                                       {
-                                           if(BinaryImage[row_up][column]==IMAGE_WHITE)
-                                           {
-                                               Point end;
-                                               end.Y=row_up;
-                                               end.X=column;
-                                               FillingLine('R', InflectionR, end); //补线
-                                               return 1;
-                                           }
-                                       }
-                                       break;
-                                   }
-                               }
-                               break;
-                           }
-                       }
-                       break;
-                   }
-               }
-               break;
-           }
-       }
-   }
-   if(LostNum_RightLine>70&&LostNum_LeftLine<35)   //无拐点但左右丢线符合
-   {
-       float left_bias=0;
-       left_bias=Regression_Slope(110, 60, LeftLine);    //求左边线斜率
-       if(fabsf(left_bias)>0.6)   //防止进环后的误判
-       {
+    {
+        //判断依据：黑-白-黑-白-黑
+        uint8 row_up=0;
+        for(uint8 row=InflectionR.Y+2,column=InflectionR.X+2;row-1>0;row--)  //右拐点往上扫
+        {
+            if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)  //黑-白
+            {
+                for(;row-1>0;row--)   //继续向上扫
+                {
+                    if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+                    {
+                    row_up=row; //保存补线的终点Y坐标
+                    for(;row-1>0;row--)   //继续向上扫
+                    {
+                        if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)  //黑-白
+                        {
+                            for(;row-1;row--)   //继续向上扫
+                            {
+                                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+                                {
+                                    for(row_up-=5;column>0;column--) //向左扫
+                                    {
+                                        if(BinaryImage[row_up][column]==IMAGE_WHITE)
+                                        {
+                                            Point end;
+                                            end.Y=row_up;
+                                            end.X=column;
+                                            FillingLine('R', InflectionR, end); //补线
+                                            return 1;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    else if(LostNum_RightLine>70&&LostNum_LeftLine<35)   //无拐点但左右丢线符合
+    {
+        float left_bias=0;
+        left_bias=Regression_Slope(110, 60, LeftLine);    //求左边线斜率
+        if(fabsf(left_bias)>0.6)   //防止进环后的误判
+        {
            return 0;
-       }
-       for(uint8 row=0;row<MT9V03X_H-1;row++)  //向下扫
-       {
+        }
+        //判断依据：黑-白-黑-白
+        for(uint8 row=0;row<MT9V03X_H-1;row++)  //向下扫
+        {
            if(BinaryImage[row][140]==IMAGE_BLACK&&BinaryImage[row+1][140]==IMAGE_WHITE)  //黑-白
            {
                for(;row<MT9V03X_H-1;row++) //继续向下扫
@@ -385,14 +387,14 @@ uint8 CrossLoopBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
                                //寻找补线点
                                for(uint8 row=100;row-1>0;row--)    //向上扫
                                {
-                                   if(RightLine[row]==0&&RightLine[row-1]!=0)
+                                   if(RightLine[row]==MT9V03X_W-1&&RightLine[row-1]!=MT9V03X_W-1)   //丢线-不丢线
                                    {
                                        if(row-5>0)
                                        {
                                            row-=5;
                                        }
                                        Point start,end;
-                                       start.Y=119;
+                                       start.Y=MT9V03X_H-1; //起点：终点对应列底部
                                        start.X=RightLine[row];
                                        end.Y=row;
                                        end.X=RightLine[row]-1;  //不能补垂直的线，稍作偏移
@@ -408,8 +410,8 @@ uint8 CrossLoopBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
                }
                break;
            }
-       }
-   }
+        }
+    }
    return 0;
 }
 
@@ -434,17 +436,17 @@ uint8 CrossLoopOverBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point 
         {
             if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
             {
-                uint8 row_f=row;
+                uint8 row_f=row;    //黑洞底部
                 for(;row-1>0;row--)
                 {
                     if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)
                     {
-                        uint8 row_s=row;
+                        uint8 row_s=row;    //黑洞顶部
                         for(;row-1>0;row--)
                         {
                             if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
                             {
-                                row=(row_f+row_s)/2;
+                                row=(row_f+row_s)/2;    //补线终点Y坐标
                                 for(;column-1>0;column--)   //向左扫
                                 {
                                     if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column-1]==IMAGE_WHITE)
@@ -453,9 +455,9 @@ uint8 CrossLoopOverBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point 
                                         Point end,start;
                                         end.Y=row;
                                         end.X=column;
-                                        start.Y=MT9V03X_H-2;    //起点为右下角
+                                        start.Y=MT9V03X_H-2;    //起点：右下角
                                         start.X=MT9V03X_W-2;
-                                        FillingLine('L', start, end);   //补线
+                                        FillingLine('R', start, end);   //补线
                                         return 1;
                                     }
                                 }
