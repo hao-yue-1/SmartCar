@@ -422,11 +422,11 @@ return 0;
 uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
 {
     uint8 flag=0;  //环岛中部约束条件
-    if(BinaryImage[MT9V03X_H-1][0]==IMAGE_BLACK||BinaryImage[MT9V03X_H-3][2]==IMAGE_BLACK)    //正常情况，左下为黑
+    if(BinaryImage[MT9V03X_H-5][4]==IMAGE_BLACK||BinaryImage[MT9V03X_H-3][2]==IMAGE_BLACK)    //正常情况，左下为黑
     {
         flag=1; //符合约束条件
         //下面的程序防止在Exit处误判：误判了圆环与直角交界处的黑块，上面有一个黑洞
-        uint8 column=1,row=MT9V03X_H-2,flag_1=0;    //寻找黑洞所在X坐标
+        uint8 column=2,row=MT9V03X_H-3,flag_1=0;    //寻找黑洞所在X坐标
         while(column+1<MT9V03X_W-1&&row-1>0)
         {
             if(BinaryImage[row][column+1]==IMAGE_BLACK)    //右黑
@@ -446,6 +446,12 @@ uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
             }
             break;
         }
+
+//        for(uint8 i=MT9V03X_H-1;i>0;i--)
+//        {
+//            lcd_drawpoint(column, i, RED);
+//        }
+
         for(;row-1>0;row--)    //向上扫，左边界
         {
             if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)    //黑-白
@@ -480,7 +486,7 @@ uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
                     if(BinaryImage[row][1]==IMAGE_BLACK&&BinaryImage[row-1][1]==IMAGE_WHITE)    //黑-白（黑洞上边界）
                     {
                         row=(row+row_low)/2;    //计算出黑洞中点Y坐标
-                        if(row>40&&row<80)      //黑洞位于中间位置
+                        if(row>50&&row<70)      //黑洞位于中间位置
                         {
                             for(uint8 column=0;column+1<MT9V03X_W-1;column++)   //向右扫，黑洞中点
                             {
@@ -488,6 +494,7 @@ uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
                                 {
                                     if(column<MT9V03X_W/4)  //黑洞右边界位于图像左部
                                     {
+                                        lcd_showuint8(0, 1, 1);
                                         flag=1; //符合约束条件
                                     }
                                     break;
@@ -537,7 +544,6 @@ uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
     //满足约束条件下的进一步判断
     if(flag==1)
     {
-        lcd_showuint8(0, 0, 0);
         return 1;
     }
     return 0;
@@ -579,7 +585,7 @@ uint8 CircleIslandInside_L(void)
  */
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    static uint8 flag=0,flag_exit,flag_in,flag_begin,flag_last_begin,flag_last2_begin,flag_end;
+    static uint8 flag,flag_exit,flag_in,flag_begin,flag_last_begin,flag_last2_begin,flag_end;
     switch(flag)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
@@ -590,7 +596,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
                 {
                     flag_exit=0;flag=1; //跳转到状态1
                     gpio_set(LED_GREEN, 0);
-                    Stop();
                     break;
                 }
                 CircleIslandOverExit_L(LeftLine, RightLine);    //第二次识别环岛出口，补线直行
