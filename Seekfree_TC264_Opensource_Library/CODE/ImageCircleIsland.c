@@ -425,18 +425,26 @@ uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
     if(BinaryImage[MT9V03X_H-1][0]==IMAGE_BLACK||BinaryImage[MT9V03X_H-3][2]==IMAGE_BLACK)    //正常情况，左下为黑
     {
         flag=1;
-        //下面的程序防止在Exit处误判
-        for(uint8 row=MT9V03X_H-1;row-1>0;row--)
+        //下面的程序防止在Exit处误判：误判了圆环与直角交界处的黑块，上面有一个黑洞
+        uint8 column=1; //寻找黑洞所在X左标
+        for(;column+1<MT9V03X_W-1;column++) //向右扫，底部
         {
-            if(BinaryImage[row][1]==IMAGE_BLACK&&BinaryImage[row-1][1]==IMAGE_WHITE)    //黑-白
+            if(BinaryImage[MT9V03X_H-2][column+1]==IMAGE_WHITE) //白
+            {
+                break;
+            }
+        }
+        for(uint8 row=MT9V03X_H-1;row-1>0;row--)    //向上扫，左边界
+        {
+            if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)    //黑-白
             {
                 for(;row-1>0;row--) //继续向上扫
                 {
-                    if(BinaryImage[row][1]==IMAGE_WHITE&&BinaryImage[row-1][1]==IMAGE_BLACK)    //白-黑
+                    if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)    //白-黑
                     {
                         for(;row-1>0;row--) //继续向上扫
                         {
-                            if(BinaryImage[row][1]==IMAGE_BLACK&&BinaryImage[row-1][1]==IMAGE_WHITE)    //黑-白
+                            if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)    //黑-白
                             {
                                 flag=0; //不符合约束条件
                             }
@@ -449,27 +457,59 @@ uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
     }
     else    //判断是否满足车子靠右的情况（左边有一个接近正中间的，极小的黑洞）
     {
-        for(uint8 row=MT9V03X_H-1;row-1>0;row--)  //向上扫
+        uint8 row=MT9V03X_H-1;
+        for(;row-1>0;row--)  //向上扫，左边界
         {
-            if(LeftLine[row]==0&&LeftLine[row-1]!=0)    //丢线-不丢线（黑洞下边界）
+            if(BinaryImage[row][1]==IMAGE_WHITE&&BinaryImage[row-1][1]==IMAGE_BLACK)    //白-黑（黑洞下边界）
             {
-                if(row>80)  //黑洞下边界位于图像底部三分之一处
+                uint8 row_low=row;  //记录黑洞下边界
+                for(;row-1>0;row--)   //继续向上扫
                 {
-                    uint8 row_low=row;  //记录黑洞下边界
-                    for(;row-1>0;row--)   //继续向上扫
+                    if(BinaryImage[row][1]==IMAGE_BLACK&&BinaryImage[row-1][1]==IMAGE_WHITE)    //黑-白（黑洞上边界）
                     {
-                        if(LeftLine[row]!=0&&LeftLine[row-1]==0)    //不丢线-丢线（黑洞上边界）
+                        row=(row+row_low)/2;    //计算出黑洞中点Y坐标
+                        if(row>40&&row<80)      //黑洞位于中间位置
                         {
-                            row=(row+row_low)/2;    //计算出黑洞中点
                             for(uint8 column=0;column+1<MT9V03X_W-1;column++)   //向右扫，黑洞中点
                             {
                                 if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column+1]==IMAGE_WHITE)  //黑-白（黑洞右边界）
                                 {
                                     if(column<MT9V03X_W/4)  //黑洞右边界位于图像左部
                                     {
-                                        lcd_showuint8(0, 1, column);
-                                        lcd_showuint8(0, 2, row);
                                         flag=1; //符合约束条件
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        //下面的程序防止在Exit处误判：将圆环与直道交界处误判为黑洞，上面还有一个真正的黑洞
+        if(flag==1) //上面条件成立的情况下作以下约束
+        {
+            for(;row-1>0;row--) //黑洞中点处向上扫，左边界
+            {
+                if(BinaryImage[row][1]==IMAGE_BLACK&&BinaryImage[row-1][1]==IMAGE_WHITE)    //黑-白
+                {
+                    for(;row-1>0;row--) //继续向上扫
+                    {
+                        if(BinaryImage[row][1]==IMAGE_WHITE&&BinaryImage[row-1][1]==IMAGE_BLACK)    //白-黑
+                        {
+                            for(;row-1>0;row--) //继续向上扫
+                            {
+                                if(BinaryImage[row][1]==IMAGE_BLACK&&BinaryImage[row-1][1]==IMAGE_WHITE)    //黑-白
+                                {
+                                    for(;row-1>0;row--) //继续向上扫
+                                    {
+                                        if(BinaryImage[row][1]==IMAGE_WHITE&&BinaryImage[row-1][1]==IMAGE_BLACK)    //白-黑
+                                        {
+                                            flag=0; //不符合约束条件
+                                            break;
+                                        }
                                     }
                                     break;
                                 }
@@ -477,8 +517,8 @@ uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
                             break;
                         }
                     }
+                    break;
                 }
-                break;
             }
         }
     }
@@ -486,6 +526,7 @@ uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
     if(flag==1)
     {
         lcd_showuint8(0, 0, 0);
+        return 1;
     }
     return 0;
 }
