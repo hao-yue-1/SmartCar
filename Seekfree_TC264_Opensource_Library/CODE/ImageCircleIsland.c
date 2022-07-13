@@ -424,17 +424,29 @@ uint8 CircleIslandMid_L(int *LeftLine,int *RightLine)
     uint8 flag=0;  //环岛中部约束条件
     if(BinaryImage[MT9V03X_H-1][0]==IMAGE_BLACK||BinaryImage[MT9V03X_H-3][2]==IMAGE_BLACK)    //正常情况，左下为黑
     {
-        flag=1;
+        flag=1; //符合约束条件
         //下面的程序防止在Exit处误判：误判了圆环与直角交界处的黑块，上面有一个黑洞
-        uint8 column=1; //寻找黑洞所在X左标
-        for(;column+1<MT9V03X_W-1;column++) //向右扫，底部
+        uint8 column=1,row=MT9V03X_H-2,flag_1=0;    //寻找黑洞所在X坐标
+        while(column+1<MT9V03X_W-1&&row-1>0)
         {
-            if(BinaryImage[MT9V03X_H-2][column+1]==IMAGE_WHITE) //白
+            if(BinaryImage[row][column+1]==IMAGE_BLACK)    //右黑
             {
-                break;
+                column++;   //右移
+                flag_1=1;
             }
+            if(BinaryImage[row-1][column]==IMAGE_BLACK)    //上黑
+            {
+                row--;      //上移
+                flag_1=1;
+            }
+            if(flag_1==1)
+            {
+                flag_1=0;
+                continue;
+            }
+            break;
         }
-        for(uint8 row=MT9V03X_H-1;row-1>0;row--)    //向上扫，左边界
+        for(;row-1>0;row--)    //向上扫，左边界
         {
             if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)    //黑-白
             {
