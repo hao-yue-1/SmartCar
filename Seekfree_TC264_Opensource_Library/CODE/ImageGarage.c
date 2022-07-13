@@ -15,34 +15,44 @@
 #include "SEEKFREE_18TFT.h"
 #include "zf_gpio.h"
 
+//Sobel算子检测
+#define FastABS(x) (x > 0 ? x : x * -1.0f)
+#define BinaryImage(i, j)    BinaryImage[i][j]
+#define ZebraTresholeL 1500  //索贝尔测试的阈值
+#define ZebraTresholeR 1300  //索贝尔测试车库在右边的阈值
+
 #define GARAGE_IDENTIFY_MODE 0    //哪种模式找上拐点
 #define IN_L_GARAGE_ANGLE   50  //入左库开启陀螺仪积分的目标角度
 #define IN_R_GARAGE_ANGLE   50  //入右库开启陀螺仪积分的目标角度
 #define L_GARAGE_LOSTLLINE_THR 30   //左边车库开启索贝尔的左边丢线阈值
-#define R_GARAGE_LOSTRLINE_THR 45   //右边车库开启索贝尔的右边丢线阈值
+#define R_GARAGE_LOSTRLINE_THR 35   //右边车库开启索贝尔的右边丢线阈值
+
 #define GARAGE_DEBUG    0       //是否需要开启车库的DEBUG
 #define GARAGE_LED_DEBUG 1
 
 /********************************************************************************************
  ** 函数功能: Sobel算子检测起跑线
- ** 参    数: 无
+ ** 参    数: uint8 starline,uint8 endline,uint8 starcloumn,uint8 endcloumn
  ** 返 回 值: Sobel阈值
- ** 作    者: 师兄
+ ** 作    者: LJF
+ ** 注    意：之前的行是MT9V03X_H-1-20~50
+ **                列是40~MT9V03X_W-1-40
  *********************************************************************************************/
-int64 SobelTest(void)
+int64 SobelTest(uint8 starline,uint8 endline,uint8 starcloumn,uint8 endcloumn)
 {
     int64 Sobel = 0;
     int64 temp = 0;
 
-    for (uint8 i = MT9V03X_H-1-20; i > 50 ; i--)
+    for (uint8 i = starline; i > endline ; i--)
     {
-        for (uint8 j = 40; j < MT9V03X_W-1-40; j++)
+        for (uint8 j = starcloumn; j < endcloumn; j++)
         {
             int64 Gx = 0, Gy = 0;
-            Gx = (-1*BinaryImage(i-1, j-1) + BinaryImage(i-1, j+1) - 2*BinaryImage(i, j-1)
-                  + 2*BinaryImage(i, j+1) - BinaryImage(i+1, j-1) + BinaryImage(i+1, j+1));
-            Gy = (-1 * BinaryImage(i-1, j-1) - 2 * BinaryImage(i-1, j) - BinaryImage(i-1, j+1)
-                  + BinaryImage(i+1, j+1) + 2 * BinaryImage(i+1, j) + BinaryImage(i+1, j+1));
+            Gx = -BinaryImage(i-1, j-1)+BinaryImage(i-1, j+1)
+                 -2*BinaryImage(i, j-1)+2*BinaryImage(i, j+1)
+                 -BinaryImage(i+1, j-1)+BinaryImage(i+1, j+1);
+            Gy = BinaryImage(i-1, j-1)+2*BinaryImage(i-1, j)+BinaryImage(i-1, j+1)
+                 -BinaryImage(i+1, j+1)-2*BinaryImage(i+1, j)-BinaryImage(i+1, j+1);
             temp += FastABS(Gx) + FastABS(Gy);
             Sobel += temp / 255;
             temp = 0;
@@ -193,12 +203,14 @@ uint8 GarageLStatusIdentify(char Choose,Point InflectionL,Point InflectionR,uint
 //            lcd_showuint8(0, 1, LostNum_LeftLine);
             if(LostNum_LeftLine>L_GARAGE_LOSTLLINE_THR)
             {
-                SobelResult=SobelTest();
+                SobelResult=SobelTest(80,50,40,MT9V03X_W-1-40);
 //            lcd_showint32(0, 0, SobelResult, 5);
             }
             if(SobelResult>ZebraTresholeL)
             {
                 StatusChange=1;
+                *GarageLFlag=1;//不让它正常循迹
+                Bias=DifferentBias(95, 80, CentreLine);//手动缩短前瞻
                 break;
             }
             break;
@@ -247,7 +259,7 @@ uint8 GarageLStatusIdentify(char Choose,Point InflectionL,Point InflectionR,uint
         }
         case 3:
         {
-            SobelResult=SobelTest();
+            SobelResult=SobelTest(80,50,40,MT9V03X_W-1-40);
             if(SobelResult<ZebraTresholeL)
             {
                 return 1;//再次sobel一次确保状态机没出错
@@ -410,9 +422,9 @@ uint8 GarageROStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
             gpio_set(LED_BLUE, 0);
             if(LostNum_RightLine>R_GARAGE_LOSTRLINE_THR)
             {
-                SobelResult=SobelTest();
+                SobelResult=SobelTest(MT9V03X_H-1-20,50,40,MT9V03X_W-1-40);
             }
-            if(SobelResult>ZebraTresholeL)
+            if(SobelResult>ZebraTresholeR)
             {
                 gpio_set(LED_BLUE, 1);
                 StatusChange=1;
@@ -435,8 +447,8 @@ uint8 GarageROStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
         case 2:
         {
             gpio_set(LED_WHITE, 0);
-            SobelResult=SobelTest();
-            if(SobelResult<ZebraTresholeL)
+            SobelResult=SobelTest(MT9V03X_H-1-20,50,40,MT9V03X_W-1-40);
+            if(SobelResult<ZebraTresholeR)
             {
                 gpio_set(LED_WHITE, 1);
                 return 1;//再次sobel一次确保状态机没出错
@@ -471,7 +483,7 @@ uint8 GarageRIStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
         {
             if(LostNum_RightLine>R_GARAGE_LOSTRLINE_THR)
             {
-                SobelResult=SobelTest();
+                SobelResult=SobelTest(65,50,50,MT9V03X_W-1-50);
             }
             if(SobelResult>ZebraTresholeR)
             {
