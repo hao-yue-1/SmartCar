@@ -197,55 +197,86 @@ uint8 CrossLoopOverBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point 
 uint8 CrossLoopEnd_L(Point InflectionL,Point InflectionR)
 {
     static uint8 flag=0;    //连续补线flag，依赖第一次补线判断
-
-    if(flag==1) //已经补过线，避免不可预知干扰打断补线
+    if((LostNum_LeftLine<90&&fabsf(Bias)<4)||flag==1) //符合约束条件或处于连续补线
     {
-        for(uint8 row=MT9V03X_H-1;row-1>0;row--)  //中间列向上扫
+        Point StarPoint,EndPoint;
+        //寻找补线起点
+        uint8 row=MT9V03X_H-2,column=1,flag_1=0;    //寻找左拐点
+        if(BinaryImage[row][column]==IMAGE_BLACK)   //左下角为黑（存在左拐点）
         {
-            if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
+            for(;column-1<MT9V03X_W-1;column++)   //将指针移动到底部最右端
             {
-                uint8 EndX=0;
-                if(row>60)  //根据逼近边界程度来决定补线矫正程度，这里很大程度上取决于速度
+                if(BinaryImage[row][column]==IMAGE_WHITE)
                 {
-                    EndX=MT9V03X_W-1;
+                    break;
                 }
-                else
+            }
+            while(column+1<MT9V03X_W-1&&row-1>0)  //向右上方寻找
+            {
+                if(BinaryImage[row][column+1]==IMAGE_BLACK) //右黑
                 {
-                    EndX=MT9V03X_W/2;
+                    column++;   //右移
+                    flag_1=1;
                 }
-                //补左线，右转
-                Point StartPoint,EndPoint;
-                StartPoint.Y=MT9V03X_H-1;   //起点：最底行的左边界点
-                StartPoint.X=LeftLine[MT9V03X_H-1];
-                EndPoint.Y=row;             //终点：分界线
-                EndPoint.X=EndX;
-                FillingLine('L', StartPoint, EndPoint);
-                Bias=DifferentBias(StartPoint.Y,EndPoint.Y,CentreLine);
-                CrossLoop_flag=1;   //内部求Bias
-                return 1;
+                if(BinaryImage[row-1][column]==IMAGE_BLACK) //上黑
+                {
+                    row--;      //上移
+                    flag_1=1;
+                }
+                if(flag_1==1)
+                {
+                    flag_1=0;
+                    continue;
+                }
+                break;
             }
         }
-        //若在上面的for循环中没有发现，下面实施补救
-    }
-    else if(LostNum_LeftLine>55&&LostNum_RightLine>55&&fabsf(Bias)<1.5) //出口判断的约束条件
-    {
-        for(uint8 row=MT9V03X_H/2;row-1>0;row--)  //中间列向上扫
+        StarPoint.Y=row;    //起点：左拐点or左下角
+        StarPoint.X=column;
+        //寻找补线终点
+        row=MT9V03X_H-2;column=MT9V03X_W-2;flag_1=0;    //寻找右拐点
+        if(BinaryImage[row][column]==IMAGE_BLACK)       //右下角为黑（存在右拐点）
         {
-            if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
+            for(;column+1>0;column--)   //将指针移动到底部最左端
             {
-                //补左线，右转
-                Point StartPoint,EndPoint;
-                StartPoint.Y=MT9V03X_H-1;   //起点：最底行的左边界点
-                StartPoint.X=LeftLine[MT9V03X_H-1];
-                EndPoint.Y=row;             //终点：分界行中点
-                EndPoint.X=MT9V03X_W/2;
-                FillingLine('L', StartPoint, EndPoint);
-                flag=1; //连续补线标记
-                Bias=DifferentBias(StartPoint.Y,EndPoint.Y,CentreLine);
-                CrossLoop_flag=1;   //内部求Bias
-                return 1;
+                if(BinaryImage[row][column]==IMAGE_WHITE)
+                {
+                    break;
+                }
+            }
+            while(column-2>0&&row-2>0)  //向左上方寻找
+            {
+                if(BinaryImage[row][column-1]==IMAGE_BLACK||BinaryImage[row][column-2]==IMAGE_BLACK) //左黑
+                {
+                    column--;   //左移
+                    flag_1=1;
+                }
+                if(BinaryImage[row-1][column]==IMAGE_BLACK||BinaryImage[row-2][column]==IMAGE_BLACK) //上黑
+                {
+                    row--;      //上移
+                    flag_1=1;
+                }
+                if(flag_1==1)
+                {
+                    flag_1=0;
+                    continue;
+                }
+                break;  //探针没有移动
             }
         }
+        for(;row-1>0;row--) //向上扫，右拐点
+        {
+            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)   //白-黑
+            {
+                break;
+            }
+        }
+        EndPoint.Y=row;     //终点：右拐点上方边界处or右边界上方
+        EndPoint.X=column;
+        //补左线右转出环
+        FillingLine('L', StarPoint, EndPoint);
+        flag=1; //连续补线标志
+        return 1;
     }
     return 0;
 }
@@ -262,7 +293,6 @@ uint8 CrossLoopEnd_L(Point InflectionL,Point InflectionR)
 uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
     static uint8 flag,flag_in,flag_end;
-
     switch(flag)
     {
         case 0: //小车识别十字回环的入口，进行补线直行
@@ -283,18 +313,38 @@ uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point I
             }
             break;
         }
-        case 1: //小车识别十字回环的出口，右转出环
+        case 1: //小车在环中自主寻迹
+        {
+            if(flag_in==1)
+            {
+                if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
+                {
+                    flag_in=0;flag=2;   //跳转到状态3
+                    break;
+                }
+            }
+            if(flag_in==0)
+            {
+                StartIntegralAngle_Z(200);  //开启陀螺仪辅助出环
+                flag_in=1;                  //避免重复开启陀螺仪
+                gpio_set(LED_WHITE, 0);
+            }
+            break;
+        }
+        case 2: //小车识别十字回环的出口，右转出环
         {
             if(CrossLoopEnd_L(InflectionL, InflectionR)==1&&flag_end==0)  //第一次检测到回环出口
             {
                 StartIntegralAngle_Z(70);   //开启积分
                 flag_end=1;                 //避免重复开启积分
+                gpio_set(LED_GREEN, 0);
             }
             if(flag_end==1)  //积分已开启
             {
                 if(icm_angle_z_flag==1) //陀螺仪识别到已经出环
                 {
-                    flag_end=0;flag=2;  //跳转到未知状态，作废
+                    flag_end=0;flag=3;  //跳转到未知状态，作废
+                    gpio_set(LED_YELLOW, 0);
                     return 1;
                 }
             }
