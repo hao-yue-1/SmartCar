@@ -29,7 +29,7 @@
 #define L_LOSTNUM   60
 
 /*起跑线相关函数*/
-int64 SobelTest(void);      //Sobel算子检测起跑线
+int64 SobelTest(uint8 starline,uint8 endline,uint8 starcloumn,uint8 endcloumn);      //Sobel算子检测起跑线
 uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR);             //左车库识别
 uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR);             //右车库识别
 uint8 GarageLStatusIdentify(char Choose,Point InflectionL,Point InflectionR,uint8* GarageLFlag);  //左车库的状态机转移
