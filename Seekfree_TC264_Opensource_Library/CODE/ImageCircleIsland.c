@@ -213,88 +213,57 @@ uint8 CircleIslandOverBegin_L(int *LeftLine,int *RightLine)
  ** 返 回 值: 0：没有识别到环岛
  **          1：识别到环岛出口且在车身左侧
  ** 作    者: WBN
- ** 注    意：该函数调用时应确保小车已在环岛中
  ********************************************************************************************
  */
 uint8 CircleIslandEnd_L(Point InflectionL,Point InflectionR)
 {
-    static uint8 flag=0;
-    if(flag==1) //已经识别到环岛出口，跳过各种判断，保证补线的连续性
+    static uint8 flag=0;    //保证补线的连续性，依赖于第一次判断
+    if((LostNum_LeftLine<90&&fabsf(Bias)<4)||flag==1)  //符合约束条件或处于连续补线
     {
-        if(InflectionR.X>MT9V03X_W/2&&InflectionR.Y>MT9V03X_H/2)    //右拐点真实存在
+        Point StarPoint,EndPoint;
+        //寻找补线起点
+        uint8 row=MT9V03X_H-2,column=MT9V03X_W-2,flag_1;
+        if(BinaryImage[row][column]==IMAGE_BLACK)   //右下角为黑（可能存在右拐点）
         {
-            //沿着右边界线补线
-            for(uint8 row=MT9V03X_H/2;row-1>0;row--)  //向上扫
+            while(column-1>0&&row-1>0)  //向左上方寻找
             {
-                if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
+                if(BinaryImage[row][column-1]==IMAGE_BLACK) //左黑
                 {
-                    //补线
-                    Point StartPoint;
-                    StartPoint.X=RightLine[0];    //起点为最底行的右边界点
-                    StartPoint.Y=0;
-                    FillinLine_V2('R', InflectionR.Y, row, StartPoint, InflectionR);
-                    break;
+                    column--;   //左移
+                    flag_1=1;
                 }
+                if(BinaryImage[row-1][column]==IMAGE_BLACK) //上黑
+                {
+                    row--;      //上移
+                    flag_1=1;
+                }
+                if(flag_1==1)
+                {
+                    flag_1=0;
+                    continue;
+                }
+                break;
+            }
+            flag_1=1;   //标记找到了右拐点，为下面找终点提供分类依据
+        }
+        StarPoint.Y=row;    //起点：右拐点or右下角
+        StarPoint.X=column;
+        //寻找补线终点
+        column=1;           //终点X坐标取左边界（由于环岛出环没有像十字回环一样的直角压角问题，所以这里可以简单处理）
+        for(;row-1>0;row--) //向上扫
+        {
+            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+            {
+                EndPoint.Y=row;     //终点：上边界点
+                EndPoint.X=column;
+                break;
             }
         }
-        else    //不存在右拐点
-        {
-            //图像右下角补线到赛道中间顶部
-            for(uint8 row=MT9V03X_H-20;row-1>0;row--)  //向上扫
-            {
-                if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
-                {
-                    //补线
-                    Point StartPoint,EndPoint;
-                    StartPoint.Y=MT9V03X_H-1;
-                    StartPoint.X=MT9V03X_W-1;
-                    EndPoint.Y=row;
-                    EndPoint.X=MT9V03X_W/2;
-                    FillingLine('R',StartPoint,EndPoint);
-                    break;
-                }
-            }
-        }
-        return 1;
-    }
-    if(LostNum_LeftLine>55&&LostNum_RightLine>55&&fabsf(Bias)<1.5)  //约束条件，识别到环岛出口
-    {
-        /*校赛过后使用补线配合陀螺仪的方法出环*/
-        if(InflectionR.X>MT9V03X_W/2&&InflectionR.Y>MT9V03X_H/2)    //右拐点真实存在
-        {
-            //沿着右边界线补线
-            for(uint8 row=MT9V03X_H/2;row-1>0;row--)  //向上扫
-            {
-                if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
-                {
-                    //补线
-                    Point StartPoint;
-                    StartPoint.X=RightLine[0];    //起点为最底行的右边界点
-                    StartPoint.Y=0;
-                    FillinLine_V2('R', InflectionR.Y, row, StartPoint, InflectionR);
-                    break;
-                }
-            }
-        }
-        else    //不存在右拐点
-        {
-            //图像右下角补线到赛道中间顶部
-            for(uint8 row=MT9V03X_H/2;row-1>0;row--)  //向上扫
-            {
-                if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
-                {
-                    //补线
-                    Point StartPoint,EndPoint;
-                    StartPoint.Y=MT9V03X_H-1;
-                    StartPoint.X=MT9V03X_W-1;
-                    EndPoint.Y=row;
-                    EndPoint.X=MT9V03X_W/2;
-                    FillingLine('R',StartPoint,EndPoint);
-                    break;
-                }
-            }
-        }
-        flag=1; //已经识别到环岛出口flag
+        //补右线左转出环
+        FillingLine('R', StarPoint, EndPoint);
+//        LcdDrawPoint(StarPoint, BLUE);
+//        LcdDrawPoint(EndPoint, GREEN);
+        flag=1; //连续补线标志
         return 1;
     }
     return 0;
@@ -585,7 +554,7 @@ uint8 CircleIslandInside_L(void)
  */
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    static uint8 flag,flag_exit,flag_in,flag_begin,flag_last_begin,flag_last2_begin,flag_end;
+    static uint8 flag=2,flag_exit,flag_in,flag_begin,flag_last_begin,flag_last2_begin,flag_end;
     switch(flag)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
@@ -633,12 +602,14 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
             {
                 StartIntegralAngle_Z(70);   //开启积分
                 flag_end=1;
+                gpio_set(LED_GREEN, 0);
             }
             if(flag_end==1)  //积分已经开启
             {
                 if(icm_angle_z_flag==1) //检测积分状态
                 {
-                    flag_end=0;flag=3; //跳转到状态3
+                    flag_end=0;flag=9; //跳转到状态3
+                    gpio_set(LED_WHITE, 0);
                     break;
                 }
             }
