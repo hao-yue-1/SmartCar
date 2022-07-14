@@ -204,7 +204,7 @@ uint8 CrossLoopEnd_L(Point InflectionL,Point InflectionR)
         uint8 row=MT9V03X_H-2,column=1,flag_1=0;    //寻找左拐点
         if(BinaryImage[row][column]==IMAGE_BLACK)   //左下角为黑（存在左拐点）
         {
-            for(;column-1<MT9V03X_W-1;column++)   //将指针移动到底部最右端
+            for(;column<MT9V03X_W-1;column++)   //将指针移动到底部最右端
             {
                 if(BinaryImage[row][column]==IMAGE_WHITE)
                 {
@@ -319,7 +319,7 @@ uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point I
             {
                 if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
                 {
-                    flag_in=0;flag=2;   //跳转到状态3
+                    flag_in=0;flag=2;   //跳转到状态2
                     break;
                 }
             }
@@ -327,7 +327,6 @@ uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point I
             {
                 StartIntegralAngle_Z(200);  //开启陀螺仪辅助出环
                 flag_in=1;                  //避免重复开启陀螺仪
-                gpio_set(LED_WHITE, 0);
             }
             break;
         }
@@ -337,14 +336,12 @@ uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point I
             {
                 StartIntegralAngle_Z(70);   //开启积分
                 flag_end=1;                 //避免重复开启积分
-                gpio_set(LED_GREEN, 0);
             }
             if(flag_end==1)  //积分已开启
             {
                 if(icm_angle_z_flag==1) //陀螺仪识别到已经出环
                 {
                     flag_end=0;flag=3;  //跳转到未知状态，作废
-                    gpio_set(LED_YELLOW, 0);
                     return 1;
                 }
             }
@@ -536,59 +533,91 @@ uint8 CrossLoopOverBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point 
  **           若是车子贴外环行驶会有压角风险。预计处理方法是通过左拐点的位置来判断极端情况
  ********************************************************************************************
  */
-uint8 CrossLoopEnd_R(Point InflectionL,Point InflectionR)
+uint8 CrossLoopEnd_R()
 {
     static uint8 flag=0;    //连续补线flag，依赖第一次补线判断
+    if((LostNum_RightLine<90&&fabsf(Bias)<4)||flag==1) //符合约束条件或处于连续补线
+    {
+        Point StarPoint,EndPoint;
+        //寻找补线起点
+        uint8 row=MT9V03X_H-2,column=MT9V03X_W-2,flag_1=0;    //寻找右拐点
+        if(BinaryImage[row][column]==IMAGE_BLACK)   //右下角为黑（存在右拐点）
+        {
+            for(;column>0;column--)   //将指针移动到底部最左端
+            {
+                if(BinaryImage[row][column]==IMAGE_WHITE)
+                {
+                    break;
+                }
+            }
+            while(column-1>0&&row-1>0)  //向左上方寻找
+            {
+                if(BinaryImage[row][column-1]==IMAGE_BLACK) //左黑
+                {
+                    column--;   //左移
+                    flag_1=1;
+                }
+                if(BinaryImage[row-1][column]==IMAGE_BLACK) //上黑
+                {
+                    row--;      //上移
+                    flag_1=1;
+                }
+                if(flag_1==1)
+                {
+                    flag_1=0;
+                    continue;
+                }
+                break;
+            }
+        }
+        StarPoint.Y=row;    //起点：右拐点or右下角
+        StarPoint.X=column;
+        //寻找补线终点
+        row=MT9V03X_H-2;column=1;flag_1=0;    //寻找左拐点
+        if(BinaryImage[row][column]==IMAGE_BLACK)       //右下角为黑（存在右拐点）
+        {
+            for(;column<MT9V03X_W-1;column++)   //将指针移动到底部最右端
+            {
+                if(BinaryImage[row][column]==IMAGE_WHITE)
+                {
+                    break;
+                }
+            }
+            while(column+2<MT9V03X_W-1&&row-2>0)  //向右上方寻找
+            {
+                if(BinaryImage[row][column+1]==IMAGE_BLACK||BinaryImage[row][column+2]==IMAGE_BLACK) //左黑
+                {
+                    column++;   //右移
+                    flag_1=1;
+                }
+                if(BinaryImage[row-1][column]==IMAGE_BLACK||BinaryImage[row-2][column]==IMAGE_BLACK) //上黑
+                {
+                    row--;      //上移
+                    flag_1=1;
+                }
+                if(flag_1==1)
+                {
+                    flag_1=0;
+                    continue;
+                }
+                break;  //探针没有移动
+            }
+        }
+        for(;row-1>0;row--) //向上扫，左拐点
+        {
+            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)   //白-黑
+            {
+                break;
+            }
+        }
+        EndPoint.Y=row;     //终点：左拐点上方边界处or左边界上方
+        EndPoint.X=column;
+        //补右线左转出环
+        FillingLine('R', StarPoint, EndPoint);
+        flag=1; //连续补线标志
+        return 1;
+    }
 
-    if(flag==1) //已经补过线，避免不可预知干扰打断补线
-    {
-        for(uint8 row=MT9V03X_H-1;row-1>0;row--)  //中间列向上扫
-        {
-            if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
-            {
-                uint8 EndX=0;
-                if(row>60)  //根据逼近边界程度来决定补线矫正程度，这里很大程度上取决于速度
-                {
-                    EndX=MT9V03X_W-1;
-                }
-                else
-                {
-                    EndX=MT9V03X_W/2;
-                }
-                //补右线，左转
-                Point StartPoint,EndPoint;
-                StartPoint.Y=MT9V03X_H-1;   //起点：最底行的右边界点
-                StartPoint.X=RightLine[MT9V03X_H-1];
-                EndPoint.Y=row;             //终点：分界线
-                EndPoint.X=EndX;
-                FillingLine('R', StartPoint, EndPoint);
-                Bias=DifferentBias(StartPoint.Y,EndPoint.Y,CentreLine);
-                CrossLoop_flag=1;   //内部求Bias
-                return 1;
-            }
-        }
-        //若在上面的for循环中没有发现，下面实施补救
-    }
-    else if(LostNum_LeftLine>55&&LostNum_RightLine>55&&fabsf(Bias)<1.5) //出口判断的约束条件
-    {
-        for(uint8 row=MT9V03X_H/2;row-1>0;row--)  //中间列向上扫
-        {
-            if(BinaryImage[row][MT9V03X_W/2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W/2]==IMAGE_BLACK)
-            {
-                //补右线，左转
-                Point StartPoint,EndPoint;
-                StartPoint.Y=MT9V03X_H-1;   //起点：最底行的右边界点
-                StartPoint.X=RightLine[MT9V03X_H-1];
-                EndPoint.Y=row;             //终点：分界行中点
-                EndPoint.X=MT9V03X_W/2;
-                FillingLine('R', StartPoint, EndPoint);
-                flag=1; //连续补线标记
-                Bias=DifferentBias(StartPoint.Y,EndPoint.Y,CentreLine);
-                CrossLoop_flag=1;   //内部求Bias
-                return 1;
-            }
-        }
-    }
     return 0;
 }
 
@@ -625,9 +654,26 @@ uint8 CrossLoopIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point I
             }
             break;
         }
-        case 1: //小车识别十字回环的出口，右转出环
+        case 1: //小车在环中，自主寻迹
         {
-            if(CrossLoopEnd_R(InflectionL, InflectionR)==1&&flag_end==0)  //第一次检测到回环出口
+            if(flag_in==1)
+            {
+                if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
+                {
+                    flag_in=0;flag=2;   //跳转到状态2
+                    break;
+                }
+            }
+            if(flag_in==0)
+            {
+                StartIntegralAngle_Z(200);  //开启陀螺仪辅助出环
+                flag_in=1;                  //避免重复开启陀螺仪
+            }
+            break;
+        }
+        case 2: //小车识别十字回环的出口，右转出环
+        {
+            if(CrossLoopEnd_R()==1&&flag_end==0)  //第一次检测到回环出口
             {
                 StartIntegralAngle_Z(70);   //开启积分
                 flag_end=1;                 //避免重复开启积分
@@ -636,7 +682,7 @@ uint8 CrossLoopIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point I
             {
                 if(icm_angle_z_flag==1) //陀螺仪识别到已经出环
                 {
-                    flag_end=0;flag=2;  //跳转到未知状态，作废
+                    flag_end=0;flag=3;  //跳转到未知状态，作废
                     return 1;
                 }
             }
