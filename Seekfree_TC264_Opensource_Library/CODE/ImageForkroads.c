@@ -12,13 +12,69 @@
 #include "LED.h"
 #include "zf_gpio.h"
 
-#define L_FINDWHIDE_THRE  10 //Y拐点中间找左边白色区域停止的阈值
-#define R_FINDWHIDE_THRE  150//Y拐点中间找右边白色区域停止的阈值
+#define L_FINDWHIDE_THRE  60 //Y拐点中间找左边白色区域停止的阈值
+#define R_FINDWHIDE_THRE  100//Y拐点中间找右边白色区域停止的阈值
+#define ROW_FINDWHIDE_THRE 100//Y拐点行的下限的阈值
 #define FORK_INFLECTION_WIDTH  120//打开三岔debug,当拐点在60行附近左右拐点的差值，补全的时候，依据没有丢失的拐点的行数做一个简单的比例关系到单边循迹思路上
 #define FORK_DEBUG  0
 
 extern uint8 bias_startline,bias_endline;        //动态前瞻
 
+/*********************************************************************************
+ ** 函数功能: 三岔种子生长生长至谷底寻找Y上拐点
+ ** 参    数:
+ ** 返 回 值: 无
+ ** 说    明:
+ ** 作    者: LJF
+ **********************************************************************************/
+void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflectionC)
+{
+    for(;Seed.Y<endline;)
+    {
+        switch(Choose)
+        {
+            case 'L':
+                if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_BLACK)
+                {
+                    Seed.Y++,Seed.X++;
+                }
+                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_WHITE)
+                {
+                    Seed.Y++;
+                }
+                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_BLACK)
+                {
+                    Seed.X++;
+                }
+                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_WHITE)
+                {
+                    UpInflectionC->Y=Seed.Y,UpInflectionC->X=Seed.X;
+                    return;
+                }
+                break;
+            case 'R':
+                if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_BLACK)
+                {
+                    Seed.Y++,Seed.X--;
+                }
+                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_WHITE)
+                {
+                    Seed.Y++;
+                }
+                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_BLACK)
+                {
+                    Seed.X--;
+                }
+                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_WHITE)
+                {
+                    UpInflectionC->Y=Seed.Y,UpInflectionC->X=Seed.X;
+                    return;
+                }
+                break;
+            default:break;
+        }
+    }
+}
 /*********************************************************************************
  ** 函数功能: 根据左右下拐点搜寻出三岔上拐点
  ** 参    数: Point InflectionL: 左边拐点
@@ -30,43 +86,111 @@ extern uint8 bias_startline,bias_endline;        //动态前瞻
  **********************************************************************************/
 void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC)
 {
-    int starline,i,cloumnL,cloumnR;
-    UpInflectionC->X=0;UpInflectionC->Y=0;//上拐点置零
-    UpInflectionC->X=(DownInflectionL.X+DownInflectionR.X)/2;//V型上拐点的列坐标为左右拐点均值，需要修改，不一定是正入三岔
-    starline=(DownInflectionL.Y+DownInflectionR.Y)/2;//起始行为左右拐点行的均值
-    //从下往上找到那个跳变的点即为上拐点
-    for(i=starline;i>1;i--)
+    int row=0, cloumnL=0, cloumnR=0;
+    Point Seed;
+    char Choose=0,flagL=0,flagR=0;//判断是在谷的左边还是右边的函数,以及判断左右两边有没有白色区域的FLAG
+    UpInflectionC->X = 0; UpInflectionC->Y = 0;//上拐点置零
+    UpInflectionC->X = (DownInflectionL.X + DownInflectionR.X) / 2;//V型上拐点的列坐标为左右拐点均值
+    row = (DownInflectionL.Y + DownInflectionR.Y) / 2;//起始行为左右拐点行的均值
+    for (; row > 20; row--)
     {
 #if FORK_DEBUG
-        lcd_drawpoint(UpInflectionC->X, i, PURPLE);
+        lcd_drawpoint(UpInflectionC->X, row, PURPLE);
 #endif
-        //图像数组是[高][宽]
-        if(BinaryImage[i][UpInflectionC->X]==IMAGE_WHITE && BinaryImage[i-1][UpInflectionC->X]==IMAGE_BLACK)
+        if (BinaryImage[row][UpInflectionC->X] == IMAGE_WHITE && BinaryImage[row - 1][UpInflectionC->X] == IMAGE_BLACK)
         {
-            for(cloumnL=UpInflectionC->X;cloumnL>L_FINDWHIDE_THRE;cloumnL--)
+            //往左往右找白色区域
+            for (cloumnL = UpInflectionC->X; cloumnL > L_FINDWHIDE_THRE; cloumnL--)
             {
 #if FORK_DEBUG
-                lcd_drawpoint(cloumnL, i-1, PURPLE);
+                lcd_drawpoint(cloumnL, row-1, PURPLE);
 #endif
-                if(BinaryImage[i-1][cloumnL]==IMAGE_WHITE && BinaryImage[i-1][cloumnL-3]==IMAGE_WHITE)//多跳三格也是白防止噪点误判
+                if (BinaryImage[row - 1][cloumnL] == IMAGE_BLACK && BinaryImage[row - 1][cloumnL - 1] == IMAGE_WHITE)
+                {
+                    flagL = 1;
                     break;
-                if(cloumnL==L_FINDWHIDE_THRE+1)//如果起始的列就小于了11，那么则不会return，会直接到后面的赋值
-                    return;//遍历完了都没有找到白的即不是三岔，退出判断
+                }
+                if (cloumnL == L_FINDWHIDE_THRE + 1)//如果起始的列就小于了11，那么则不会return，会直接到后面的赋值
+                {
+                    Choose = 'R';//左边找不到说明在谷的右边
+                    break;
+                }
             }
-            for(cloumnR=UpInflectionC->X;cloumnR<R_FINDWHIDE_THRE;cloumnR++)
+            for (cloumnR = UpInflectionC->X; cloumnR < R_FINDWHIDE_THRE; cloumnR++)
             {
 #if FORK_DEBUG
-                lcd_drawpoint(cloumnR, i-1, PURPLE);
+                lcd_drawpoint(cloumnR, row-1, PURPLE);
 #endif
-                if(BinaryImage[i-1][cloumnR]==IMAGE_WHITE && BinaryImage[i-1][cloumnR+3]==IMAGE_WHITE)//多跳三格也是白防止噪点误判
+                if (BinaryImage[row - 1][cloumnR] == IMAGE_BLACK && BinaryImage[row - 1][cloumnR + 1] == IMAGE_WHITE)
+                {
+                    flagR = 1;
                     break;
-                if(cloumnR==R_FINDWHIDE_THRE-1)
-                    return;//遍历完了都没有找到白的即不是三岔，退出判断
+                }
+                if (cloumnR == R_FINDWHIDE_THRE - 1)
+                {
+                    Choose = 'L';//右边找不到说明在谷的左边
+                    break;
+                }
             }
-            UpInflectionC->Y=i;//Y坐标是行数
-            return;
+            break;
         }
     }
+    if ((flagL == 0 || flagR == 0)&&Choose!=0)//说明有一边是没有白色区域的
+    {
+        Seed.X = UpInflectionC->X, Seed.Y = row - 1;
+        SeedGrowFindUpInflection(Choose, Seed, ROW_FINDWHIDE_THRE, UpInflectionC);
+    }
+    else
+    {
+        UpInflectionC->Y = row - 1;
+    }
+
+//    int starline,i,cloumnL,cloumnR;
+//    UpInflectionC->X=0;UpInflectionC->Y=0;//上拐点置零
+//    UpInflectionC->X=(DownInflectionL.X+DownInflectionR.X)/2;//V型上拐点的列坐标为左右拐点均值，需要修改，不一定是正入三岔
+//    starline=(DownInflectionL.Y+DownInflectionR.Y)/2;//起始行为左右拐点行的均值
+//    //从下往上找到那个跳变的点即为上拐点
+//    for(i=starline;i>20;i--)
+//    {
+//#if FORK_DEBUG
+//        lcd_drawpoint(UpInflectionC->X, i, PURPLE);
+//#endif
+//        //图像数组是[高][宽]
+//        if(BinaryImage[i][UpInflectionC->X]==IMAGE_WHITE && BinaryImage[i-1][UpInflectionC->X]==IMAGE_BLACK)
+//        {
+//            for(cloumnL=UpInflectionC->X;cloumnL>L_FINDWHIDE_THRE;cloumnL--)
+//            {
+//#if FORK_DEBUG
+//                lcd_drawpoint(cloumnL, i-1, PURPLE);
+//#endif
+//                if(BinaryImage[i-1][cloumnL]==IMAGE_BLACK && BinaryImage[i-1][cloumnL-1]==IMAGE_WHITE)
+//                    break;
+//                if(cloumnL==L_FINDWHIDE_THRE+1)//如果起始的列就小于了11，那么则不会return，会直接到后面的赋值
+//                    return;//遍历完了都没有找到白的即不是三岔，退出判断
+//            }
+//#if FORK_DEBUG
+//            lcd_showint32(0, 3, BinaryImage[i+5][UpInflectionC->X+6], 3);
+//#endif
+//            //防止其实是Y拐点只是你随机给的列不对,而拐点在你右下方所以没找到
+//            if(BinaryImage[i+6][UpInflectionC->X+20]==IMAGE_BLACK)
+//            {
+//                i=i+6;
+//                UpInflectionC->X=UpInflectionC->X+20;
+//            }
+//            for(cloumnR=UpInflectionC->X;cloumnR<R_FINDWHIDE_THRE;cloumnR++)
+//            {
+//#if FORK_DEBUG
+//                lcd_drawpoint(cloumnR, i-1, PURPLE);
+//#endif
+//                if(BinaryImage[i-1][cloumnR]==IMAGE_BLACK && BinaryImage[i-1][cloumnR+1]==IMAGE_WHITE)
+//                    break;
+//                if(cloumnR==R_FINDWHIDE_THRE-1)
+//                    return;//遍历完了都没有找到白的即不是三岔，退出判断
+//            }
+//            UpInflectionC->Y=i;//Y坐标是行数
+//            return;
+//        }
+//    }
 }
 
 /********************************************************************************************
@@ -94,7 +218,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
 #endif
     Point UpInflectionC;
     //当左右拐点存在,并且两个拐点要在图像下半部分
-    if(DownInflectionL.X!=0 && DownInflectionR.X!=0 && BinaryImage[MT9V03X_H-3][3]==IMAGE_BLACK && BinaryImage[MT9V03X_H-3][MT9V03X_W-3]==IMAGE_BLACK)
+    if(DownInflectionL.X!=0 && DownInflectionR.X!=0 && DownInflectionL.X<120 && DownInflectionR.X>30)
     {
         //取消这个左右拐点行数的判断，增加运算速率
         if(abs((DownInflectionL.Y-DownInflectionR.Y))<40)//左右两个拐点的行数小于30，才进行判断
@@ -103,13 +227,14 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
             {
                 FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
-                if(UpInflectionC.Y<bias_endline)//上拐点在正常巡线前瞻的还要前面
+                //判断三岔补线顶上的线是否被扫到了右边赛道，若没有则正常巡线
+                if(abs(CentreLine[UpInflectionC.Y]-CentreLine[UpInflectionC.Y-1])>50)
                 {
-                    Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
+                    Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
                 }
                 else
                 {
-                    Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                    Bias=DifferentBias(bias_startline,bias_endline,CentreLine);
                 }
                 gpio_set(LED_BLUE, 0);
                 return 1;//三个拐点存在三岔成立：正入三岔
@@ -121,20 +246,33 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
     else if((DownInflectionL.X==0 && DownInflectionR.X==0) || (BinaryImage[MT9V03X_H-5][5]==IMAGE_WHITE && BinaryImage[MT9V03X_H-5][MT9V03X_W-5]==IMAGE_WHITE))//如果左右下拐点不存在并且下面一段出现就丢线的话的话,我们就去看存不存在正上的拐点
     {
         Point ImageDownPointL,ImageDownPointR;//以画面的左下角和右下角作为左右补线的点
-        ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H,ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H;
+        //给上拐点的列一个预测的只，而不是写死为屏幕中间
+        if(LeftLine[MT9V03X_H-1]!=0)//如果最下面的一行没有丢线
+            ImageDownPointL.X=LeftLine[MT9V03X_H-1]+10,ImageDownPointL.Y=MT9V03X_H;
+        else ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H;
+        if(RightLine[MT9V03X_H-1]!=MT9V03X_W-1)
+            ImageDownPointR.X=RightLine[MT9V03X_H-1]-10,ImageDownPointR.Y=MT9V03X_H;
+        else ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H;
+        //找寻上拐点
         GetForkUpInflection(ImageDownPointL, ImageDownPointR, &UpInflectionC);
         if(UpInflectionC.Y!=0 && UpInflectionC.Y>40)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
             FillingLine('R',ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
-            //在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
-            //这一次是越过了三岔很接近冲出三岔的拐角，我们手动把补到的线计算出来的bias扩大
-            Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine)*1.2;
+            //判断三岔补线顶上的线是否被扫到了右边赛道，若没有则正常巡线
+            if(abs(CentreLine[UpInflectionC.Y]-CentreLine[UpInflectionC.Y-1])>50)
+            {
+                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+            }
+            else
+            {
+                Bias=DifferentBias(bias_startline,bias_endline,CentreLine);
+            }
             gpio_set(LED_GREEN, 0);
             return 1;//三岔正入丢失左右拐点那一帧
         }
     }
     //右边丢线超过60，左拐点存在，并且左拐点不能在上半平屏防止误判
-    else if(LostNum_RightLine>55 && DownInflectionL.X!=0 && DownInflectionL.Y>60)
+    else if(LostNum_RightLine>55 && DownInflectionL.X!=0 && DownInflectionL.Y>40)
     {
         Point ImageDownPointR;//以左拐点对称的点去补线和找拐点
         //给自己设定的右拐点去找上拐点
@@ -145,20 +283,21 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
             FillingLine('R',ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
-            if(UpInflectionC.Y<bias_endline)//上拐点在正常巡线前瞻的还要前面
+            //判断三岔补线顶上的线是否被扫到了右边赛道，若没有则正常巡线
+            if(abs(CentreLine[UpInflectionC.Y]-CentreLine[UpInflectionC.Y-1])>50)
             {
-                Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
+                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
             }
             else
             {
-                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
+                Bias=DifferentBias(bias_startline,bias_endline,CentreLine);
             }
             gpio_set(LED_RED, 0);
             return 1;//三岔左斜入三岔
         }
     }
     //左边丢线超过60,右拐点存在,并且右拐点不能在上半平屏防止误判
-    else if(LostNum_LeftLine>55 && DownInflectionR.X!=0 && DownInflectionR.Y>60)
+    else if(LostNum_LeftLine>55 && DownInflectionR.X!=0 && DownInflectionR.Y>40)
     {
         Point ImageDownPointL;//以左拐点对称的点去补线和找拐点
         //与拐点行数做一个比例关系，越靠近底部了拐点宽度越大.左斜多往左一点
@@ -168,13 +307,14 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
             FillingLine('R',DownInflectionR,UpInflectionC);//三岔成立了就在返回之前补线
-            if(UpInflectionC.Y<bias_endline)//上拐点在正常巡线前瞻的还要前面
+            //判断三岔补线顶上的线是否被扫到了右边赛道，若没有则正常巡线
+            if(abs(CentreLine[UpInflectionC.Y]-CentreLine[UpInflectionC.Y-1])>50)
             {
-                Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//因为这里距离进入三岔还有一段距离，我怕打角太多，所以还是按照原来的方法
+                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
             }
             else
             {
-                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);//在此处就对偏差进行计算，就可以避免仅有一部分中线被补线到的问题，同时外部使用一个标志变量识别到了之后这一次则不进行外面自定义的前瞻偏差计算
+                Bias=DifferentBias(bias_startline,bias_endline,CentreLine);
             }
             gpio_set(LED_WHITE, 0);
             return 1;//三岔右斜入三岔
@@ -191,10 +331,14 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
  **           1：三岔已结束
  ** 作    者: LJF
  *********************************************************************************************/
-uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag)
+uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *ForkFlag)
 {
-    static uint8 StatusChange,num1,num3,numspecial;//三岔识别函数的零食状态变量，用来看状态是否跳转
+    static uint8 StatusChange,num1,num3,numspecial;//三岔识别函数的临时状态变量，用来看状态是否跳转
+    uint8 NowFlag=0;//这次的识别结果
 
+    NowFlag=ForkIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);
+    *ForkFlag=NowFlag;//把识别结果送出去
+    //特殊保护
     if(numspecial<200)//防止很久都没有出现进入入口的状态，及时去判断出口
     {
         numspecial++;
@@ -203,7 +347,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
     {
         StatusChange=2;
     }
-
+    //状态机开始部分
     switch(StatusChange)
     {
         //入口状态
@@ -218,7 +362,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         //中途状态
         case 1:
         {
-            if(num1<120)  //给足够长的时间让车走到三岔运行中
+            if(num1<100)  //给足够长的时间让车走到三岔运行中
             {
                 num1++;
                 break;
@@ -264,7 +408,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
  **           1：三岔已结束
  ** 作    者: LJF
  *********************************************************************************************/
-uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag)
+uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *NowFlag)
 {
     static uint8 StatusChange,num1,num3,numspecial;//三岔识别函数的零食状态变量，用来看状态是否跳转
 
@@ -282,7 +426,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         //入口状态
         case 0:
         {
-            if(NowFlag==1)
+            if(*NowFlag==1)
             {
                 SteerK.P=18.25;//减小KP进入三岔
                 StatusChange=1; //只要开始识别到了三岔就说明已经是入口阶段了
@@ -302,7 +446,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
                 num1++;
                 break;
             }
-            if(NowFlag==0)
+            if(*NowFlag==0)
             {
                 StatusChange=2; //过了中间过度态之后跳转至检测出口
                 base_speed-=5; //检测出口减速
@@ -312,7 +456,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowF
         //出口状态
         case 2:
         {
-            if(NowFlag==1)
+            if(*NowFlag==1)
             {
                 StatusChange=3;
             }

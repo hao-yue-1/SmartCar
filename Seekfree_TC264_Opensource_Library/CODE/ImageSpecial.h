@@ -58,10 +58,11 @@ uint8 CrossLoopOverBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point 
 uint8 CrossLoopEnd_R(Point InflectionL,Point InflectionR);
 uint8 CrossLoopIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);    //右十字回环状态机
 /*三岔相关函数*/
+void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflectionC);//三岔种子生长生长至谷底
 void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC);     //搜寻出三岔上拐点
 uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR);   //三岔识别
-uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag);           //第一遍三岔状态跳转判断函数
-uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 NowFlag);           //第二遍三岔状态跳转判断函数
+uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *NowFlag);           //第一遍三岔状态跳转判断函数
+uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *NowFlag);           //第二遍三岔状态跳转判断函数
 /*十字相关函数*/
 void GetCrossRoadsUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionL,Point *UpInflectionR);//十字路口找寻上拐点函数
 uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR);      //十字路口识别函数
