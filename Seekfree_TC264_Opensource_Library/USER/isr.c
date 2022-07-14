@@ -33,7 +33,7 @@
 #include "LED.h"
 #include  "zf_stm_systick.h"
 
-uint32 SteerPWM=0;            //舵机PWM
+uint32 SteerPWM=STEER_MID;            //舵机PWM
 float icm_target_angle_z=0;   //陀螺仪Z轴积分目标角度
 uint8 icm_angle_z_flag=0;     //陀螺仪Z轴积分达到目标角度
 //PIT中断函数  示例
@@ -42,13 +42,15 @@ uint8 icm_angle_z_flag=0;     //陀螺仪Z轴积分达到目标角度
 IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 {
 	enableInterrupts();//开启中断嵌套
-	//定距停车
+//	//定距停车
 //	if(encoder_dis_flag==1)
 //    {
 //        gpio_set(LED_RED, 0);
 //        while(1)
 //        {
-//            MotorCtrl(0, 0);
+//            MotorSetPWM(0, 0);
+////            MotorCtrl(0, 0);
+////            systick_delay_ms(STM0,6);
 //        }
 //    }
 	//阿克曼结构差速，减速版
@@ -58,17 +60,21 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	{
 	    radian=0.00838884*diff_steerpwm;    //左轮与竖直线实际夹角    //若舵机阈值与实际最大打角改变，则需要修改此处
 	    speed_l=(41/(41+15*tan(radian)))*base_speed;    //左转左轮减速    //此处由前轮轮距和前后轮轴距决定，一般不需要改动
+	    speed_r=base_speed;
 	}
 	else                //右转
 	{
 	    diff_steerpwm=-diff_steerpwm;
 	    radian=0.00789426*diff_steerpwm;     //右轮与竖直线实际夹角    //若舵机阈值与实际最大打角改变，则需要修改此处
 	    speed_r=(41/(41+15*tan(radian)))*base_speed;    //右转右轮减速    //此处由前轮轮距和前后轮轴距决定，一般不需要改动
+	    speed_l=base_speed;
 	}
 	MotorSetTarget(speed_l, speed_r);   //设置目标值，限幅
 	MotorCtrl(speed_l,speed_r);         //PID控制电机速度
 	//调试
 	gpio_set(P20_8,0);
+//	MotorCtrl(base_speed, base_speed);
+//	printf("%d,%d\n",speed_l,speed_r);
 
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH0);
 }
