@@ -43,14 +43,7 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-//    if(CrossLoopEnd_L(InflectionL,InflectionR)==1)
-//    {
-//        CrossLoop_flag=1;
-//    }
-//    else
-//    {
-//        CrossLoop_flag=0;
-//    }
+//    CircleIslandBegin_R();
     /****************************状态机***************************/
 #if 0
     switch(flag)
@@ -239,7 +232,8 @@ void Stop(void)
 {
     while(1)
     {
-        base_speed=0;
+//        base_speed=0;
+        encoder_dis_flag=1; //为了避免掉电导致MCU重启的情况，先不使用PID停车
     }
 }
 
