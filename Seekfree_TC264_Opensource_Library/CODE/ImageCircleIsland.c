@@ -613,6 +613,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Poin
  ** 返 回 值: 0：没有识别到环岛
  **           1：识别到环岛且在车身右侧
  ** 作    者: WBN
+ ** 注    意：这里和左环岛的区别在于我们使用的扫线方式是默认向左寻找中线，所以左环岛即使不做处理也会
  ********************************************************************************************
  */
 uint8 CircleIslandBegin_R()

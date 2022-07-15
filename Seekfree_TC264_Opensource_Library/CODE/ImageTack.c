@@ -187,13 +187,13 @@ void FillinLine_V2(char Choose,int startline,int endline,Point Point1,Point Poin
  ** 返 回 值: 偏差Bias
  ** 作    者: WBN
  *********************************************************************************************/
-float DifferentBias(int startline,int endline,int *CentreLine)
+float DifferentBias(uint8 startline,uint8 endline,uint8 *CentreLine)
 {
     static float last_bias;
     float bias=0;
-    int rownum=0;//用于计数求了多少行的偏差
+    uint8 rownum=0;//用于计数求了多少行的偏差
 
-    for(int i=startline;i>endline;i--)
+    for(uint8 i=startline;i>endline;i--)
     {
         if(BinaryImage[i][CentreLine[i]]==IMAGE_BLACK)  //中线在赛道外的情况，跳出累积
         {

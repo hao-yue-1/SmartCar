@@ -19,9 +19,9 @@
 #define UPINFLECTION_THRESHOLD  30  //上拐点列坐标的差值阈值
 #define UPINFLECTION_COMPARE_INTERVAL 3 //上拐点两点之间比较间隔
 //全局变量
-extern int Lost_Row;                    //中线丢失的行坐标(扫线到赛道外)
-extern int LostNum_LeftLine,LostNum_RightLine; //记录左右边界丢线数
-extern int LeftLine[MT9V03X_H], CentreLine[MT9V03X_H], RightLine[MT9V03X_H];   //扫线处理左中右三线
+extern uint8 Lost_Row;                    //中线丢失的行坐标(扫线到赛道外)
+extern uint8 LostNum_LeftLine,LostNum_RightLine; //记录左右边界丢线数
+extern uint8 LeftLine[MT9V03X_H], CentreLine[MT9V03X_H], RightLine[MT9V03X_H];   //扫线处理左中右三线
 //结构体
 typedef struct Point
 {
@@ -29,7 +29,7 @@ typedef struct Point
     int Y;
 }Point; //点坐标的结构体
 
-void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine);  //扫线提取左中右三线
+void GetImagBasic(uint8 *LeftLine, uint8 *CentreLine, uint8 *RightLine ,char path);  //扫线提取左中右三线
 void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR);//根据左右边界线来得到下拐点（十字、三岔、环岛）
 void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection);//根据遍历左右线得到行与行之间的列坐标的差值，大于设定的阈值则判断为是上拐点
 void GetRightangleUPInflection(char Choose,Point DowmInflection,Point *UpInflection,int ROWTHR,int CLOUMNTHR);//根据二值化图像找直角上拐点
