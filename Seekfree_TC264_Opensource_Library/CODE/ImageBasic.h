@@ -25,15 +25,15 @@ extern uint8 LeftLine[MT9V03X_H], CentreLine[MT9V03X_H], RightLine[MT9V03X_H];  
 //结构体
 typedef struct Point
 {
-    int X;
-    int Y;
+    uint8 X;
+    uint8 Y;
 }Point; //点坐标的结构体
 
 void GetImagBasic(uint8 *LeftLine, uint8 *CentreLine, uint8 *RightLine ,char path);  //扫线提取左中右三线
-void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR);//根据左右边界线来得到下拐点（十字、三岔、环岛）
-void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection);//根据遍历左右线得到行与行之间的列坐标的差值，大于设定的阈值则判断为是上拐点
-void GetRightangleUPInflection(char Choose,Point DowmInflection,Point *UpInflection,int ROWTHR,int CLOUMNTHR);//根据二值化图像找直角上拐点
+void GetDownInflection(uint8 startline,uint8 endline,Point *InflectionL,Point *InflectionR);//根据左右边界线来得到下拐点（十字、三岔、环岛）
+void GetUpInflection(char Choose,uint8 startline,uint8 endline,Point *UpInflection);//根据遍历左右线得到行与行之间的列坐标的差值，大于设定的阈值则判断为是上拐点
+void GetRightangleUPInflection(char Choose,Point DowmInflection,Point *UpInflection,uint8 ROWTHR,uint8 CLOUMNTHR);//根据二值化图像找直角上拐点
 void Bin_Image_Filter(void);//图像腐蚀
-void MeasureWidth(int startline,int endline);//测量赛道宽度
+void MeasureWidth(uint8 startline,uint8 endline);//测量赛道宽度
 
 #endif /* CODE_IMAGEBASIC_H_ */
