@@ -26,11 +26,10 @@ float Bias=0;       //偏差
  **           - 需要向又拐的时候是正的，左边是负的
  ********************************************************************************************
  */
-float Regression_Slope(uint8 startline,uint8 endline,uint8 *CentreLine)
+float Regression_Slope(int startline,int endline,int *CentreLine)
 {
     //Y=BX+A
-    uint8 i=0;
-    int SumX=0,SumY=0,SumLines=0;
+    int i=0,SumX=0,SumY=0,SumLines=0;
     float SumUp=0,SumDown=0,avrX=0,avrY=0,Bias=0;
     SumLines=startline-endline;   // startline 为开始行， //endline 结束行 //SumLines
 
@@ -80,8 +79,7 @@ float Regression_Slope(uint8 startline,uint8 endline,uint8 *CentreLine)
 void FillingLine(char Choose, Point StarPoint,Point EndPoint)
 {
     float K;//斜率为浮点型，否则K<1时，K=0
-    int B;
-    uint8 Y,X;
+    int B,Y,X;
 
     /*特殊情况：当要补的线是一条垂线的时候*/
     if(EndPoint.X==StarPoint.X)
@@ -109,7 +107,7 @@ void FillingLine(char Choose, Point StarPoint,Point EndPoint)
 
     for(Y=StarPoint.Y;Y>EndPoint.Y;Y--)
     {
-        X=(uint8)((-Y-B)/K);          //强制类型转化：指针索引的时候只能是整数
+        X=(int)((-Y-B)/K);          //强制类型转化：指针索引的时候只能是整数
 
         //判断X会不会越界
         if(X<0)                X=0;
@@ -129,11 +127,10 @@ void FillingLine(char Choose, Point StarPoint,Point EndPoint)
         }
     }
 }
-void FillinLine_V2(char Choose,uint8 startline,uint8 endline,Point Point1,Point Point2)
+void FillinLine_V2(char Choose,int startline,int endline,Point Point1,Point Point2)
 {
     float K;//斜率为浮点型，否则K<1时，K=0
-    int B;
-    uint8 Y,X;
+    int B,Y,X;
 
     /*特殊情况：当要补的线是一条垂线的时候*/
     if(Point1.X==Point2.X)
@@ -162,7 +159,7 @@ void FillinLine_V2(char Choose,uint8 startline,uint8 endline,Point Point1,Point 
 
     for(Y=startline;Y>endline;Y--)
     {
-        X=(uint8)((-Y-B)/K);          //强制类型转化：指针索引的时候只能是整数
+        X=(int)((-Y-B)/K);          //强制类型转化：指针索引的时候只能是整数
 
         //判断X会不会越界
         if(X<0)                X=0;
@@ -190,7 +187,7 @@ void FillinLine_V2(char Choose,uint8 startline,uint8 endline,Point Point1,Point 
  ** 返 回 值: 偏差Bias
  ** 作    者: WBN
  *********************************************************************************************/
-float DifferentBias(uint8 startline,uint8 endline,uint8 *CentreLine)
+float DifferentBias(int startline,int endline,int *CentreLine)
 {
     static float last_bias;
     float bias=0;
@@ -236,9 +233,9 @@ float DifferentBias(uint8 startline,uint8 endline,uint8 *CentreLine)
  ** 返 回 值: 偏差Bias
  ** 作    者: LJF
  *********************************************************************************************/
-void Unilaterally_Plan_CenterLine(uint8 startline,uint8 endline)
+void Unilaterally_Plan_CenterLine(int startline,int endline)
 {
-    uint8 row=0,test=0;
+    int row=0,test=0;
     lcd_showint32(TFT_X_MAX-50, 0, LeftLine[60], 3);
     lcd_showint32(TFT_X_MAX-50, 1, RightLine[60], 3);
     for(row=startline;row>endline;row--)

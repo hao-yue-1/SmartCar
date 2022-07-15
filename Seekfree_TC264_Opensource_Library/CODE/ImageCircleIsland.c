@@ -30,6 +30,7 @@ uint8 CircleIslandBegin_L(void)
 {
     Point StarPoint,EndPoint;
     uint8 row=MT9V03X_H-1,column=0;
+    //第一段补线：
     //寻找补线起点
     if(BinaryImage[MT9V03X_H-10][1]==IMAGE_BLACK&&BinaryImage[MT9V03X_H-20][9]==IMAGE_BLACK)    //左下角存在黑洞
     {
@@ -131,6 +132,23 @@ uint8 CircleIslandBegin_L(void)
     }
     //补右线左拐入环
     FillingLine('R', StarPoint, EndPoint);
+    //第二段补线：
+    //寻找补线起点
+    StarPoint.Y=row;    //起点：第一段补线的终点
+    StarPoint.X=column;
+    //寻找补线终点
+    for(column=1;row-1>0;row--)
+    {
+        if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+        {
+            break;
+        }
+    }
+    EndPoint.Y=row;     //终点：左边谷顶
+    EndPoint.X=column;
+    //补右线左拐入环
+    FillingLine('R', StarPoint, EndPoint);
+
     return 1;
 }
 
@@ -620,6 +638,7 @@ uint8 CircleIslandBegin_R()
 {
     Point StarPoint,EndPoint;
     uint8 row=MT9V03X_H-1,column=MT9V03X_W-1;
+    //第一段补线：
     //寻找补线起点
     if(BinaryImage[MT9V03X_H-10][MT9V03X_W-2]==IMAGE_BLACK&&BinaryImage[MT9V03X_H-20][MT9V03X_W-10]==IMAGE_BLACK)    //右下角存在黑洞
     {
@@ -633,6 +652,7 @@ uint8 CircleIslandBegin_R()
     }
     StarPoint.Y=row;    //起点：
     StarPoint.X=LeftLine[row];
+    uint8 start_row=row;//记录补线起点的Y坐标（用于求Bias）
     //寻找补线终点
     for(row=MT9V03X_H-1,column=3*(MT9V03X_W/4);row-1>0;row--)    //向上扫，靠右三分之一处
     {
@@ -721,8 +741,28 @@ uint8 CircleIslandBegin_R()
     }
     //补左线右拐入环
     FillingLine('L', StarPoint, EndPoint);
-//    Bias=DifferentBias(StarPoint.Y, EndPoint.Y, CentreLine);
-//    CircleIsland_flag=1;    //元素内求Bias
+    //第二段补线：
+    //寻找补线起点
+    StarPoint.Y=row;    //起点：将第一段补线的终点作为起点
+    StarPoint.X=column;
+    //寻找补线终点
+    for(column=MT9V03X_W-2;row-1>0;row--)   //向上扫，补线起点
+    {
+        if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+        {
+            break;
+        }
+    }
+    EndPoint.Y=row;     //终点：右谷顶
+    EndPoint.X=column;
+    //补左线右拐入环
+    FillingLine('L', StarPoint, EndPoint);
+    //修正右边界
+    StarPoint.X=column;
+    FillingLine('R', StarPoint, EndPoint);
+    //特殊情况求Bias
+    Bias=DifferentBias(start_row,row,CentreLine);//无特殊处理时的偏差计算
+    CircleIsland_flag=1;
     return 1;
 }
 

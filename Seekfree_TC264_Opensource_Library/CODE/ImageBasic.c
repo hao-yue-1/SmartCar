@@ -21,7 +21,7 @@ uint8 LostNum_LeftLine=0,LostNum_RightLine=0; //记录左右边界丢线数
  ** 返 回 值: 无
  ** 作    者: WBN
  */
-void GetImagBasic(uint8 *LeftLine, uint8 *CentreLine, uint8 *RightLine ,char path)
+void GetImagBasic(int *LeftLine, int *CentreLine, int *RightLine ,char path)
 {
     uint8 row,cloum;              //行,列
     uint8 flag_l=0,flag_r=0;    //记录是否丢线flag，flag=0：丢线
@@ -206,9 +206,9 @@ void GetImagBasic(uint8 *LeftLine, uint8 *CentreLine, uint8 *RightLine ,char pat
  **           - 由于图像原点在左上角，所以起始行是大于结束行，左右线数组从下往上遍历
  ** 作    者: LJF
  */
-void GetDownInflection(uint8 startline,uint8 endline,Point *InflectionL,Point *InflectionR)
+void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Point *InflectionL,Point *InflectionR)
 {
-    uint8 i=0;
+    int i=0;
     InflectionL->X=0;InflectionL->Y=0;InflectionR->X=0;InflectionR->Y=0;//左右拐点置零
 
     for(i=startline;i>endline;i--)
@@ -259,9 +259,9 @@ void GetDownInflection(uint8 startline,uint8 endline,Point *InflectionL,Point *I
  ** 说    明: 起始行要小于结束行，从上往下遍历左右线
  ** 作    者: LJF
  ***********************************************************************/
-void GetUpInflection(char Choose,uint8 startline,uint8 endline,Point *UpInflection)
+void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection)
 {
-    uint8 row=0;
+    int row=0;
     switch(Choose)
     {
         case 'L':
@@ -324,9 +324,9 @@ void GetUpInflection(char Choose,uint8 startline,uint8 endline,Point *UpInflecti
  ** 说    明: 起始行要小于结束行，从上往下遍历左右线
  ** 作    者: LJF
  ***********************************************************************/
-void GetRightangleUPInflection(char Choose,Point DowmInflection,Point *UpInflection,uint8 ROWTHR,uint8 CLOUMNTHR)
+void GetRightangleUPInflection(char Choose,Point DowmInflection,Point *UpInflection,int ROWTHR,int CLOUMNTHR)
 {
-    uint8 row=0,cloumn=0;//起始行,列
+    int row=0,cloumn=0;//起始行,列
     UpInflection->X=0;UpInflection->Y=0;//左上拐点置零
     //从下往上找白跳黑
     for(row=DowmInflection.Y;row>ROWTHR;row--)
@@ -409,9 +409,9 @@ void Bin_Image_Filter(void)
  ** 说    明: 用于赛前测试使用，赛道宽度可以给拐弯的时候单边巡线
  ** 作    者: LJF
  ***********************************************************************/
-void MeasureWidth(uint8 startline,uint8 endline)
+void MeasureWidth(int startline,int endline)
 {
-    uint8 row=0,width=0;
+    int row=0,width=0;
     for(row=startline;row>endline;row--)
     {
         width=RightLine[row]-LeftLine[row];

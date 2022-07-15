@@ -14,9 +14,9 @@
 
 extern float Bias;  //偏差
 
-float Regression_Slope(uint8 startline,uint8 endline,uint8 *CentreLine);//求中线数组点拟合出来的回归方程
+float Regression_Slope(int startline,int endline,int *CentreLine);//求中线数组点拟合出来的回归方程
 void FillingLine(char Choose, Point StarPoint,Point EndPoint);//根据两点进行补线
-float DifferentBias(uint8 startline,uint8 endline,uint8 *CentreLine);
-void FillinLine_V2(char Choose,uint8 startline,uint8 endline,Point Point1,Point Point2);//比第一版本升级了可以根据已经有点线段去推测出未知的线段补线
-void Unilaterally_Plan_CenterLine(uint8 startline,uint8 endline);//判断赛道是否单边丢线使得中线信息失真，根据另外一边未丢线的边消除失真
+float DifferentBias(int startline,int endline,int *CentreLine);
+void FillinLine_V2(char Choose,int startline,int endline,Point Point1,Point Point2);//比第一版本升级了可以根据已经有点线段去推测出未知的线段补线
+void Unilaterally_Plan_CenterLine(int startline,int endline);//判断赛道是否单边丢线使得中线信息失真，根据另外一边未丢线的边消除失真
 #endif /* CODE_IMAGETACK_H_ */

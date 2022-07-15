@@ -20,7 +20,7 @@ uint8 CircleIsland_flag=0;      //环岛识别标志变量
 uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=160,speed_case_6=160,speed_case_7=170;
 
 uint32 SobelResult=0;
-uint8 LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
+int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 
 /********************************************************************************************
  ** 函数功能: 对图像的各个元素之间的逻辑处理函数，最终目的是为了得出Bias给中断去控制
@@ -43,7 +43,7 @@ void ImageProcess()
     /*****************************扫线*****************************/
     GetImagBasic(LeftLine, CentreLine, RightLine, 'L');
     /*************************搜寻左右下拐点***********************/
-//    GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
+    GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
 //    CircleIslandBegin_R();
 //    CircleIslandIdentify_R(LeftLine, RightLine, InflectionL, InflectionR);
