@@ -44,6 +44,7 @@ uint8 CircleIslandBegin_L(void)
     }
     StarPoint.Y=row;    //起点：右边界不丢线处or右下角
     StarPoint.X=RightLine[row];
+    uint8 start_row=row;//记录补线起点的Y坐标（用于求Bias）
     //寻找补线终点
     for(row=MT9V03X_H-1,column=MT9V03X_W/3;row-1>0;row--)    //向上扫，靠左三分之一
     {
@@ -148,7 +149,12 @@ uint8 CircleIslandBegin_L(void)
     EndPoint.X=column;
     //补右线左拐入环
     FillingLine('R', StarPoint, EndPoint);
-
+    //修正左边界
+    StarPoint.X=column;
+    FillingLine('L', StarPoint, EndPoint);
+    //特殊情况求Bias
+    Bias=DifferentBias(start_row,row,CentreLine);//特殊情况求Bias
+    CircleIsland_flag=1;
     return 1;
 }
 
@@ -164,32 +170,120 @@ uint8 CircleIslandBegin_L(void)
  */
 uint8 CircleIslandOverBegin_L(int *LeftLine,int *RightLine)
 {
-    //环岛入口在左边
-    for(int row=MT9V03X_H;row-1>0;row--)  //从下往上检查左边界线
+    //判断是否完全出环：丢线数符合且左下方不存在黑洞
+    if(LostNum_LeftLine<50) //丢线数符合
     {
-        if(LeftLine[row]==0&&LeftLine[row-1]!=0)    //该行丢线而下一行不丢线
+        uint8 flag=0;
+        if(BinaryImage[MT9V03X_H-5][4]==IMAGE_BLACK)    //左下角为黑
         {
-            //下面这个防止进入环岛后误判
-            for(int column=0;column+1<MT9V03X_W-1;column++) //向右扫
+            for(uint8 row=MT9V03X_H-5,column=4;row-2>0;row--)   //向上扫
             {
-                if(BinaryImage[10][column]!=BinaryImage[10][column+1])
+                if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE&&BinaryImage[row-2][column]==IMAGE_WHITE)    //黑-白-白（避免偶然出现的白点误判）
                 {
-                    if(row-10>0)
+                    for(;row-1>0;row--) //继续向上扫
                     {
-                        row-=10;
+                        if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)    //白-黑
+                        {
+                            flag=1; //存在黑洞
+                            break;
+                        }
                     }
-                    Point StarPoint,EndPoint;   //定义补线的起点和终点
-                    EndPoint.Y=row;             //终点赋值
-                    EndPoint.X=LeftLine[row];
-                    StarPoint.Y=MT9V03X_H-1;    //起点赋值
-                    StarPoint.X=0;
-                    FillingLine('L',StarPoint,EndPoint);    //补线
-                    return 1;
+                    break;
                 }
             }
         }
+        if(flag==0)
+        {
+            return 0;
+        }
     }
-    return 0;
+    Point StarPoint,EndPoint;
+    uint8 row=MT9V03X_H-1,column=0;
+    //寻找补线起点
+    StarPoint.Y=row;    //起点：左边界不丢线处or左下角
+    StarPoint.X=LeftLine[row];
+    //寻找补线终点
+    for(row=MT9V03X_H-1,column=MT9V03X_W/3;row-1>0;row--)    //向上扫，靠左三分之一
+    {
+        if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+        {
+            uint8 flag_down=0;  //边界点的位置（1：左边界；2：右边界）
+            if(BinaryImage[row][column+1]==IMAGE_BLACK)      //右边为黑
+            {
+                flag_down=1;    //左边界
+            }
+            else if(BinaryImage[row][column-1]==IMAGE_BLACK) //左边为黑
+            {
+                flag_down=2;    //右边界
+            }
+            else    //X坐标没有落在跳变点上，默认是左边界，手动迫近
+            {
+                flag_down=3;    //出环的时候车身右斜太厉害，若和入环一样找谷底出错概率变大，不如简单处理
+            }
+            switch(flag_down)
+            {
+                case 1: //左边界，向右寻找谷底
+                {
+                    uint8 flag_1=0;
+                    while(column+1<MT9V03X_W-1&&row+1<MT9V03X_H-1)
+                    {
+                        if(BinaryImage[row][column+1]==IMAGE_BLACK) //右黑
+                        {
+                            column++;   //右移
+                            flag_1=1;
+                        }
+                        if(BinaryImage[row+1][column]==IMAGE_BLACK)    //下黑
+                        {
+                            row++;      //下移
+                            flag_1=1;
+                        }
+                        if(flag_1==1)
+                        {
+                            flag_1=0;
+                            continue;
+                        }
+                        break;
+                    }
+                    break;
+                }
+                case 2: //右边界，向左寻找谷底
+                {
+                    uint8 flag_2=0;
+                    while(column-1>0&&row+1<MT9V03X_H-1)
+                    {
+                        if(BinaryImage[row][column-1]==IMAGE_BLACK) //左黑
+                        {
+                            column--;   //左移
+                            flag_2=1;
+                        }
+                        if(BinaryImage[row+1][column]==IMAGE_BLACK) //下黑
+                        {
+                            row++;      //下移
+                            flag_2=1;
+                        }
+                        if(flag_2==1)
+                        {
+                            flag_2=0;
+                            continue;
+                        }
+                        break;
+                    }
+                    break;
+                }
+                default:    //意外情况：无法判别边界点位置
+                {
+                    EndPoint.Y=MT9V03X_H/2;     //终点：定为图像的中心点
+                    EndPoint.X=MT9V03X_W/2;
+                }
+            }
+            EndPoint.Y=row;     //终点：谷底
+            EndPoint.X=column;
+            break;
+        }
+    }
+    //补左线直行
+    FillingLine('L', StarPoint, EndPoint);
+    return 1;
 }
 
 /*
@@ -268,40 +362,81 @@ uint8 CircleIslandEnd_L(Point InflectionL,Point InflectionR)
  */
 uint8 CircleIslandExit_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
-    if(InflectionL.X!=0&&InflectionL.Y!=0&&InflectionL.Y>85)  //判断条件一：是否存在左拐点与右侧直道，且车子接近环岛
+    static uint8 flag=0;    //连续补线flag
+    if((InflectionL.X!=0&&InflectionL.Y!=0&&InflectionL.Y>85)||flag==1)  //符合约束条件or处于连续补线状态
     {
-        float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
-        if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
+        uint8 row=MT9V03X_H-5,column=4,flag_1=0;
+        Point StarPoint,EndPoint;
+        //寻找补线起点
+        if(BinaryImage[row][column]==IMAGE_BLACK)   //左下角为黑（存在左拐点）
         {
-            for(uint8 row=InflectionL.Y;row-1>0;row--)    //从左拐点开始向上扫
+            for(;column<MT9V03X_W-1;column++)   //将指针移动到底部最右端
             {
-                if(BinaryImage[row][InflectionL.X]==IMAGE_WHITE&&BinaryImage[row-1][InflectionL.X]==IMAGE_BLACK)
+                if(BinaryImage[row][column]==IMAGE_WHITE)
                 {
-                    uint8 row_f=row;
-                    for(;row-1>0;row--)
-                    {
-                        if(BinaryImage[row][InflectionL.X]==IMAGE_BLACK&&BinaryImage[row-1][InflectionL.X]==IMAGE_WHITE)
-                        {
-                            row=(row+row_f)/2;
-                            for(uint8 column=InflectionL.X;column<MT9V03X_W-1;column++)   //向右扫
-                            {
-                                if(BinaryImage[row-1][column]==IMAGE_WHITE)
-                                {
-                                    /*补线操作*/
-                                    Point end;
-                                    end.Y=row-1;
-                                    end.X=column;
-                                    FillingLine('L', InflectionL, end);   //补线
-                                    return 1;
-                                }
-                            }
-                            break;
-                        }
-                    }
                     break;
                 }
             }
+            while(column+1<MT9V03X_W-1&&row-1>0)  //向右上方寻找
+            {
+                if(BinaryImage[row][column+1]==IMAGE_BLACK) //右黑
+                {
+                    column++;   //右移
+                    flag_1=1;
+                }
+                if(BinaryImage[row-1][column]==IMAGE_BLACK) //上黑
+                {
+                    row--;      //上移
+                    flag_1=1;
+                }
+                if(flag_1==1)
+                {
+                    flag_1=0;
+                    continue;
+                }
+                break;
+            }
         }
+        StarPoint.Y=row;    //起点：左拐点or左下角
+        StarPoint.X=column;
+        //寻找补线终点
+        for(;row-1>0;row--)    //向上扫
+        {
+            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+            {
+                uint8 row_f=row;
+                for(;row-1>0;row--)
+                {
+                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)
+                    {
+                        uint8 row_s=row;
+                        for(;row-1>0;row--)
+                        {
+                            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+                            {
+                                row=(row_f+row_s)/2;
+                                for(;column+1<MT9V03X_W;column++)   //向右扫
+                                {
+                                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column+1]==IMAGE_WHITE)
+                                    {
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        //补左线直行
+        EndPoint.Y=row; //终点：黑洞右边界点
+        EndPoint.X=column;
+        FillingLine('L', StarPoint, EndPoint);
+        flag=1;
+        return 1;
     }
     return 0;
 }
@@ -321,44 +456,7 @@ uint8 CircleIslandOverExit_L(int *LeftLine,int *RightLine)
     float bias_right=Regression_Slope(119,0,RightLine);   //求出右边界线斜率
     if(fabsf(bias_right)<G_LINEBIAS)    //右边界为直道
     {
-        for(uint8 row=MT9V03X_H-30,column=20;row-1>0;row--)    //向上扫
-        {
-            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
-            {
-                uint8 row_f=row;
-                for(;row-1>0;row--)
-                {
-                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)
-                    {
-                        uint8 row_s=row;
-                        for(;row-1>0;row--)
-                        {
-                            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
-                            {
-                                row=(row_f+row_s)/2;
-                                for(;column+1<MT9V03X_W;column++)   //向右扫
-                                {
-                                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column+1]==IMAGE_WHITE)
-                                    {
-                                        /*补线操作*/
-                                        Point end,start;
-                                        end.Y=row;
-                                        end.X=column;
-                                        start.Y=MT9V03X_H-2;
-                                        start.X=1;
-                                        FillingLine('L', start, end);   //补线
-                                        return 1;
-                                    }
-                                }
-                                return 0;
-                            }
-                        }
-                        return 0;
-                    }
-                }
-                return 0;
-            }
-        }
+
     }
     return 0;
 }
@@ -761,7 +859,7 @@ uint8 CircleIslandBegin_R()
     StarPoint.X=column;
     FillingLine('R', StarPoint, EndPoint);
     //特殊情况求Bias
-    Bias=DifferentBias(start_row,row,CentreLine);//无特殊处理时的偏差计算
+    Bias=DifferentBias(start_row,row,CentreLine);//特殊情况求Bias
     CircleIsland_flag=1;
     return 1;
 }
@@ -1124,7 +1222,6 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
             if(icm_angle_z_flag==1) //陀螺仪判断入环
             {
                 num_1=0;num_2=0;flag=2; //跳转到状态2
-                gpio_set(LED_WHITE, 0);
                 break;
             }
             break;

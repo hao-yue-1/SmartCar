@@ -45,8 +45,8 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-//    CircleIslandBegin_R();
-//    CircleIslandIdentify_R(LeftLine, RightLine, InflectionL, InflectionR);
+    CircleIslandExit_L(LeftLine, RightLine, InflectionL, InflectionR);
+//    CircleIslandOverExit_L(LeftLine, RightLine);
     /****************************状态机***************************/
 #if 0
     switch(flag)
@@ -211,7 +211,7 @@ void ImageProcess()
     }
 #endif
     /***************************偏差计算**************************/
-    if(Fork_flag!=0 || Garage_flag!=0||CrossLoop_flag!=0||CircleIsland_flag!=0)  //在识别函数里面已经计算了Bias
+    if(Fork_flag!=0||Garage_flag!=0||CrossLoop_flag!=0||CircleIsland_flag!=0)  //在识别函数里面已经计算了Bias
     {
         Garage_flag=0;Fork_flag=0;CrossLoop_flag=0;CircleIsland_flag=0;
         return;
