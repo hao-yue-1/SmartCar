@@ -14,9 +14,9 @@
 
 #define L_FINDWHIDE_THRE  10 //Y拐点中间找左边白色区域停止的阈值
 #define R_FINDWHIDE_THRE  150//Y拐点中间找右边白色区域停止的阈值
-#define ROW_FINDWHIDE_THRE 100//Y拐点行的下限的阈值
+#define ROW_FINDWHIDE_THRE 80//Y拐点行的下限的阈值
 #define CLOUMN_FINDWHIDE_THRE   20//列左右寻找白色区域的宽度，如果找不到则进入种子生长
-#define SEED_TRANSVERSE_GROW_THRE    5//三岔种子生长横向生长的阈值范围，超出则默认横向生长的第一个为拐点
+#define SEED_TRANSVERSE_GROW_THRE    8//三岔种子生长横向生长的阈值范围，超出则默认横向生长的第一个为拐点
 #define FORK_INFLECTION_WIDTH  120//打开三岔debug,当拐点在60行附近左右拐点的差值，补全的时候，依据没有丢失的拐点的行数做一个简单的比例关系到单边循迹思路上
 #define FORK_DEBUG  0
 
@@ -131,6 +131,9 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
     char Choose=0,flagL=0,flagR=0;//判断是在谷的左边还是右边的函数,以及判断左右两边有没有白色区域的FLAG
     UpInflectionC->X = 0; UpInflectionC->Y = 0;//上拐点置零
     UpInflectionC->X = (DownInflectionL.X + DownInflectionR.X) / 2;//V型上拐点的列坐标为左右拐点均值
+    //防止因为单边寻拐点使得溢出
+    if(UpInflectionC->X<0) UpInflectionC->X=0;
+    if(UpInflectionC->X>MT9V03X_W-1) UpInflectionC->X=MT9V03X_W-1;
     row = (DownInflectionL.Y + DownInflectionR.Y) / 2;//起始行为左右拐点行的均值
     for (; row > 20; row--)
     {
@@ -236,7 +239,14 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
                 //判断三岔补线顶上的线是否被扫到了右边赛道，若没有则正常巡线
                 if(abs(CentreLine[UpInflectionC.Y]-CentreLine[UpInflectionC.Y-1])>50)
                 {
-                    Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                    if(bias_startline<UpInflectionC.Y)
+                    {
+                        Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);
+                    }
+                    else
+                    {
+                        Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                    }
                 }
                 else
                 {
@@ -251,14 +261,15 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
     }
     else if((DownInflectionL.X==0 && DownInflectionR.X==0) || (BinaryImage[MT9V03X_H-5][5]==IMAGE_WHITE && BinaryImage[MT9V03X_H-5][MT9V03X_W-5]==IMAGE_WHITE))//如果左右下拐点不存在并且下面一段出现就丢线的话的话,我们就去看存不存在正上的拐点
     {
+
         Point ImageDownPointL,ImageDownPointR;//以画面的左下角和右下角作为左右补线的点
         //给上拐点的列一个预测的只，而不是写死为屏幕中间
         if(LeftLine[MT9V03X_H-1]!=0)//如果最下面的一行没有丢线
-            ImageDownPointL.X=LeftLine[MT9V03X_H-1]+10,ImageDownPointL.Y=MT9V03X_H;
-        else ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H;
+            ImageDownPointL.X=LeftLine[MT9V03X_H-1]+10,ImageDownPointL.Y=MT9V03X_H-1;
+        else ImageDownPointL.X=0,ImageDownPointL.Y=MT9V03X_H-1;
         if(RightLine[MT9V03X_H-1]!=MT9V03X_W-1)
-            ImageDownPointR.X=RightLine[MT9V03X_H-1]-10,ImageDownPointR.Y=MT9V03X_H;
-        else ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H;
+            ImageDownPointR.X=RightLine[MT9V03X_H-1]-10,ImageDownPointR.Y=MT9V03X_H-1;
+        else ImageDownPointR.X=MT9V03X_W-1,ImageDownPointR.Y=MT9V03X_H-1;
         //找寻上拐点
         GetForkUpInflection(ImageDownPointL, ImageDownPointR, &UpInflectionC);
         if(UpInflectionC.Y!=0 && UpInflectionC.Y>40)//直接访问Y即可，加快速度，因为X默认就会赋值了
@@ -267,13 +278,20 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             //判断三岔补线顶上的线是否被扫到了右边赛道，若没有则正常巡线
             if(abs(CentreLine[UpInflectionC.Y]-CentreLine[UpInflectionC.Y-1])>50)
             {
-                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                if(bias_startline<UpInflectionC.Y)
+                {
+                    Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);
+                }
+                else
+                {
+                    Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                }
             }
             else
             {
                 Bias=DifferentBias(bias_startline,bias_endline,CentreLine);
             }
-            gpio_set(LED_GREEN, 0);
+            gpio_toggle(LED_GREEN);
             return 1;//三岔正入丢失左右拐点那一帧
         }
     }
@@ -294,7 +312,14 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             //判断三岔补线顶上的线是否被扫到了右边赛道，若没有则正常巡线
             if(abs(CentreLine[UpInflectionC.Y]-CentreLine[UpInflectionC.Y-1])>50)
             {
-                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                if(bias_startline<UpInflectionC.Y)
+                {
+                    Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);
+                }
+                else
+                {
+                    Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                }
             }
             else
             {
@@ -318,7 +343,14 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             //判断三岔补线顶上的线是否被扫到了右边赛道，若没有则正常巡线
             if(abs(CentreLine[UpInflectionC.Y]-CentreLine[UpInflectionC.Y-1])>50)
             {
-                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                if(bias_startline<UpInflectionC.Y)
+                {
+                    Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);
+                }
+                else
+                {
+                    Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                }
             }
             else
             {
