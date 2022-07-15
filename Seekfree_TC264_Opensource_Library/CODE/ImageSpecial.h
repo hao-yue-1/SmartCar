@@ -32,7 +32,7 @@ uint8 GarageROStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
 uint8 GarageRIStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag);//车库右边入库状态机
 void OutGarage(void);       //出库
 /*环岛相关函数*/
-uint8 CircleIslandBegin_L(int *LeftLine,int *RightLine);
+uint8 CircleIslandBegin_L(void);
 uint8 CircleIslandOverBegin_L(int *LeftLine,int *RightLine);
 uint8 CircleIslandEnd_L(Point InflectionL,Point InflectionR);
 uint8 CircleIslandExit_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
@@ -40,7 +40,7 @@ uint8 CircleIslandOverExit_L(int *LeftLine,int *RightLine);
 uint8 CircleIslandMid_L(int *LeftLine,int *RightLine);
 uint8 CircleIslandInside_L(void);
 uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //左环岛状态机
-uint8 CircleIslandBegin_R(int *LeftLine,int *RightLine);
+uint8 CircleIslandBegin_R(void);
 uint8 CircleIslandOverBegin_R(int *LeftLine,int *RightLine);
 uint8 CircleIslandEnd_R(Point InflectionL,Point InflectionR);
 uint8 CircleIslandExit_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
@@ -51,11 +51,11 @@ uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Poin
 /*十字回环相关函数*/
 uint8 CrossLoopBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
 uint8 CrossLoopOverBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
-uint8 CrossLoopEnd_L(Point InflectionL,Point InflectionR);
+uint8 CrossLoopEnd_L(void);
 uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);    //左十字回环状态机
 uint8 CrossLoopBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
 uint8 CrossLoopOverBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
-uint8 CrossLoopEnd_R(Point InflectionL,Point InflectionR);
+uint8 CrossLoopEnd_R(void);
 uint8 CrossLoopIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);    //右十字回环状态机
 /*三岔相关函数*/
 void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflectionC);//三岔种子生长生长至谷底

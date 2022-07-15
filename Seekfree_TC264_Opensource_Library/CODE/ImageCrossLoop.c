@@ -194,7 +194,7 @@ uint8 CrossLoopOverBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point 
  **           若是车子贴外环行驶会有压角风险。预计处理方法是通过右拐点的位置来判断极端情况
  ********************************************************************************************
  */
-uint8 CrossLoopEnd_L(Point InflectionL,Point InflectionR)
+uint8 CrossLoopEnd_L(void)
 {
     static uint8 flag=0;    //连续补线flag，依赖第一次补线判断
     if((LostNum_LeftLine<90&&fabsf(Bias)<4)||flag==1) //符合约束条件或处于连续补线
@@ -332,7 +332,7 @@ uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point I
         }
         case 2: //小车识别十字回环的出口，右转出环
         {
-            if(CrossLoopEnd_L(InflectionL, InflectionR)==1&&flag_end==0)  //第一次检测到回环出口
+            if(CrossLoopEnd_L()==1&&flag_end==0)  //第一次检测到回环出口
             {
                 StartIntegralAngle_Z(70);   //开启积分
                 flag_end=1;                 //避免重复开启积分
@@ -533,7 +533,7 @@ uint8 CrossLoopOverBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point 
  **           若是车子贴外环行驶会有压角风险。预计处理方法是通过左拐点的位置来判断极端情况
  ********************************************************************************************
  */
-uint8 CrossLoopEnd_R()
+uint8 CrossLoopEnd_R(void)
 {
     static uint8 flag=0;    //连续补线flag，依赖第一次补线判断
     if((LostNum_RightLine<90&&fabsf(Bias)<4)||flag==1) //符合约束条件或处于连续补线

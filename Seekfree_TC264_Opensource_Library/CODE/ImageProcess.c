@@ -16,6 +16,7 @@ uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
 uint8 CrossLoop_flag=0;         //十字回环识别标志变量
+uint8 CircleIsland_flag=0;      //环岛识别标志变量
 uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=160,speed_case_6=160,speed_case_7=170;
 
 uint32 SobelResult=0;
@@ -43,7 +44,8 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-//    CircleIslandBegin_R();
+    CircleIslandBegin_R();
+//    CircleIslandIdentify_R(LeftLine, RightLine, InflectionL, InflectionR);
     /****************************状态机***************************/
 #if 0
     switch(flag)
@@ -208,15 +210,21 @@ void ImageProcess()
     }
 #endif
     /***************************偏差计算**************************/
-    if(Fork_flag!=0 || Garage_flag!=0||CrossLoop_flag!=0)  //在识别函数里面已经计算了Bias
+    if(Fork_flag!=0 || Garage_flag!=0||CrossLoop_flag!=0||CircleIsland_flag!=0)  //在识别函数里面已经计算了Bias
     {
-        Garage_flag=0;Fork_flag=0;CrossLoop_flag=0;
+        Garage_flag=0;Fork_flag=0;CrossLoop_flag=0;CircleIsland_flag=0;
         return;
     }
     else
     {
         Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//无特殊处理时的偏差计算
     }
+//    //LCD绘制图像
+//    for(uint8 i=0;i<MT9V03X_W-1;i++)
+//    {
+//        lcd_drawpoint(i, bias_startline, RED);
+//        lcd_drawpoint(i, bias_endline, RED);
+//    }
 }
 
 /*

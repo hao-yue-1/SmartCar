@@ -125,23 +125,23 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
     pwm_r=Speed_PI_Right(encoder_r,speed_r,MotorK_R);
 
     //电机驱动保护
-    if(flag==1)
-    {
-        if(encoder_l>300||encoder_r>300)    //转速过高
-        {
-            MotorSetPWM(0,0);
-            while(1);
-         }
-        else if(encoder_l<50||encoder_r<50) //转速过低
-        {
-            MotorSetPWM(0,0);
-            while(1);
-        }
-    }
-    else if(flag==0&&encoder_l>150&&encoder_r>150)  //确保电机正常工作后再开启保护
-    {
-        flag=1;
-    }
+//    if(flag==1)
+//    {
+//        if(encoder_l>300||encoder_r>300)    //转速过高
+//        {
+//            MotorSetPWM(0,0);
+//            while(1);
+//         }
+//        else if(encoder_l<50||encoder_r<50) //转速过低
+//        {
+//            MotorSetPWM(0,0);
+//            while(1);
+//        }
+//    }
+//    else if(flag==0&&encoder_l>150&&encoder_r>150)  //确保电机正常工作后再开启保护
+//    {
+//        flag=1;
+//    }
 
     MotorSetPWM(pwm_l,pwm_r);                   //电机PWM赋值
     EncoderDistance(0,0,encoder_l,encoder_r);   //采集编码器值，用于编码器测距
