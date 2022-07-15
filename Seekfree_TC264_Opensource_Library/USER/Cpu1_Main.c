@@ -27,6 +27,8 @@
 #include <string.h>
 #include "Key.h"            //按键调参
 #include "ICM20602.h"       //陀螺仪
+#include "LED.h"
+#include "Motor.h"
 
 //将本语句与#pragma section all restore语句之间的全局变量都放在CPU1的RAM中
 

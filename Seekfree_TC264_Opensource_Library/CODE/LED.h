@@ -9,11 +9,11 @@
 #define CODE_LED_H_
 
 //主控板LED颜色定义
-#define LED_YELLOW   P23_1  //黄色
-#define LED_WHITE    P22_1  //白色
-#define LED_GREEN    P22_2  //绿色
-#define LED_BLUE     P22_3  //蓝色
-#define LED_RED      P21_2  //红色
+#define LED_RED         P23_1
+#define LED_YELLOW      P22_1
+#define LED_WHITE       P22_2
+#define LED_BLUE        P22_3
+#define LED_GREEN       P21_2
 
 void LEDInit(void);
 
