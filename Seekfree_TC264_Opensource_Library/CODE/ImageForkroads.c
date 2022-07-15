@@ -12,9 +12,11 @@
 #include "LED.h"
 #include "zf_gpio.h"
 
-#define L_FINDWHIDE_THRE  60 //Y拐点中间找左边白色区域停止的阈值
-#define R_FINDWHIDE_THRE  100//Y拐点中间找右边白色区域停止的阈值
+#define L_FINDWHIDE_THRE  10 //Y拐点中间找左边白色区域停止的阈值
+#define R_FINDWHIDE_THRE  150//Y拐点中间找右边白色区域停止的阈值
 #define ROW_FINDWHIDE_THRE 100//Y拐点行的下限的阈值
+#define CLOUMN_FINDWHIDE_THRE   20//列左右寻找白色区域的宽度，如果找不到则进入种子生长
+#define SEED_TRANSVERSE_GROW_THRE    5//三岔种子生长横向生长的阈值范围，超出则默认横向生长的第一个为拐点
 #define FORK_INFLECTION_WIDTH  120//打开三岔debug,当拐点在60行附近左右拐点的差值，补全的时候，依据没有丢失的拐点的行数做一个简单的比例关系到单边循迹思路上
 #define FORK_DEBUG  0
 
@@ -29,26 +31,45 @@ extern uint8 bias_startline,bias_endline;        //动态前瞻
  **********************************************************************************/
 void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflectionC)
 {
-    for(;Seed.Y<endline;)
+    char transversenum=0;//记录种子是否一直横向移动,种子横向生长的次数
+    Point tempSeed;//临时的种子
+    for(;Seed.Y<endline && Seed.X<MT9V03X_W-1 && Seed.X>0;)
     {
+#if FORK_DEBUG
+        lcd_drawpoint(Seed.X, Seed.Y, GREEN);
+#endif
         switch(Choose)
         {
             case 'L':
                 if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_BLACK)
                 {
                     Seed.Y++,Seed.X++;
+                    transversenum=0;
                 }
                 else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_WHITE)
                 {
                     Seed.Y++;
+                    transversenum=0;
                 }
                 else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_BLACK)
                 {
                     Seed.X++;
+                    if(transversenum==0)//判断是否是第一次往右走
+                    {
+                        tempSeed=Seed;
+                    }
+                    transversenum++;//说明在往右边走
                 }
                 else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_WHITE)
                 {
-                    UpInflectionC->Y=Seed.Y,UpInflectionC->X=Seed.X;
+                    if(transversenum!=0)//说明之前一直都是往右走找到了谷底
+                    {
+                        UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
+                    }
+                    else
+                    {
+                        UpInflectionC->Y=Seed.Y,UpInflectionC->X=Seed.X;
+                    }
                     return;
                 }
                 break;
@@ -56,22 +77,41 @@ void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflec
                 if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_BLACK)
                 {
                     Seed.Y++,Seed.X--;
+                    transversenum=0;
                 }
                 else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_WHITE)
                 {
                     Seed.Y++;
+                    transversenum=0;
                 }
                 else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_BLACK)
                 {
                     Seed.X--;
+                    if(transversenum!=0)//判断是否是第一次往右走
+                    {
+                        tempSeed=Seed;
+                    }
+                    transversenum++;;//说明在往左边走
                 }
                 else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_WHITE)
                 {
-                    UpInflectionC->Y=Seed.Y,UpInflectionC->X=Seed.X;
+                    if(transversenum!=0)//说明之前一直都是往右走找到了谷底
+                    {
+                        UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
+                    }
+                    else
+                    {
+                        UpInflectionC->Y=Seed.Y,UpInflectionC->X=Seed.X;
+                    }
                     return;
                 }
                 break;
             default:break;
+        }
+        //当种子横向生长的次数大于了阈值
+        if(transversenum>SEED_TRANSVERSE_GROW_THRE)
+        {
+            UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
         }
     }
 }
@@ -86,7 +126,7 @@ void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflec
  **********************************************************************************/
 void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC)
 {
-    int row=0, cloumnL=0, cloumnR=0;
+    int row=0, cloumnL=0, cloumnR=0, cloumnnum=0;//cloumnnum记录从基准点偏移了多少列
     Point Seed;
     char Choose=0,flagL=0,flagR=0;//判断是在谷的左边还是右边的函数,以及判断左右两边有没有白色区域的FLAG
     UpInflectionC->X = 0; UpInflectionC->Y = 0;//上拐点置零
@@ -103,31 +143,38 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
             for (cloumnL = UpInflectionC->X; cloumnL > L_FINDWHIDE_THRE; cloumnL--)
             {
 #if FORK_DEBUG
-                lcd_drawpoint(cloumnL, row-1, PURPLE);
+                lcd_drawpoint(cloumnL, row-1, YELLOW);
 #endif
-                if (BinaryImage[row - 1][cloumnL] == IMAGE_BLACK && BinaryImage[row - 1][cloumnL - 1] == IMAGE_WHITE)
+                cloumnnum++;
+                if (BinaryImage[row - 1][cloumnL] == IMAGE_BLACK && BinaryImage[row - 1][cloumnL - 1] == IMAGE_WHITE && BinaryImage[row - 1][cloumnL - 3] == IMAGE_WHITE)
                 {
+                    cloumnnum=0;
                     flagL = 1;
                     break;
                 }
-                if (cloumnL == L_FINDWHIDE_THRE + 1)//如果起始的列就小于了11，那么则不会return，会直接到后面的赋值
+                //条件1：循环结束了还没找到白色区域，或，条件2：黑色区域太多了大于了阈值，就算能找到白色区域补的线也不好
+                if (cloumnL == L_FINDWHIDE_THRE + 1 || cloumnnum>CLOUMN_FINDWHIDE_THRE)
                 {
+                    cloumnnum=0;
                     Choose = 'R';//左边找不到说明在谷的右边
                     break;
                 }
             }
-            for (cloumnR = UpInflectionC->X; cloumnR < R_FINDWHIDE_THRE; cloumnR++)
+            for (cloumnR = UpInflectionC->X; cloumnR < R_FINDWHIDE_THRE && Choose!='R'; cloumnR++)
             {
 #if FORK_DEBUG
-                lcd_drawpoint(cloumnR, row-1, PURPLE);
+                lcd_drawpoint(cloumnR, row-1, YELLOW);
 #endif
-                if (BinaryImage[row - 1][cloumnR] == IMAGE_BLACK && BinaryImage[row - 1][cloumnR + 1] == IMAGE_WHITE)
+                cloumnnum++;
+                if (BinaryImage[row - 1][cloumnR] == IMAGE_BLACK && BinaryImage[row - 1][cloumnR + 1] == IMAGE_WHITE && BinaryImage[row - 1][cloumnL + 3] == IMAGE_WHITE)
                 {
+                    cloumnnum=0;
                     flagR = 1;
                     break;
                 }
-                if (cloumnR == R_FINDWHIDE_THRE - 1)
+                if (cloumnR == R_FINDWHIDE_THRE - 1 || cloumnnum>CLOUMN_FINDWHIDE_THRE)
                 {
+                    cloumnnum=0;
                     Choose = 'L';//右边找不到说明在谷的左边
                     break;
                 }
@@ -135,62 +182,21 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
             break;
         }
     }
-    if ((flagL == 0 || flagR == 0)&&Choose!=0)//说明有一边是没有白色区域的
+    if ((flagL == 0 || flagR == 0) && Choose!=0)//说明有一边是没有白色区域的
     {
         Seed.X = UpInflectionC->X, Seed.Y = row - 1;
+#if FORK_DEBUG
+        for(int j=0;j<MT9V03X_W-1;j++)//画出100行那条线
+        {
+            lcd_drawpoint(j, ROW_FINDWHIDE_THRE, PURPLE);
+        }
+#endif
         SeedGrowFindUpInflection(Choose, Seed, ROW_FINDWHIDE_THRE, UpInflectionC);
     }
     else
     {
         UpInflectionC->Y = row - 1;
     }
-
-//    int starline,i,cloumnL,cloumnR;
-//    UpInflectionC->X=0;UpInflectionC->Y=0;//上拐点置零
-//    UpInflectionC->X=(DownInflectionL.X+DownInflectionR.X)/2;//V型上拐点的列坐标为左右拐点均值，需要修改，不一定是正入三岔
-//    starline=(DownInflectionL.Y+DownInflectionR.Y)/2;//起始行为左右拐点行的均值
-//    //从下往上找到那个跳变的点即为上拐点
-//    for(i=starline;i>20;i--)
-//    {
-//#if FORK_DEBUG
-//        lcd_drawpoint(UpInflectionC->X, i, PURPLE);
-//#endif
-//        //图像数组是[高][宽]
-//        if(BinaryImage[i][UpInflectionC->X]==IMAGE_WHITE && BinaryImage[i-1][UpInflectionC->X]==IMAGE_BLACK)
-//        {
-//            for(cloumnL=UpInflectionC->X;cloumnL>L_FINDWHIDE_THRE;cloumnL--)
-//            {
-//#if FORK_DEBUG
-//                lcd_drawpoint(cloumnL, i-1, PURPLE);
-//#endif
-//                if(BinaryImage[i-1][cloumnL]==IMAGE_BLACK && BinaryImage[i-1][cloumnL-1]==IMAGE_WHITE)
-//                    break;
-//                if(cloumnL==L_FINDWHIDE_THRE+1)//如果起始的列就小于了11，那么则不会return，会直接到后面的赋值
-//                    return;//遍历完了都没有找到白的即不是三岔，退出判断
-//            }
-//#if FORK_DEBUG
-//            lcd_showint32(0, 3, BinaryImage[i+5][UpInflectionC->X+6], 3);
-//#endif
-//            //防止其实是Y拐点只是你随机给的列不对,而拐点在你右下方所以没找到
-//            if(BinaryImage[i+6][UpInflectionC->X+20]==IMAGE_BLACK)
-//            {
-//                i=i+6;
-//                UpInflectionC->X=UpInflectionC->X+20;
-//            }
-//            for(cloumnR=UpInflectionC->X;cloumnR<R_FINDWHIDE_THRE;cloumnR++)
-//            {
-//#if FORK_DEBUG
-//                lcd_drawpoint(cloumnR, i-1, PURPLE);
-//#endif
-//                if(BinaryImage[i-1][cloumnR]==IMAGE_BLACK && BinaryImage[i-1][cloumnR+1]==IMAGE_WHITE)
-//                    break;
-//                if(cloumnR==R_FINDWHIDE_THRE-1)
-//                    return;//遍历完了都没有找到白的即不是三岔，退出判断
-//            }
-//            UpInflectionC->Y=i;//Y坐标是行数
-//            return;
-//        }
-//    }
 }
 
 /********************************************************************************************
@@ -282,6 +288,8 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
         GetForkUpInflection(DownInflectionL, ImageDownPointR, &UpInflectionC);
         if(UpInflectionC.Y!=0)//直接访问Y即可，加快速度，因为X默认就会赋值了
         {
+            //左斜的时候，其实右拐点会在右下屏幕的最下角，所以用于补线的时候以右下角为补线点
+            ImageDownPointR.X=MT9V03X_W-1;ImageDownPointR.Y=MT9V03X_H-1;
             FillingLine('R',ImageDownPointR,UpInflectionC);//三岔成立了就在返回之前补线
             //判断三岔补线顶上的线是否被扫到了右边赛道，若没有则正常巡线
             if(abs(CentreLine[UpInflectionC.Y]-CentreLine[UpInflectionC.Y-1])>50)
