@@ -11,6 +11,7 @@
 #include "Motor.h"
 #include "LED.h"
 #include <stdio.h>
+#include "zf_ccu6_pit.h"
 
 uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
@@ -18,9 +19,9 @@ uint8 Garage_flag=0;            //车库识别标志变量
 uint8 CrossLoop_flag=0;         //十字回环识别标志变量
 uint8 CircleIsland_flag=0;      //环岛识别标志变量
 uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=160,speed_case_6=160,speed_case_7=170;
-
 uint32 SobelResult=0;
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
+uint8 stop_flag=0;
 
 /********************************************************************************************
  ** 函数功能: 对图像的各个元素之间的逻辑处理函数，最终目的是为了得出Bias给中断去控制
@@ -229,7 +230,7 @@ void ImageProcess()
 
 /*
  *******************************************************************************************
- ** 函数功能: 停车
+ ** 函数功能: 停车，使用PID将电机速度降为0，关闭舵机中断
  ** 参    数: 无InflectionL：左下拐点
  **           InflectionR：右下拐点
  ** 返 回 值: 无
@@ -238,11 +239,9 @@ void ImageProcess()
  */
 void Stop(void)
 {
-    while(1)
-    {
-//        base_speed=0;
-        encoder_dis_flag=1; //为了避免掉电导致MCU重启的情况，先不使用PID停车
-    }
+    base_speed=0;   //设置目标速度为0
+    stop_flag=1;    //开启辅助停车防止静差导致车滑行
+    pit_disable_interrupt(CCU6_0, PIT_CH1); //关闭舵机中断
 }
 
 /*

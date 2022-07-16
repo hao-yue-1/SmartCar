@@ -34,7 +34,7 @@
 
 uint8 outgarage_flag=0;     //出库的flag
 uint8 key_flag=0;           //按键调参的flag
-int16 base_speed=210;       //基础速度
+int16 base_speed=200;       //基础速度
 
 void core1_main(void)
 {
@@ -51,7 +51,7 @@ void core1_main(void)
 
     //**********按键调参*************
     //*******************************
-    EncoderDistance(1, 3, 0, 0);
+//    EncoderDistance(1, 3, 0, 0);
     pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化电机定时器中断
     pit_interrupt_ms(CCU6_0,PIT_CH1,20);//初始化舵机定时器中断
 //    //完成出库

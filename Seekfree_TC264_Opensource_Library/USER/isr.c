@@ -32,6 +32,7 @@
 #include "ICM20602.h"
 #include "LED.h"
 #include  "zf_stm_systick.h"
+#include "ImageProcess.h"
 
 uint32 SteerPWM=STEER_MID;            //舵机PWM
 float icm_target_angle_z=0;   //陀螺仪Z轴积分目标角度
@@ -45,13 +46,8 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	//定距停车
 	if(encoder_dis_flag==1)
     {
-        gpio_set(LED_RED, 0);
-        while(1)
-        {
-            MotorSetPWM(0, 0);
-//            MotorCtrl(0, 0);
-//            systick_delay_ms(STM0,6);
-        }
+	    Stop();
+        gpio_set(P21_4, 0);
     }
 	//阿克曼结构差速，减速版
 	int diff_steerpwm=SteerPWM-STEER_MID;
