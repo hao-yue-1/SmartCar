@@ -153,8 +153,11 @@ uint8 CircleIslandBegin_L(void)
     StarPoint.X=column;
     FillingLine('L', StarPoint, EndPoint);
     //特殊情况求Bias
-    Bias=DifferentBias(start_row,row,CentreLine);//特殊情况求Bias
-    CircleIsland_flag=1;
+    if(row>bias_endline)    //防止其他元素干扰，当补线终点低于默认前瞻时，视为特殊情况
+    {
+        Bias=DifferentBias(start_row,row,CentreLine);//特殊情况求Bias
+        CircleIsland_flag=1;
+    }
     return 1;
 }
 
@@ -306,6 +309,13 @@ uint8 CircleIslandEnd_L(void)
         uint8 row=MT9V03X_H-2,column=MT9V03X_W-2,flag_1;
         if(BinaryImage[row][column]==IMAGE_BLACK)   //右下角为黑（可能存在右拐点）
         {
+            for(;column-1>0;column--)   //将指针移动到底部最左端
+            {
+                if(BinaryImage[row][column-1]==IMAGE_WHITE)
+                {
+                    break;
+                }
+            }
             while(column-1>0&&row-1>0)  //向左上方寻找
             {
                 if(BinaryImage[row][column-1]==IMAGE_BLACK) //左黑
@@ -370,9 +380,9 @@ uint8 CircleIslandExit_L(Point InflectionL)
         //寻找补线起点
         if(BinaryImage[row][column]==IMAGE_BLACK)   //左下角为黑（存在左拐点）
         {
-            for(;column<MT9V03X_W-1;column++)   //将指针移动到底部最右端
+            for(;column+1<MT9V03X_W-1;column++)   //将指针移动到底部最右端
             {
-                if(BinaryImage[row][column]==IMAGE_WHITE)
+                if(BinaryImage[row][column+1]==IMAGE_WHITE)
                 {
                     break;
                 }
@@ -396,9 +406,16 @@ uint8 CircleIslandExit_L(Point InflectionL)
                 }
                 break;
             }
+            StarPoint.Y=row;    //起点：左拐点
+            StarPoint.X=column;
         }
-        StarPoint.Y=row;    //起点：左拐点or左下角
-        StarPoint.X=column;
+        else
+        {
+            StarPoint.Y=row;    //起点：左下角
+            StarPoint.X=column;
+            column=MT9V03X_W/3; //为寻找上方黑洞，重置X坐标为右三分之一处
+        }
+
         //寻找补线终点
         for(;row-1>0;row--)    //向上扫
         {
@@ -459,6 +476,13 @@ uint8 CircleIslandMid_L(void)
         flag=1; //符合约束条件
         //下面的程序防止在Exit处误判：误判了圆环与直角交界处的黑块，上面有一个黑洞
         uint8 column=2,row=MT9V03X_H-3,flag_1=0;    //寻找黑洞所在X坐标
+        for(;column+1>MT9V03X_W-1;column++)   //将指针移动到底部最右端
+        {
+            if(BinaryImage[row][column+1]==IMAGE_WHITE)
+            {
+                break;
+            }
+        }
         while(column+1<MT9V03X_W-1&&row-1>0)
         {
             if(BinaryImage[row][column+1]==IMAGE_BLACK)    //右黑
@@ -835,8 +859,12 @@ uint8 CircleIslandBegin_R(void)
     StarPoint.X=column;
     FillingLine('R', StarPoint, EndPoint);
     //特殊情况求Bias
-    Bias=DifferentBias(start_row,row,CentreLine);//特殊情况求Bias
-    CircleIsland_flag=1;
+    if(row>bias_endline)    //防止其他元素干扰，当补线终点低于默认前瞻时，视为特殊情况
+    {
+        Bias=DifferentBias(start_row,row,CentreLine);//特殊情况求Bias
+        CircleIsland_flag=1;
+    }
+
     return 1;
 }
 
@@ -989,6 +1017,13 @@ uint8 CircleIslandEnd_R(void)
         uint8 row=MT9V03X_H-2,column=1,flag_1;
         if(BinaryImage[row][column]==IMAGE_BLACK)   //左下角为黑（可能存在左拐点）
         {
+            for(;column+1<MT9V03X_W-1;column++)   //将指针移动到底部最右端
+            {
+                if(BinaryImage[row][column+1]==IMAGE_WHITE)
+                {
+                    break;
+                }
+            }
             while(column+1<MT9V03X_W-1&&row-1>0)  //向右上方寻找
             {
                 if(BinaryImage[row][column+1]==IMAGE_BLACK) //右黑
@@ -1053,9 +1088,9 @@ uint8 CircleIslandExit_R(Point InflectionR)
         //寻找补线起点
         if(BinaryImage[row][column]==IMAGE_BLACK)   //右下角为黑（存在右拐点）
         {
-            for(;column>0;column--)   //将指针移动到底部最左端
+            for(;column-1>0;column--)   //将指针移动到底部最左端
             {
-                if(BinaryImage[row][column]==IMAGE_WHITE)
+                if(BinaryImage[row][column-1]==IMAGE_WHITE)
                 {
                     break;
                 }
@@ -1079,28 +1114,34 @@ uint8 CircleIslandExit_R(Point InflectionR)
                 }
                 break;
             }
+            StarPoint.Y=row;    //起点：右拐点
+            StarPoint.X=column;
         }
-        StarPoint.Y=row;    //起点：右拐点or右下角
-        StarPoint.X=column;
-        //寻找补线终点
-        for(;row-1>0;row--)    //向上扫
+        else
         {
-            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+            StarPoint.Y=row;    //起点：右下角
+            StarPoint.X=column;
+            column=2*(MT9V03X_W/3); //为寻找上方黑洞，重置X坐标为右三分之一处
+        }
+        //寻找补线终点
+        for(;row-1>0;row--)    //向上扫，寻找黑洞下边界
+        {
+            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
             {
-                uint8 row_f=row;
-                for(;row-1>0;row--)
+                uint8 row_f=row;    //黑洞下边界
+                for(;row-1>0;row--) //继续向上扫，寻找黑洞上边界
                 {
-                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)
+                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)  //黑-白
                     {
-                        uint8 row_s=row;
-                        for(;row-1>0;row--)
+                        uint8 row_s=row;    //黑洞上边界
+                        for(;row-1>0;row--) //继续向上扫，对黑洞进行验证
                         {
-                            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+                            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
                             {
-                                row=(row_f+row_s)/2;
-                                for(;column-1>0;column--)   //向左扫
+                                row=(row_f+row_s)/2;    //黑洞中点Y坐标
+                                for(;column-1>0;column--)   //向左扫，寻找黑洞左边界
                                 {
-                                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column-1]==IMAGE_WHITE)
+                                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column-1]==IMAGE_WHITE)  //黑-白
                                     {
                                         break;
                                     }
@@ -1141,8 +1182,15 @@ uint8 CircleIslandMid_R(void)
     if(BinaryImage[MT9V03X_H-5][MT9V03X_W-5]==IMAGE_BLACK||BinaryImage[MT9V03X_H-3][MT9V03X_W-3]==IMAGE_BLACK)    //正常情况，右下为黑
     {
         flag=1; //符合约束条件
-        //下面的程序防止在Exit处误判：误判了圆环与直角交界处的黑块，上面有一个黑洞
-        uint8 column=MT9V03X_W-3,row=MT9V03X_H-3,flag_1=0;    //寻找黑洞所在X坐标
+        //下面的程序防止在Exit处误判：误判了圆环与直角交界处的黑块，上面有一个黑洞，寻找黑洞
+        uint8 column=MT9V03X_W-3,row=MT9V03X_H-3,flag_1=0;
+        for(;column-1<0;column--)   //将指针移动到底部最左端
+        {
+            if(BinaryImage[row][column-1]==IMAGE_WHITE)
+            {
+                break;
+            }
+        }
         while(column-1>0&&row-1>0)
         {
             if(BinaryImage[row][column-1]==IMAGE_BLACK)    //左黑
@@ -1162,30 +1210,23 @@ uint8 CircleIslandMid_R(void)
             }
             break;
         }
-        for(;row-1>0;row--)    //向上扫，右边界
+        //这里为了防止远处十字环的干扰，和左环岛不同，采用另外一种判断方法
+        if(row-5>0)     //手动上移切点Y坐标，方便下面的判断
         {
-            if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)    //黑-白
+            row-=5;
+        }
+        for(;column+1<MT9V03X_W-1;column++) //向右扫，黑洞左切点
+        {
+            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row][column+1]==IMAGE_WHITE)    //谷底右侧为白：误判了Exit处圆环和直道的夹角为黑洞
             {
-                for(;row-1>0;row--) //继续向上扫
-                {
-                    if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)    //白-黑
-                    {
-                        for(;row-1>0;row--) //继续向上扫
-                        {
-                            if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)    //黑-白
-                            {
-                                flag=0; //不符合约束条件
-                            }
-                        }
-                    }
-                }
+                flag=0;
                 break;
             }
         }
     }
-    else    //判断是否满足车子靠右的情况（左边有一个接近正中间的，极小的黑洞）
+    else    //判断是否满足车子靠左的情况（右边有一个接近正中间的，极小的黑洞）
     {
-        uint8 row=MT9V03X_H-1;
+        uint8 row=MT9V03X_H-1,column=MT9V03X_W-1;
         for(;row-1>0;row--)  //向上扫，右边界
         {
             if(BinaryImage[row][MT9V03X_W-2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W-2]==IMAGE_BLACK)    //白-黑（黑洞下边界）
@@ -1198,11 +1239,11 @@ uint8 CircleIslandMid_R(void)
                         row=(row+row_low)/2;    //计算出黑洞中点Y坐标
                         if(row>50&&row<70)      //黑洞位于中间位置
                         {
-                            for(uint8 column=0;column-1>0;column--)   //向左扫，黑洞中点
+                            for(;column-1>0;column--)   //向左扫，黑洞中点
                             {
                                 if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column-1]==IMAGE_WHITE)  //黑-白（黑洞左边界）
                                 {
-                                    if(column<3*(MT9V03X_W/4))  //黑洞左边界位于图像右部
+                                    if(column>3*(MT9V03X_W/4))  //黑洞左边界位于图像右部
                                     {
                                         flag=1; //符合约束条件
                                     }
@@ -1216,39 +1257,15 @@ uint8 CircleIslandMid_R(void)
                 break;
             }
         }
-        //下面的程序防止在Exit处误判：将圆环与直道交界处误判为黑洞，上面还有一个真正的黑洞
-        if(flag==1) //上面条件成立的情况下作以下约束
-        {
-            for(;row-1>0;row--) //黑洞中点处向上扫，左边界
-            {
-                if(BinaryImage[row][MT9V03X_W-2]==IMAGE_BLACK&&BinaryImage[row-1][MT9V03X_W-2]==IMAGE_WHITE)    //黑-白
-                {
-                    for(;row-1>0;row--) //继续向上扫
-                    {
-                        if(BinaryImage[row][MT9V03X_W-2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W-2]==IMAGE_BLACK)    //白-黑
-                        {
-                            for(;row-1>0;row--) //继续向上扫
-                            {
-                                if(BinaryImage[row][MT9V03X_W-2]==IMAGE_BLACK&&BinaryImage[row-1][MT9V03X_W-2]==IMAGE_WHITE)    //黑-白
-                                {
-                                    for(;row-1>0;row--) //继续向上扫
-                                    {
-                                        if(BinaryImage[row][MT9V03X_W-2]==IMAGE_WHITE&&BinaryImage[row-1][MT9V03X_W-2]==IMAGE_BLACK)    //白-黑
-                                        {
-                                            flag=0; //不符合约束条件
-                                            break;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-        }
+//        //这里为了防止远处十字环的干扰，和左环岛不同，采用另外一种判断方法
+//        for(;column+1<MT9V03X_W-1;column++) //向右扫，黑洞左切点
+//        {
+//            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row][column+1]==IMAGE_WHITE)    //谷底右侧为白：误判了Exit处圆环和直道的夹角为黑洞
+//            {
+//                flag=0;
+//                break;
+//            }
+//        }
     }
     //满足约束条件下的进一步判断
     if(flag==1)
@@ -1300,6 +1317,7 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
+            gpio_set(LED_BLUE, 0);
             if(flag_exit==1)        //之前已识别到环岛出口
             {
                 if(CircleIslandMid_R()==1)   //识别到环岛中部
@@ -1316,6 +1334,7 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
+            gpio_set(LED_GREEN, 0);
             if(CircleIslandBegin_R()==1&&flag_in==0) //识别到环岛入口
             {
                 StartIntegralAngle_Z(45);   //开启陀螺仪辅助入环
@@ -1333,6 +1352,7 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
         }
         case 2: //此时小车在环中，自主寻迹
         {
+            gpio_set(LED_RED, 0);
             if(flag_in==1)
             {
                 if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
@@ -1350,6 +1370,7 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
         }
         case 3: //此时小车已经接近环岛出口，开始判断环岛出口
         {
+            gpio_set(LED_WHITE, 0);
             if(CircleIslandEnd_R()==1&&flag_end==0)  //第一次检测到环岛出口
             {
                 StartIntegralAngle_Z(70);   //开启积分
@@ -1367,6 +1388,7 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
         }
         case 4: //此时小车已经出环，但是会再次进过环岛入口，需要补线直行
         {
+            gpio_set(LED_YELLOW, 0);
             flag_begin=CircleIslandOverBegin_R(RightLine);     //识别环岛入口补线忽略
             if(flag_begin==0&&flag_last_begin==0&&flag_last2_begin==1)   //上上次识别到环岛入口而这两次都没有识别到环岛入口
             {

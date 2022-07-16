@@ -45,8 +45,7 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-    CircleIslandExit_L(InflectionL);
-//    CircleIslandOverExit_L(LeftLine, RightLine);
+    CircleIslandIdentify_L(LeftLine, InflectionL);
     /****************************状态机***************************/
 #if 0
     switch(flag)
@@ -257,12 +256,67 @@ void Stop(void)
  */
 void LcdDrawPoint(Point Inflection,uint16 color)
 {
-    for(int cloum=0;cloum<MT9V03X_W-1;cloum++)
+    for(uint8 column=0;column<MT9V03X_W-1;column++)
     {
-        lcd_drawpoint(cloum,Inflection.Y,color);
+        lcd_drawpoint(column,Inflection.Y,color);
     }
-    for(int row=0;row<MT9V03X_H-1;row++)
+    for(uint8 row=0;row<MT9V03X_H-1;row++)
     {
         lcd_drawpoint(Inflection.X,row,color);
+    }
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 以xy轴交点的方式，在LCD上定位一个坐标
+ ** 参    数:
+ **           color：颜色
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+void LcdDrawPoint_V2(uint8 row,uint8 column,uint16 color)
+{
+    for(uint8 cloum=0;cloum<MT9V03X_W-1;cloum++)
+    {
+        lcd_drawpoint(cloum,row,color);
+    }
+    for(uint8 row=0;row<MT9V03X_H-1;row++)
+    {
+        lcd_drawpoint(column,row,color);
+    }
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 以一条垂直于Y轴直线的方式绘制出Y坐标
+ ** 参    数:
+ **           color：颜色
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+void LcdDrawRow(uint8 row,uint16 color)
+{
+    for(uint8 column=0;column<MT9V03X_W-1;column++)
+    {
+        lcd_drawpoint(column,row,color);
+    }
+}
+
+/*
+ *******************************************************************************************
+ ** 函数功能: 以一条垂直于X轴直线的方式绘制出X坐标
+ ** 参    数:
+ **           color：颜色
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ ********************************************************************************************
+ */
+void LcdDrawColumn(uint8 column,uint16 color)
+{
+    for(uint8 row=0;row<MT9V03X_H-1;row++)
+    {
+        lcd_drawpoint(column,row,color);
     }
 }

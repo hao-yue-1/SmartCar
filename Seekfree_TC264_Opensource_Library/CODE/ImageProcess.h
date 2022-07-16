@@ -19,9 +19,13 @@ extern uint8 CircleIsland_flag;      //环岛标志变量
 extern uint8 CrossLoop_flag;         //十字回环标志变量
 extern uint8 CircleIsland_flag;      //环岛识别标志变量
 extern uint8 speed_case_1,speed_case_2,speed_case_3,speed_case_4,speed_case_5,speed_case_6,speed_case_7;
+extern uint8 bias_startline,bias_endline;        //动态前瞻
 
-void Stop(void);
-void LcdDrawPoint(Point Inflection,uint16 color);
 void ImageProcess(void);//图像处理逻辑函数
+void Stop(void);        //停车
+void LcdDrawPoint(Point Inflection,uint16 color);
+void LcdDrawPoint_V2(uint8 row,uint8 column,uint16 color);
+void LcdDrawRow(uint8 row,uint16 color);
+void LcdDrawColumn(uint8 column,uint16 color);
 
 #endif /* CODE_IMAGEPROCESS_H_ */
