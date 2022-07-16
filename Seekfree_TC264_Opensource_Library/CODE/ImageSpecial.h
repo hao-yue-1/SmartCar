@@ -33,21 +33,19 @@ uint8 GarageRIStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
 void OutGarage(void);       //出库
 /*环岛相关函数*/
 uint8 CircleIslandBegin_L(void);
-uint8 CircleIslandOverBegin_L(int *LeftLine,int *RightLine);
-uint8 CircleIslandEnd_L(Point InflectionL,Point InflectionR);
-uint8 CircleIslandExit_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
-uint8 CircleIslandOverExit_L(int *LeftLine,int *RightLine);
-uint8 CircleIslandMid_L(int *LeftLine,int *RightLine);
+uint8 CircleIslandOverBegin_L(int *LeftLine);
+uint8 CircleIslandEnd_L(void);
+uint8 CircleIslandExit_L(Point InflectionL);
+uint8 CircleIslandMid_L(void);
 uint8 CircleIslandInside_L(void);
-uint8 CircleIslandIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //左环岛状态机
+uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL);   //左环岛状态机
 uint8 CircleIslandBegin_R(void);
-uint8 CircleIslandOverBegin_R(int *LeftLine,int *RightLine);
-uint8 CircleIslandEnd_R(Point InflectionL,Point InflectionR);
-uint8 CircleIslandExit_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
-uint8 CircleIslandOverExit_R(int *LeftLine,int *RightLine);
-uint8 CircleIslandMid_R(int *LeftLine,int *RightLine);
+uint8 CircleIslandOverBegin_R(int *RightLine);
+uint8 CircleIslandEnd_R(void);
+uint8 CircleIslandExit_R(Point InflectionR);
+uint8 CircleIslandMid_R(void);
 uint8 CircleIslandInside_R(void);
-uint8 CircleIslandIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);   //右环岛状态机
+uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR);   //右环岛状态机
 /*十字回环相关函数*/
 uint8 CrossLoopBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
 uint8 CrossLoopOverBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);

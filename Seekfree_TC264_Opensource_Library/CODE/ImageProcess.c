@@ -45,7 +45,7 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-    CircleIslandExit_L(LeftLine, RightLine, InflectionL, InflectionR);
+    CircleIslandExit_L(InflectionL);
 //    CircleIslandOverExit_L(LeftLine, RightLine);
     /****************************状态机***************************/
 #if 0
