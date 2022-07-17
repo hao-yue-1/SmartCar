@@ -12,7 +12,7 @@ void OLED_full(void);			//填充整个OLED
 void OLED_init(void);			//初始化OLED
 void Picture_display(const unsigned char *ptr_pic);
 void Picture_ReverseDisplay(const unsigned char *ptr_pic);
-void OLED_ShowStr(unsigned char x, unsigned char y, unsigned char ch[], unsigned char TextSize);
+void OLED_ShowStr(unsigned char x, unsigned char y, char ch[], unsigned char TextSize);
 
 void OLED_ShowNum(unsigned char x,unsigned char y,int num,unsigned char len,unsigned char TextSize);
 void OLED_ShowCh(unsigned char x,unsigned char y,unsigned char ch,unsigned char TextSize);

@@ -197,7 +197,7 @@ void OLED_SetPos(unsigned char x, unsigned char y)
 *	·µ »Ø Öµ: ÎÞ
 *********************************************************************************************************
 */
-void OLED_ShowStr(unsigned char x, unsigned char y, unsigned char ch[], unsigned char TextSize)
+void OLED_ShowStr(unsigned char x, unsigned char y, char ch[], unsigned char TextSize)
 {
     unsigned char c = 0,i = 0,j = 0;
     switch(TextSize)

@@ -10,8 +10,8 @@
 #include "zf_gpio.h"
 #include "ImageProcess.h"
 #include "PID.h"            //修改PID参数
-#include "SEEKFREE_18TFT.h" //LCD显示
 #include "LED.h"
+#include "oled.h"           //OLED显示
 
 /*
  ** 函数功能: 初始化按键对应IO口
@@ -53,6 +53,56 @@ uint8 KeyScan(void)
 }
 
 /*
+ ** 函数功能: 按键PID调参的OLED参数显示
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void PIDParameterDisplay(uint8 key_num)
+{
+    OLED_clear();
+    switch(key_num)
+    {
+        case 0: //舵机P
+        {
+            OLED_ShowStr(0, 1, "Steer.P:", 2);
+            OLED_ShowFloat(0, 4, SteerK.P, 2);
+            break;
+        }
+        case 1: //舵机D
+        {
+            OLED_ShowStr(0, 1, "Steer.D:", 2);
+            OLED_ShowFloat(0, 4, SteerK.D, 2);
+            break;
+        }
+        case 2: //左电机P
+        {
+            OLED_ShowStr(0, 1, "Motor_L.P:", 2);
+            OLED_ShowFloat(0, 4, MotorK_L.P, 2);
+            break;
+        }
+        case 3: //左电机I
+        {
+            OLED_ShowStr(0, 1, "Motor_L.I:", 2);
+            OLED_ShowFloat(0, 4, MotorK_L.I, 2);
+            break;
+        }
+        case 4: //右电机P
+        {
+            OLED_ShowStr(0, 1, "Motor_R.P:", 2);
+            OLED_ShowFloat(0, 4, MotorK_R.P, 2);
+            break;
+        }
+        case 5: //右电机I
+        {
+            OLED_ShowStr(0, 1, "Motor_R.I:", 2);
+            OLED_ShowFloat(0, 4, MotorK_R.I, 2);
+            break;
+        }
+    }
+}
+
+/*
  ** 函数功能: 按键PID调参
  ** 参    数: 无
  ** 返 回 值: 无
@@ -60,34 +110,67 @@ uint8 KeyScan(void)
  */
 void KeyPID(void)
 {
+    uint8 key_num=0;
     while(1)
     {
         switch(KeyScan())
         {
-            case KEY_UP:
+            case KEY_UP:    //增大参数值
             {
-                gpio_toggle(LED_BLUE);
+                switch(key_num)
+                {
+                    case 0:SteerK.P+=1;     break;
+                    case 1:SteerK.D+=1;     break;
+                    case 2:MotorK_L.P+=1;   break;
+                    case 3:MotorK_L.I+=1;   break;
+                    case 4:MotorK_R.P+=1;   break;
+                    case 5:MotorK_R.I+=1;   break;
+                }
+                PIDParameterDisplay(key_num);
                 break;
             }
-            case KEY_DOWN:
+            case KEY_DOWN:  //减小参数值
             {
-                gpio_toggle(LED_GREEN);
+                switch(key_num)
+                {
+                    case 0:SteerK.P-=1;     break;
+                    case 1:SteerK.D-=1;     break;
+                    case 2:MotorK_L.P-=1;   break;
+                    case 3:MotorK_L.I-=1;   break;
+                    case 4:MotorK_R.P-=1;   break;
+                    case 5:MotorK_R.I-=1;   break;
+                }
+                PIDParameterDisplay(key_num);
                 break;
             }
-            case KEY_LEFT:
+            case KEY_LEFT:  //向后切换参数
             {
-                gpio_toggle(LED_RED);
+                if(key_num>0)
+                {
+                    key_num--;
+                }
+                PIDParameterDisplay(key_num);
                 break;
             }
-            case KEY_RIGHT:
+            case KEY_RIGHT: //向前切换参数
             {
-                gpio_toggle(LED_WHITE);
+                if(key_num<5)
+                {
+                    key_num++;
+                }
+                PIDParameterDisplay(key_num);
                 break;
             }
-            case KEY_ENTER:
+            case KEY_ENTER: //退出调参
             {
-                gpio_toggle(LED_YELLOW);
-                break;
+                OLED_clear();
+                OLED_ShowFloat(0, 1, SteerK.P, 2);
+                OLED_ShowFloat(0, 2, SteerK.D, 2);
+                OLED_ShowFloat(0, 3, MotorK_L.P, 2);
+                OLED_ShowFloat(0, 4, MotorK_L.I, 2);
+                OLED_ShowFloat(0, 5, MotorK_R.P, 2);
+                OLED_ShowFloat(0, 6, MotorK_R.I, 2);
+                return;
             }
         }
         systick_delay_ms(STM0,100);
