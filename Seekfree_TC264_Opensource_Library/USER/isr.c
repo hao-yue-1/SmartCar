@@ -47,7 +47,6 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	if(encoder_dis_flag==1)
     {
 	    Stop();
-        gpio_set(P21_4, 0);
     }
 	//阿克曼结构差速，减速版
 	int diff_steerpwm=SteerPWM-STEER_MID;

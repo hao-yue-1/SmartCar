@@ -46,7 +46,7 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-    CircleIslandIdentify_L(LeftLine, InflectionL);
+//    CircleIslandIdentify_L(LeftLine, InflectionL);
     /****************************状态机***************************/
 #if 0
     switch(flag)
@@ -242,6 +242,7 @@ void Stop(void)
     base_speed=0;   //设置目标速度为0
     stop_flag=1;    //开启辅助停车防止静差导致车滑行
     pit_disable_interrupt(CCU6_0, PIT_CH1); //关闭舵机中断
+    gpio_set(P21_4, 0);
 }
 
 /*
