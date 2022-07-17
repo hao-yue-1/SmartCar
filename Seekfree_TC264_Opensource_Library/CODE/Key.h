@@ -17,14 +17,14 @@
 #define KEY_S4      gpio_get(P33_13)
 #define KEY_S5      gpio_get(P32_4)
 
-#define KEY_S1_PRES     1
-#define KEY_S2_PRES     2
-#define KEY_S3_PRES     3
-#define KEY_S4_PRES     4
-#define KEY_S5_PRES     5
+#define KEY_UP      1   //上
+#define KEY_DOWN    2   //下
+#define KEY_LEFT    3   //左
+#define KEY_RIGHT   4   //右
+#define KEY_ENTER   5   //确认
 
 void KeyInit(void);
 uint8 KeyScan(void);
-
+void KeyPID(void);
 
 #endif /* CODE_KEY_H_ */

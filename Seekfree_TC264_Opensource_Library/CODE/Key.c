@@ -11,6 +11,7 @@
 #include "ImageProcess.h"
 #include "PID.h"            //修改PID参数
 #include "SEEKFREE_18TFT.h" //LCD显示
+#include "LED.h"
 
 /*
  ** 函数功能: 初始化按键对应IO口
@@ -36,20 +37,60 @@ void KeyInit(void)
 uint8 KeyScan(void)
 {
     static uint8 key_up=1;     //按键松开标志
-    if(key_up&&(KEY_S1==1||KEY_S2==1||KEY_S3==1||KEY_S4==1||KEY_S5==1))
+    if(key_up&&(KEY_S1==0||KEY_S2==0||KEY_S3==0||KEY_S4==0||KEY_S5==0))
     {
         systick_delay_ms(STM0,10);
         key_up=0;
-        if(KEY_S1==1)       return KEY_S1_PRES;
-        else if(KEY_S2==1)  return KEY_S2_PRES;
-        else if(KEY_S3==1)  return KEY_S3_PRES;
-        else if(KEY_S4==1)  return KEY_S4_PRES;
-        else if(KEY_S5==1)  return KEY_S5_PRES;
+        if(KEY_S1==0)       return KEY_UP;
+        else if(KEY_S2==0)  return KEY_DOWN;
+        else if(KEY_S3==0)  return KEY_LEFT;
+        else if(KEY_S4==0)  return KEY_RIGHT;
+        else if(KEY_S5==0)  return KEY_ENTER;
     }
-    else if(KEY_S1==0||KEY_S2==0||KEY_S3==0||KEY_S4==0||KEY_S5==0)
+    else if(KEY_S1==1||KEY_S2==1||KEY_S3==1||KEY_S4==1||KEY_S5==1)
         key_up=1;
     return 0;   //无按键按下
 }
 
-
+/*
+ ** 函数功能: 按键PID调参
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void KeyPID(void)
+{
+    while(1)
+    {
+        switch(KeyScan())
+        {
+            case KEY_UP:
+            {
+                gpio_toggle(LED_BLUE);
+                break;
+            }
+            case KEY_DOWN:
+            {
+                gpio_toggle(LED_GREEN);
+                break;
+            }
+            case KEY_LEFT:
+            {
+                gpio_toggle(LED_RED);
+                break;
+            }
+            case KEY_RIGHT:
+            {
+                gpio_toggle(LED_WHITE);
+                break;
+            }
+            case KEY_ENTER:
+            {
+                gpio_toggle(LED_YELLOW);
+                break;
+            }
+        }
+        systick_delay_ms(STM0,100);
+    }
+}
 
