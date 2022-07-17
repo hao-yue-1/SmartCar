@@ -226,41 +226,119 @@ float DifferentBias(int startline,int endline,int *CentreLine)
         return last_bias;   //计算错误，忽略此次计算，返回上一次的值
     }
 }
+/*********************************************
+ * 函数功能:车库专属循迹偏差
+ * 注   意：此函数，不会管屏幕循迹是否是黑色
+ *********************************************/
+float DifferentBias_Garage(int startline,int endline,int *CentreLine)
+{
+    static float last_bias;
+    float bias=0;
+    uint8 rownum=0;//用于计数求了多少行的偏差
+
+    for(uint8 i=startline;i>endline;i--)
+    {
+
+        bias+=(float)(MT9V03X_W/2-CentreLine[i]);  //累积偏差，Mid-Centre，左正右负（中线在车头的左/右，应该往左/右）
+        rownum++;
+    }
+    bias=bias/rownum/10;   //求偏差均值
+
+    if(bias<0.5&&bias>-0.5) //分段加权
+    {
+        bias=bias*0.1;
+    }
+    else if(bias<-3||bias>3)
+    {
+        bias=bias*1.5;
+    }
+
+    if(bias==bias)  //bias是真值
+    {
+        last_bias=bias;
+        return bias;
+    }
+    else
+    {
+        return last_bias;   //计算错误，忽略此次计算，返回上一次的值
+    }
+}
 /********************************************************************************************
  ** 函数功能: 根据赛道宽度单边巡线消除中线失真
- ** 参    数: int starline:    离散点的起始行
+ ** 参    数: char ManualorAuto:自动或者手动判断补线
+ **           char LorR：手动的话选择是根据左线来的还是右线
+ **           int starline:    离散点的起始行
  **           int endline:     离散点的结束行
  ** 返 回 值: 偏差Bias
  ** 作    者: LJF
  *********************************************************************************************/
-void Unilaterally_Plan_CenterLine(int startline,int endline)
+void Unilaterally_Plan_CenterLine(char ManualorAuto ,char LorR,int startline,int endline)
 {
     int row=0,test=0;
-    lcd_showint32(TFT_X_MAX-50, 0, LeftLine[60], 3);
-    lcd_showint32(TFT_X_MAX-50, 1, RightLine[60], 3);
+//    lcd_showint32(TFT_X_MAX-50, 0, LeftLine[60], 3);
+//    lcd_showint32(TFT_X_MAX-50, 1, RightLine[60], 3);
     for(row=startline;row>endline;row--)
     {
-        //左边丢线右边不丢
-        if(LeftLine[row]==0 && RightLine[row]!=MT9V03X_W-1)
+        switch(ManualorAuto)
         {
-//            CentreLine[row]=RightLine[row]-(137-(119-row)*1.1)/2;
-//            if(CentreLine[row]<0) CentreLine[row]=0;
-//            else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
-            test=RightLine[row]-(137-(119-row)*1.1)/2;
-            if(test<0) test=0;
-            else if(test>MT9V03X_W-1) test=MT9V03X_W-1;
-            lcd_drawpoint(test, row, PURPLE);
+            case 'M':
+            {
+                switch(LorR)
+                {
+                    case 'L':
+                    {
+                        CentreLine[row]=LeftLine[row]+(137-(119-row)*1.1)/2;
+                        if(CentreLine[row]<0) CentreLine[row]=0;
+                        else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
+//                        test=LeftLine[row]+(137-(119-row)*1.1)/2;
+//                        if(test<0) test=0;
+//                        else if(test>MT9V03X_W-1) test=MT9V03X_W-1;
+//                        lcd_drawpoint(test, row, PURPLE);
+                        break;
+                    }
+                    case 'R':
+                    {
+                        CentreLine[row]=RightLine[row]-(137-(119-row)*1.1)/2;
+                        if(CentreLine[row]<0) CentreLine[row]=0;
+                        else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
+//                        test=RightLine[row]-(137-(119-row)*1.1)/2;
+//                        if(test<0) test=0;
+//                        else if(test>MT9V03X_W-1) test=MT9V03X_W-1;
+//                        lcd_drawpoint(test, row, PURPLE);
+                        break;
+                    }
+                    default:break;
+                }
+                break;
+            }
+            case 'A':
+            {
+                //左边丢线右边不丢
+                if(LeftLine[row]==0 && RightLine[row]!=MT9V03X_W-1)
+                {
+//                    CentreLine[row]=RightLine[row]-(137-(119-row)*1.1)/2;
+//                    if(CentreLine[row]<0) CentreLine[row]=0;
+//                    else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
+                    test=RightLine[row]-(137-(119-row)*1.1)/2;
+                    if(test<0) test=0;
+                    else if(test>MT9V03X_W-1) test=MT9V03X_W-1;
+                    lcd_drawpoint(test, row, PURPLE);
+                }
+                //右边丢线左边不丢
+                else if(LeftLine[row]!=0 && RightLine[row]==MT9V03X_W-1)
+                {
+//                    CentreLine[row]=LeftLine[row]+(137-(119-row)*1.1)/2;
+//                    if(CentreLine[row]<0) CentreLine[row]=0;
+//                    else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
+                      test=LeftLine[row]+(137-(119-row)*1.1)/2;
+                      if(test<0) test=0;
+                      else if(test>MT9V03X_W-1) test=MT9V03X_W-1;
+                      lcd_drawpoint(test, row, PURPLE);
+                }
+                break;
+            }
+            default:break;
         }
-        //右边丢线左边不丢
-        else if(LeftLine[row]!=0 && RightLine[row]==MT9V03X_W-1)
-        {
-//            CentreLine[row]=LeftLine[row]+(137-(119-row)*1.1)/2;
-//            if(CentreLine[row]<0) CentreLine[row]=0;
-//            else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
-              test=LeftLine[row]+(137-(119-row)*1.1)/2;
-              if(test<0) test=0;
-              else if(test>MT9V03X_W-1) test=MT9V03X_W-1;
-              lcd_drawpoint(test, row, PURPLE);
-        }
+
     }
 }

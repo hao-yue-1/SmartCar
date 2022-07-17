@@ -18,13 +18,15 @@
 //Sobel算子检测
 #define FastABS(x) (x > 0 ? x : x * -1.0f)
 #define BinaryImage(i, j)    BinaryImage[i][j]
-#define ZebraTresholeL 1500  //索贝尔测试的阈值
+#define ZebraTresholeL 1200  //索贝尔测试的阈值
 #define ZebraTresholeR 1300  //索贝尔测试车库在右边的阈值
 
 #define GARAGE_IDENTIFY_MODE 0    //哪种模式找上拐点
 #define IN_L_GARAGE_ANGLE   50  //入左库开启陀螺仪积分的目标角度
-#define IN_R_GARAGE_ANGLE   50  //入右库开启陀螺仪积分的目标角度
-#define L_GARAGE_LOSTLLINE_THR 30   //左边车库开启索贝尔的左边丢线阈值
+#define IN_R_GARAGE_ANGLE   60  //入右库开启陀螺仪积分的目标角度
+#define L_GARAGE_LOSTLLINE_MIN_THR 25   //左边车库开启索贝尔的左边丢线最小阈值
+#define L_GARAGE_LOSTLLINE_MAX_THR 35   //左边车库开启索贝尔的左边丢线最大阈值
+#define L_GARAGE_LOSTRLINE_MAX_THR 50   //左边车库开启索贝尔的右边丢线最大阈值
 #define R_GARAGE_LOSTRLINE_THR 35   //右边车库开启索贝尔的右边丢线阈值
 
 #define GARAGE_DEBUG    0       //是否需要开启车库的DEBUG
@@ -76,6 +78,7 @@ uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR)
     Point UpInflection;//上拐点的变量
     UpInflection.X=0,UpInflection.Y=0;//初始化为0
     uint8 NoInflectionLFlag=0;//左库左拐点不存在的标志变量，用于选取哪种补线方式
+    float LastBias=Bias;//记录上一次的Bias
 
 #if GARAGE_DEBUG
     lcd_showint32(TFT_X_MAX-50, 0, InflectionL.X, 3);
@@ -173,7 +176,7 @@ uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR)
                 {
                     Bias=DifferentBias(UpInflection.Y-5, UpInflection.Y-8, CentreLine);//直接以上拐点的上面正常的线去循迹
                 }
-                if(Bias>1.5) Bias=0;//如果偏差往左太大则否认这一次的控制
+                if(Bias>1.5) Bias=LastBias;//如果偏差往左太大则否认这一次的控制
                 return 1;
             }
             default :break;
@@ -200,11 +203,16 @@ uint8 GarageLStatusIdentify(char Choose,Point InflectionL,Point InflectionR,uint
         //第一个状态Sobel检测，通过了再开启识别函数
         case 0:
         {
-//            lcd_showuint8(0, 1, LostNum_LeftLine);
-            if(LostNum_LeftLine>L_GARAGE_LOSTLLINE_THR)
+#if GARAGE_DEBUG
+            lcd_showuint8(0, 0, LostNum_LeftLine);
+            lcd_showuint8(0, 1, LostNum_RightLine);
+#endif
+            if(LostNum_LeftLine>L_GARAGE_LOSTLLINE_MIN_THR && LostNum_LeftLine<L_GARAGE_LOSTLLINE_MAX_THR && LostNum_RightLine<L_GARAGE_LOSTRLINE_MAX_THR)
             {
                 SobelResult=SobelTest(80,50,40,MT9V03X_W-1-40);
-//            lcd_showint32(0, 0, SobelResult, 5);
+#if GARAGE_DEBUG
+                lcd_showint32(0, 2, SobelResult, 5);
+#endif
             }
             if(SobelResult>ZebraTresholeL)
             {
@@ -287,7 +295,7 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
 {
     Point UpInflection;//上拐点的变量
     UpInflection.X=0,UpInflection.Y=0;//初始化为0
-    uint8 NoInflectionLFlag=0;//左库左拐点不存在的标志变量，用于选取哪种补线方式
+    uint8 NoInflectionRFlag=0;//左库左拐点不存在的标志变量，用于选取哪种补线方式
 
 #if GARAGE_DEBUG
     lcd_showint32(TFT_X_MAX-50, 0, InflectionL.X, 3);
@@ -320,19 +328,19 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
             if(BinaryImage[row][MT9V03X_W-3]==IMAGE_WHITE)
             {
                 InflectionR.X=MT9V03X_W-3;InflectionR.Y=row+10;//+10是因为下面的循环是-10了，防止因为-10直接到黑色区域所以找不到拐点
-                NoInflectionLFlag=1;
+                NoInflectionRFlag=1;
                 break;
             }
         }
-        if(NoInflectionLFlag!=1) return 0;//否则说明左边都是黑的了直接返回已经过了左库
+        if(NoInflectionRFlag!=1) return 0;//否则说明左边都是黑的了直接返回已经过了右库
     }
-    if(NoInflectionLFlag==1 && Choose=='Y')
+    if(NoInflectionRFlag==1 && Choose=='Y')
     {
         for(int row=InflectionR.Y-10;row>10;row--)
         {
-            /******************debug:把从下往上的找点轨迹画出来******************/
-//          lcd_drawpoint(InflectionL.X, row, YELLOW);
-            /******************************************************************/
+#if GARAGE_DEBUG
+           lcd_drawpoint(InflectionL.X, row, YELLOW);
+#endif
             //从下往上白调黑
             if(BinaryImage[row][InflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionR.X]==IMAGE_BLACK)
             {
@@ -356,22 +364,34 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
             case 'Y':
             {
                 Point LeftDownPoint;
-                LeftDownPoint.X=5;LeftDownPoint.Y=MT9V03X_H-5;
-                FillingLine('L', LeftDownPoint, UpInflection);//入右库补左线
+                if(NoInflectionRFlag==1 && LeftLine[MT9V03X_H-5]<MT9V03X_W/2)//右拐点不存在并且下面那行不在斑马线上
+                {
+                    LeftDownPoint.X=LeftLine[MT9V03X_H-5];LeftDownPoint.Y=MT9V03X_H-5;
+                    InflectionR.X=MT9V03X_W-5,InflectionR.Y=MT9V03X_H-5;//给右边补垂直线的起点
+                    FillingLine('L', LeftDownPoint, UpInflection);//入右库补左线
+                    FillingLine('R', InflectionR, UpInflection);//入右库补右边垂直的线，消除斑马线扫线错乱影响
+                }
+                else if(NoInflectionRFlag==0 && LeftLine[MT9V03X_H-5]<MT9V03X_W/2)//右拐点存在，并且下面那行不在斑马线上
+                {
+                    LeftDownPoint.X=LeftLine[InflectionR.Y],LeftDownPoint.Y=InflectionR.Y;
+                    FillingLine('L', LeftDownPoint, UpInflection);//入右库补左线
+                    Unilaterally_Plan_CenterLine('M', 'L', LeftDownPoint.Y, UpInflection.Y);//半宽补线消除影响
+                }
+                else//否则以屏幕左下角作为补线起点
+                {
+                    LeftDownPoint.X=2,LeftDownPoint.Y=MT9V03X_H-5;
+                    FillingLine('L', LeftDownPoint, UpInflection);//入右库补左线
+                    FillingLine('R', InflectionR, UpInflection);//入右库补右边垂直的线，消除斑马线扫线错乱影响
+                }
+
                 //给偏差给舵机
-                Bias=Regression_Slope(LeftDownPoint.Y, UpInflection.Y, LeftLine);
-                //对斜率求出来的偏差进行个缩放
-                if(Bias<=1)
-                    Bias=Bias*1.75;//这里因为是入库，感觉跟左上拐点补线的时候太大了使得打到库边，所以手动减小打角，毕竟这个缩放是盲调的
-                                   //修改之后感觉良好，如果车头是正着开启ICM的话是可以的，但是问题就在于车头不正不能用ICM去判断
-                else
-                    Bias=Bias*1.5;
+                Bias=DifferentBias_Garage(LeftDownPoint.Y, UpInflection.Y, CentreLine);
                 return 1;
             }
             //不入左库
             case 'N':
             {
-               if(NoInflectionLFlag==0)//如果没丢失下拐点则用下拐点下面巡线
+               if(NoInflectionRFlag==0)//如果没丢失下拐点则用下拐点下面巡线
                {
 #if GARAGE_DEBUG
                     for(int i=0;i<MT9V03X_W-1;i++)
@@ -487,7 +507,7 @@ uint8 GarageRIStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
             }
             if(SobelResult>ZebraTresholeR)
             {
-                base_speed=100;//提前降速防止MCU复位
+//                base_speed=100;//提前降速防止MCU复位
                 StatusChange=1;
                 break;
             }
@@ -503,7 +523,7 @@ uint8 GarageRIStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
         case 2:
         {
 //            gpio_set(LED_WHITE, 0);
-#if 0   //0:直接打死入库 1:补线打死入库
+#if 1   //0:直接打死入库 1:补线打死入库
             NowFlag=GarageRIdentify('Y', InflectionL, InflectionR);
             *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
 #else
@@ -513,14 +533,21 @@ uint8 GarageRIStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
             //检测是否入库成功，入库成功停车
             if(icm_angle_z_flag==1)
             {
-                while(1)
-                {
-                    base_speed=0;
-                }
+                Stop();
                 return 1;
             }
-            break;
+//            //如果右拐点不存在了，进入专门为入库写的函数
+//            if(InflectionR.X==0 || InflectionR.X<MT9V03X_W/2 || BinaryImage[InflectionR.Y+5][MT9V03X_W-5]==IMAGE_WHITE)
+//            {
+//                StatusChange=4
+//            }
+//            break;
+//        }
         }
+//        case 3:
+//        {
+//            ;
+//        }
     }
     return 0;
 }
