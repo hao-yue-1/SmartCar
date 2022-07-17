@@ -15,6 +15,7 @@
 #include "zf_stm_systick.h"
 #include <stdio.h>
 #include "ImageTack.h"
+#include "Motor.h"
 
 /*
  *******************************************************************************************
@@ -152,12 +153,15 @@ uint8 CircleIslandBegin_L(void)
     //修正左边界
     StarPoint.X=column;
     FillingLine('L', StarPoint, EndPoint);
-//    //特殊情况求Bias
-//    if(row>bias_endline)    //防止其他元素干扰，当补线终点低于默认前瞻时，视为特殊情况
-//    {
-//        Bias=DifferentBias(start_row,row,CentreLine);//特殊情况求Bias
-//        CircleIsland_flag=1;
-//    }
+    //特殊情况求Bias，防止其他元素干扰
+    if(row>bias_endline)        //补线终点低于前瞻终点
+    {
+        bias_endline=row;
+    }
+    if(start_row<bias_startline)//补线起点高于前瞻起点
+    {
+        bias_startline=start_row;
+    }
     return 1;
 }
 
@@ -339,6 +343,7 @@ uint8 CircleIslandEnd_L(void)
         }
         StarPoint.Y=row;    //起点：右拐点or右下角
         StarPoint.X=column;
+        uint8 start_row=row;
         //寻找补线终点
         column=1;           //终点X坐标取左边界（由于环岛出环没有像十字回环一样的直角压角问题，所以这里可以简单处理）
         for(;row-1>0;row--) //向上扫
@@ -353,6 +358,15 @@ uint8 CircleIslandEnd_L(void)
         //补右线左转出环
         FillingLine('R', StarPoint, EndPoint);
         flag=1; //连续补线标志
+        //特殊情况求Bias，防止其他元素干扰
+        if(row>bias_endline)        //补线终点低于前瞻终点
+        {
+            bias_endline=row;
+        }
+        if(start_row<bias_startline)//补线起点高于前瞻起点
+        {
+            bias_startline=start_row;
+        }
         return 1;
     }
     return 0;
@@ -413,28 +427,28 @@ uint8 CircleIslandExit_L(Point InflectionL)
         {
             StarPoint.Y=row;    //起点：左下角
             StarPoint.X=column;
-            column=MT9V03X_W/3; //为寻找上方黑洞，重置X坐标为右三分之一处
+            column=MT9V03X_W/4; //为寻找上方黑洞，重置X坐标为左四分之一处
         }
 
         //寻找补线终点
         for(;row-1>0;row--)    //向上扫
         {
-            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
             {
                 uint8 row_f=row;
-                for(;row-1>0;row--)
+                for(;row-1>0;row--) //继续向上扫
                 {
-                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)
+                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)  //黑-白
                     {
                         uint8 row_s=row;
-                        for(;row-1>0;row--)
+                        for(;row-1>0;row--) //继续向上扫
                         {
-                            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)
+                            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
                             {
                                 row=(row_f+row_s)/2;
                                 for(;column+1<MT9V03X_W;column++)   //向右扫
                                 {
-                                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column+1]==IMAGE_WHITE)
+                                    if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column+1]==IMAGE_WHITE)  //黑-白
                                     {
                                         break;
                                     }
@@ -866,7 +880,6 @@ uint8 CircleIslandBegin_R(void)
     {
         bias_startline=start_row;
     }
-
     return 1;
 }
 
@@ -1049,6 +1062,7 @@ uint8 CircleIslandEnd_R(void)
         }
         StarPoint.Y=row;    //起点：左拐点or左下角
         StarPoint.X=column;
+        uint8 start_row=row;
         //寻找补线终点
         column=MT9V03X_W-2;           //终点X坐标取右边界（由于环岛出环没有像十字回环一样的直角压角问题，所以这里可以简单处理）
         for(;row-1>0;row--) //向上扫
@@ -1063,6 +1077,17 @@ uint8 CircleIslandEnd_R(void)
         //补左线右转出环
         FillingLine('L', StarPoint, EndPoint);
         flag=1; //连续补线标志
+        //特殊情况求Bias，防止其他元素干扰
+        if(row>bias_endline)        //补线终点低于前瞻终点
+        {
+            bias_endline=row;
+            LcdDrawRow(bias_endline, PURPLE);
+        }
+        if(start_row<bias_startline)//补线起点高于前瞻起点
+        {
+            bias_startline=start_row;
+            LcdDrawRow(bias_startline, BROWN);
+        }
         return 1;
     }
     return 0;
@@ -1123,7 +1148,7 @@ uint8 CircleIslandExit_R(Point InflectionR)
         {
             StarPoint.Y=row;    //起点：右下角
             StarPoint.X=column;
-            column=2*(MT9V03X_W/3); //为寻找上方黑洞，重置X坐标为右三分之一处
+            column=3*(MT9V03X_W/4); //为寻找上方黑洞，重置X坐标为右四分之一处
         }
         //寻找补线终点
         for(;row-1>0;row--)    //向上扫，寻找黑洞下边界
@@ -1212,11 +1237,8 @@ uint8 CircleIslandMid_R(void)
             }
             break;
         }
+        LcdDrawPoint_V2(row, column, RED);
         //这里为了防止远处十字环的干扰，和左环岛不同，采用另外一种判断方法
-        if(row-5>0)     //手动上移切点Y坐标，方便下面的判断
-        {
-            row-=5;
-        }
         for(;column+1<MT9V03X_W-1;column++) //向右扫，黑洞左切点
         {
             if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row][column+1]==IMAGE_WHITE)    //谷底右侧为白：误判了Exit处圆环和直道的夹角为黑洞
@@ -1319,7 +1341,7 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
-            if(flag_exit==1)        //之前已识别到环岛出口
+            if(flag_exit==1&&encoder_dis_flag==1)   //已识别到环岛出口且测距完成
             {
                 if(CircleIslandMid_R()==1)   //识别到环岛中部
                 {
@@ -1327,8 +1349,9 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
                     break;
                 }
             }
-            if(CircleIslandExit_R(InflectionR)==1)  //识别到环岛Exit作为开启环岛中部检测的条件
+            if(CircleIslandExit_R(InflectionR)==1&&flag_exit==0)  //识别到环岛Exit作为开启环岛中部检测的条件
             {
+                EncoderDistance(1, 0.3, 0, 0);  //开启测距：0.3m
                 flag_exit=1;
             }
             break;
