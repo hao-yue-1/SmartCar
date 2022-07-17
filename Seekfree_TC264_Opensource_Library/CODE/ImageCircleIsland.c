@@ -152,12 +152,12 @@ uint8 CircleIslandBegin_L(void)
     //修正左边界
     StarPoint.X=column;
     FillingLine('L', StarPoint, EndPoint);
-    //特殊情况求Bias
-    if(row>bias_endline)    //防止其他元素干扰，当补线终点低于默认前瞻时，视为特殊情况
-    {
-        Bias=DifferentBias(start_row,row,CentreLine);//特殊情况求Bias
-        CircleIsland_flag=1;
-    }
+//    //特殊情况求Bias
+//    if(row>bias_endline)    //防止其他元素干扰，当补线终点低于默认前瞻时，视为特殊情况
+//    {
+//        Bias=DifferentBias(start_row,row,CentreLine);//特殊情况求Bias
+//        CircleIsland_flag=1;
+//    }
     return 1;
 }
 
@@ -729,7 +729,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL)
  ** 返 回 值: 0：没有识别到环岛
  **           1：识别到环岛且在车身右侧
  ** 作    者: WBN
- ** 注    意：这里和左环岛的区别在于我们使用的扫线方式是默认向左寻找中线，所以左环岛即使不做处理也会
  ********************************************************************************************
  */
 uint8 CircleIslandBegin_R(void)
@@ -858,11 +857,14 @@ uint8 CircleIslandBegin_R(void)
     //修正右边界
     StarPoint.X=column;
     FillingLine('R', StarPoint, EndPoint);
-    //特殊情况求Bias
-    if(row>bias_endline)    //防止其他元素干扰，当补线终点低于默认前瞻时，视为特殊情况
+    //特殊情况求Bias，防止其他元素干扰
+    if(row>bias_endline)        //补线终点低于前瞻终点
     {
-        Bias=DifferentBias(start_row,row,CentreLine);//特殊情况求Bias
-        CircleIsland_flag=1;
+        bias_endline=row;
+    }
+    if(start_row<bias_startline)//补线起点高于前瞻起点
+    {
+        bias_startline=start_row;
     }
 
     return 1;
@@ -1317,7 +1319,6 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
-            gpio_set(LED_BLUE, 0);
             if(flag_exit==1)        //之前已识别到环岛出口
             {
                 if(CircleIslandMid_R()==1)   //识别到环岛中部
@@ -1334,7 +1335,6 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
         }
         case 1: //此时小车到达环岛中部，开始判断环岛入口并完成入环，这里需要补线
         {
-            gpio_set(LED_GREEN, 0);
             if(CircleIslandBegin_R()==1&&flag_in==0) //识别到环岛入口
             {
                 StartIntegralAngle_Z(45);   //开启陀螺仪辅助入环
@@ -1352,7 +1352,6 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
         }
         case 2: //此时小车在环中，自主寻迹
         {
-            gpio_set(LED_RED, 0);
             if(flag_in==1)
             {
                 if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
@@ -1370,7 +1369,6 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
         }
         case 3: //此时小车已经接近环岛出口，开始判断环岛出口
         {
-            gpio_set(LED_WHITE, 0);
             if(CircleIslandEnd_R()==1&&flag_end==0)  //第一次检测到环岛出口
             {
                 StartIntegralAngle_Z(70);   //开启积分
@@ -1388,7 +1386,6 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
         }
         case 4: //此时小车已经出环，但是会再次进过环岛入口，需要补线直行
         {
-            gpio_set(LED_YELLOW, 0);
             flag_begin=CircleIslandOverBegin_R(RightLine);     //识别环岛入口补线忽略
             if(flag_begin==0&&flag_last_begin==0&&flag_last2_begin==1)   //上上次识别到环岛入口而这两次都没有识别到环岛入口
             {
