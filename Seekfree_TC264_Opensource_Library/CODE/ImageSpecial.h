@@ -56,7 +56,7 @@ uint8 CrossLoopOverBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point 
 uint8 CrossLoopEnd_R(void);
 uint8 CrossLoopIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);    //右十字回环状态机
 /*三岔相关函数*/
-void ForkFindSpecialPoint(Point UpInflectionC,Point *LeftUpPoint);//三岔特殊处理，防止Bias因为扫线变右使得Bias变小
+void ForkFindSpecialPoint(int row,int cloumn,Point *LeftUpPoint);//三岔特殊处理，防止Bias因为扫线变右使得Bias变小
 void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflectionC);//三岔种子生长生长至谷底
 void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC);     //搜寻出三岔上拐点
 uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR);   //三岔识别
