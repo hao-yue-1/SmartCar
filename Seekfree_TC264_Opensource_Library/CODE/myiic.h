@@ -1,0 +1,47 @@
+#ifndef _MYIIC_H
+#define _MYIIC_H
+//////////////////////////////////////////////////////////////////////////////////	 
+//本程序只供学习使用，未经作者许可，不得用于其它任何用途
+//ALIENTEK STM32F103开发板
+//IIC驱动代码	   
+//正点原子@ALIENTEK
+//技术论坛:www.openedv.com
+//创建日期:2019/9/18
+//版本：V1.0
+//版权所有，盗版必究。
+//Copyright(C) 广州市星翼电子科技有限公司 2014-2024
+//All rights reserved									  
+////////////////////////////////////////////////////////////////////////////////// 	
+
+#include "zf_gpio.h"
+
+//定义IO
+#define OLED_SCL    P22_0
+#define OLED_SDA    P33_8
+
+//IO方向设置
+#define SDA_IN()    gpio_dir(OLED_SDA, GPI, NO_PULL)    //输入方向
+#define SDA_OUT()   gpio_dir(OLED_SDA, GPO, PUSHPULL)   //输出方向
+
+//IO操作
+#define READ_SDA         gpio_get (OLED_SDA)         //IO口获取输入电平
+#define SDA_0()          gpio_set (OLED_SDA, 0)      //IO口输出低电平
+#define SDA_1()          gpio_set (OLED_SDA, 1)      //IO口输出高电平
+#define SCL_0()          gpio_set (OLED_SCL, 0)      //IO口输出低电平
+#define SCL_1()          gpio_set (OLED_SCL, 1)      //IO口输出高电平
+
+//IIC所有操作函数
+void IIC_Init(void);                //初始化IIC的IO口				 
+void IIC_Start(void);				//发送IIC开始信号
+void IIC_Stop(void);	  			//发送IIC停止信号
+void IIC_Send_Byte(unsigned char txd);			//IIC发送一个字节
+unsigned char IIC_Read_Byte(unsigned char ack);//IIC读取一个字节
+unsigned char IIC_Wait_Ack(void); 				//IIC等待ACK信号
+void IIC_Ack(void);					//IIC发送ACK信号
+void IIC_NAck(void);				//IIC不发送ACK信号
+
+void IIC_Write_One_Byte(unsigned char daddr,unsigned char addr,unsigned char data);
+unsigned char IIC_Read_One_Byte(unsigned char daddr,unsigned char addr);
+
+#endif
+
