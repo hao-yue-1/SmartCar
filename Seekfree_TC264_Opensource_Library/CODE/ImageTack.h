@@ -20,4 +20,6 @@ float DifferentBias(int startline,int endline,int *CentreLine);
 float DifferentBias_Garage(int startline,int endline,int *CentreLine);//车库专属循迹偏差
 void FillinLine_V2(char Choose,int startline,int endline,Point Point1,Point Point2);//比第一版本升级了可以根据已经有点线段去推测出未知的线段补线
 void Unilaterally_Plan_CenterLine(char ManualorAuto ,char LorR,int startline,int endline);//判断赛道是否单边丢线使得中线信息失真，根据另外一边未丢线的边消除失真
+uint8 SlopeUntie_X(Point point_1,Point point_2,uint8 y);
+
 #endif /* CODE_IMAGETACK_H_ */

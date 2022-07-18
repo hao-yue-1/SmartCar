@@ -342,3 +342,39 @@ void Unilaterally_Plan_CenterLine(char ManualorAuto ,char LorR,int startline,int
 
     }
 }
+
+/********************************************************************************************
+ ** 函数功能: 给出两个点的坐标并给出一个未知点的Y坐标，
+ ** 参    数:
+ ** 返 回 值: 偏差Bias
+ ** 作    者: WBN
+ *********************************************************************************************/
+uint8 SlopeUntie_X(Point point_1,Point point_2,uint8 y)
+{
+    float k;//斜率为浮点型，否则K<1时，K=0
+    float b;
+    int x;
+
+    /*特殊情况：当要补的线是一条垂线的时候*/
+    if(point_1.X==point_2.X)
+    {
+        x=point_1.X;
+    }
+    else
+    {
+        k=(float)(-point_2.Y+point_1.Y)/(point_2.X-point_1.X);//k=(y2-y1)/(x2-x1)，强制类型转化否则会损失精度仍然为0
+        b=-point_1.Y-k*point_1.X;//b=y-kx
+        x=(int)((-y-b)/k);
+    }
+
+    if(x>MT9V03X_W-1)
+    {
+        x=MT9V03X_W-1;
+    }
+    else if(x<0)
+    {
+        x=0;
+    }
+
+    return (uint8)x;
+}

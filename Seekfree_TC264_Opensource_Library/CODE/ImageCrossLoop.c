@@ -560,10 +560,27 @@ uint8 CrossLoopEnd_R(void)
     if((LostNum_RightLine<90&&fabsf(Bias)<4)||flag==1) //符合约束条件或处于连续补线
     {
         Point StarPoint,EndPoint;
-        uint8 row=MT9V03X_H-5,column=MT9V03X_W-5,flag_1=0;
+        uint8 row=MT9V03X_H-2,column=MT9V03X_W-2,flag_1=0,flag_2=0;
         //寻找补线起点
-        if(BinaryImage[row][column]==IMAGE_BLACK)   //右下角为黑（存在右拐点）
+        if(BinaryImage[row][column]==IMAGE_BLACK)   //右下角为黑
         {
+            flag_2=1;   //存在右拐点
+        }
+        else                                        //右下角为白
+        {
+            for(;row-1>2*(MT9V03X_H/3);row--)   //向上扫，右下角
+            {
+                //白-黑跳变点在图像下方三分之一处
+                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+                {
+                    flag_2=1;
+                    break;
+                }
+            }
+        }
+        if(flag_2==1)   //存在右拐点
+        {
+            //向左上方寻找谷底
             for(;column-1>0;column--)   //将指针移动到底部最左端
             {
                 if(BinaryImage[row][column-1]==IMAGE_WHITE)
@@ -571,7 +588,7 @@ uint8 CrossLoopEnd_R(void)
                     break;
                 }
             }
-            while(column-1>0&&row-1>0)  //向左上方寻找
+            while(column-1>0&&row-1>0)  //左上
             {
                 if(BinaryImage[row][column-1]==IMAGE_BLACK) //左黑
                 {
@@ -591,11 +608,15 @@ uint8 CrossLoopEnd_R(void)
                 break;
             }
         }
+        else    //不存在右拐点
+        {
+            row=MT9V03X_H-2;
+        }
         StarPoint.Y=row;    //起点：右拐点or右下角
         StarPoint.X=column;
         uint8 start_row=row;
         //寻找补线终点
-        row=MT9V03X_H-5;column=4;flag_1=0;
+        row=MT9V03X_H-2;column=1;flag_1=0;
         if(BinaryImage[row][column]==IMAGE_BLACK)       //左下角为黑（存在左拐点）
         {
             for(;column+1<MT9V03X_W-1;column++)   //将指针移动到底部最右端
@@ -624,12 +645,23 @@ uint8 CrossLoopEnd_R(void)
                 }
                 break;  //探针没有移动
             }
+            //通过线性方程求出补线终点
+            Point point_1,point_2;
+            point_1.Y=MT9V03X_H-2;
+            point_1.X=LeftLine[MT9V03X_H-2];
+            point_2.Y=row;
+            point_2.X=column;
             for(;row-1>0;row--) //向上扫，左拐点
             {
                 if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)   //白-黑
                 {
-                    break;
+                    break;  //补线终点Y坐标
                 }
+            }
+            column=SlopeUntie_X(point_1, point_2, row); //补线终点X坐标
+            if(column>StarPoint.X)
+            {
+                column=(uint8)StarPoint.X;
             }
         }
         else    //不存在左拐点

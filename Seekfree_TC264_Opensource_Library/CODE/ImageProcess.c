@@ -44,12 +44,12 @@ void ImageProcess()
     /*************************ËÑÑ°×óÓÒÏÂ¹Õµã***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************ÌØÊâÔªËØÅÐ¶Ï*************************/
-    if(CrossLoopIdentify_R(LeftLine, RightLine, InflectionL, InflectionR)==1)
-    {
-        gpio_set(LED_BLUE, 0);
-        Stop();
-    }
-//    CrossLoopEnd_R();
+//    if(CrossLoopIdentify_R(LeftLine, RightLine, InflectionL, InflectionR)==1)
+//    {
+//        gpio_set(LED_BLUE, 0);
+//        Stop();
+//    }
+    CrossLoopEnd_R();
     /****************************×´Ì¬»ú***************************/
 #if 0
     switch(flag)
