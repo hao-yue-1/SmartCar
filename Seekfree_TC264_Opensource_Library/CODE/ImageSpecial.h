@@ -31,6 +31,9 @@ uint8 GarageLStatusIdentify(char Choose,Point InflectionL,Point InflectionR,uint
 uint8 GarageROStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag);//车库右边不入库状态机
 uint8 GarageRIStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag);//车库右边入库状态机
 void OutGarage(void);       //出库
+void SeedGrowFindUpInflection_Garage(char Choose,Point Seed,int endline,Point *UpInflectionC,char TRANSVERSE_THR);//车库的种子生长找谷底
+uint8 RINGarageEntrance(Point InflectionL,Point InflectionR);//右车库入口状态识别函数
+uint8 RINGarageMid(void);//右车库入库最后，判断是否入库成功
 /*环岛相关函数*/
 uint8 CircleIslandBegin_L(void);
 uint8 CircleIslandOverBegin_L(int *LeftLine);

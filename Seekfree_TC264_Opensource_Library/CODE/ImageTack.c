@@ -129,8 +129,8 @@ void FillingLine(char Choose, Point StarPoint,Point EndPoint)
 }
 void FillinLine_V2(char Choose,int startline,int endline,Point Point1,Point Point2)
 {
-    float K;//斜率为浮点型，否则K<1时，K=0
-    int B,Y,X;
+    float K,B;//斜率为浮点型，否则K<1时，K=0
+    int Y,X;
 
     /*特殊情况：当要补的线是一条垂线的时候*/
     if(Point1.X==Point2.X)
@@ -155,7 +155,7 @@ void FillinLine_V2(char Choose,int startline,int endline,Point Point1,Point Poin
     /***********************************************/
 
     K=(float)(-Point2.Y+Point1.Y)/(Point2.X-Point1.X);//k=(y2-y1)/(x2-x1)，强制类型转化否则会损失精度仍然为0
-    B=-Point2.Y-K*Point1.X;//b=y-kx
+    B=(float)-Point1.Y-K*Point1.X;//b=y-kx
 
     for(Y=startline;Y>endline;Y--)
     {
