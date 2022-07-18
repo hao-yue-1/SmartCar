@@ -51,15 +51,9 @@ void core1_main(void)
 
     //**********按键调参*************
     //*******************************
-//    EncoderDistance(1, 3, 0, 0);
+    EncoderDistance(2, 6, 0, 0);
     pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化电机定时器中断
     pit_interrupt_ms(CCU6_0,PIT_CH1,20);//初始化舵机定时器中断
-//    //完成出库
-//    if(outgarage_flag==0)
-//    {
-//        OutGarage();
-//        outgarage_flag=1;
-//    }
 
     while (TRUE)
     {
@@ -69,6 +63,7 @@ void core1_main(void)
             ImageBinary();      //图像二值化
             ImageProcess();     //图像处理、元素识别
             //把三线画出来
+#if 0
             lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
             for(int i=MT9V03X_H-1;i>0;i--)
             {
@@ -76,6 +71,7 @@ void core1_main(void)
                 lcd_drawpoint(CentreLine[i],i,RED);
                 lcd_drawpoint(RightLine[i],i,BLUE);
             }
+#endif
             mt9v03x_finish_flag = 0;//在图像使用完毕后务必清除标志位，否则不会开始采集下一幅图像
         }
         //调试

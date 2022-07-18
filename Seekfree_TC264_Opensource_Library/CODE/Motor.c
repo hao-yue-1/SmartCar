@@ -9,10 +9,12 @@
 #include "Filter.h"         //滤波
 #include <stdio.h>
 #include "PID.h"            //PID
-#include "protocol.h"
 #include "SEEKFREE_18TFT.h"
+#include "LED.h"
 
 extern uint8 stop_flag;
+void Stop(void);
+
 int16 speed_l,speed_r;      //电机左右速度目标值的全局变量
 uint8 encoder_dis_flag=2;   //编码器测距flag（赋初值=2，避免自己开启检测导致int溢出）
 
@@ -115,7 +117,6 @@ void MotorEncoder(int16* left_encoder,int16* right_encoder)
 */
 void MotorCtrl(int16 speed_l,int16 speed_r)
 {
-    static uint8 flag;               //电机保护flag
     int16 encoder_l=0,encoder_r=0;   //左右电机编码器值
     int pwm_l=0,pwm_r=0;             //左右电机PWM
 
@@ -182,8 +183,8 @@ void MotorSetTarget(int16 target_l,int16 target_r)
 ** 功能说明: 编码器测距，该函数将在编码器中断中被调用于采集编码器的值（flag=0）；
 **           在主进程中被调用于设置目标距离和开启检测，开启后需要用户手动查询encoder_dis_flag==1?
 **           从而检测是否达到目标值
-** 形    参: flag：选择函数功能（0：采集编码器数据；1：设置目标值，从此处开始测距）
-**           dis：目标距离，单位m（只有flag=1时，此项才起作用）
+** 形    参: flag：选择函数功能（0：采集数据；1：测距模式；2：停车模式）
+**           dis：目标距离，单位m（只有flag=1、2时，此项才起作用）
 **           encoder_l：左编码器值（只有flag=0时，此项才起作用）
 **           encoder_r：右编码器值（只有flag=0时，此项才起作用）
 ** 返 回 值: 无
@@ -191,22 +192,40 @@ void MotorSetTarget(int16 target_l,int16 target_r)
 */
 void EncoderDistance(uint8 flag,float target_dis,int16 encoder_l,int16 encoder_r)
 {
-    static int encoder_nowsum,encoder_target;   //当前编码器值和目标编码器值
-    //采集编码器数据
-    if(flag==0&&encoder_dis_flag==0)    //正确调用且当前处于测距状态
+    static int encoder_nowsum=0,encoder_target=0;   //当前值和目标值
+    static int stop_nowsum=0,stop_target=0;         //停车模式
+    static uint8 encoder_stop_flag=0;               //停车flag
+
+    if(flag==0) //采集数据
     {
         int16 encoder=(encoder_l+encoder_r)/2;  //左右编码器均值
-        encoder_nowsum+=encoder;                //编码器累加
-        if(encoder_nowsum>encoder_target)       //当前编码器超过目标值
+        if(encoder_dis_flag==0) //测距模式
         {
-            encoder_dis_flag=1; //编码器测距flag置1
+            encoder_nowsum+=encoder;                //编码器累加
+            if(encoder_nowsum>encoder_target)       //当前编码器超过目标值
+            {
+                encoder_dis_flag=1; //编码器测距flag置1
+            }
+        }
+        if(encoder_stop_flag==1)//停车模式
+        {
+            stop_nowsum+=encoder;                   //编码器累加
+            if(stop_nowsum>stop_target)             //当前编码器超过目标值
+            {
+                Stop(); //停车
+            }
         }
     }
-    //设置目标值
-    else if(flag==1)
+    else if(flag==1)     //测距模式
     {
         encoder_target=11731*target_dis;    //根据目标距离计算目标编码器值
-        encoder_dis_flag=0;                 //编码器测距flag置0，开启编码器采集
         encoder_nowsum=0;                   //清空编码器累积值
+        encoder_dis_flag=0;                 //编码器测距flag置0，开启编码器采集
+    }
+    else if(flag==2)    //停车模式
+    {
+        stop_target=11731*target_dis;
+        stop_nowsum=0;
+        encoder_stop_flag=1;    //开启定距停车
     }
 }

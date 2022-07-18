@@ -34,7 +34,7 @@
 #include  "zf_stm_systick.h"
 #include "ImageProcess.h"
 
-uint32 SteerPWM=STEER_MID;            //舵机PWM
+uint32 SteerPWM=STEER_MID;    //舵机PWM
 float icm_target_angle_z=0;   //陀螺仪Z轴积分目标角度
 uint8 icm_angle_z_flag=0;     //陀螺仪Z轴积分达到目标角度
 //PIT中断函数  示例
@@ -43,11 +43,7 @@ uint8 icm_angle_z_flag=0;     //陀螺仪Z轴积分达到目标角度
 IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 {
 	enableInterrupts();//开启中断嵌套
-	//定距停车
-	if(encoder_dis_flag==1)
-    {
-	    Stop();
-    }
+
 	//阿克曼结构差速，减速版
 	int diff_steerpwm=SteerPWM-STEER_MID;
 	double radian;

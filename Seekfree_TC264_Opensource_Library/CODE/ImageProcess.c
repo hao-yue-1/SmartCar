@@ -44,8 +44,7 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-    CircleIslandIdentify_R(RightLine, InflectionR);
-//    CircleIslandBegin_R();
+    CircleIslandIdentify_L(LeftLine, InflectionL);
     /****************************状态机***************************/
 #if 0
     switch(flag)
@@ -220,12 +219,14 @@ void ImageProcess()
         bias_startline=95;bias_endline=50;                          //恢复默认前瞻
     }
     //LCD绘制图像
-//    for(uint8 i=0;i<MT9V03X_W-1;i++)
-//    {
-//        lcd_drawpoint(i, bias_startline, RED);
-//        lcd_drawpoint(i, bias_endline, RED);
-//    }
-//    lcd_showfloat(0, 0, Bias, 1, 2);
+#if 0
+    for(uint8 i=0;i<MT9V03X_W-1;i++)
+    {
+        lcd_drawpoint(i, bias_startline, RED);
+        lcd_drawpoint(i, bias_endline, RED);
+    }
+    lcd_showfloat(0, 0, Bias, 1, 2);
+#endif
 }
 
 /*

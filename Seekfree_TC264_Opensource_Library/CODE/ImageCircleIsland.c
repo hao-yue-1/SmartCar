@@ -516,6 +516,7 @@ uint8 CircleIslandMid_L(void)
             }
             break;
         }
+        //下面的方法只适用于左环岛：前方没有其他圆环干扰，但是在右环岛情况并非如此
         for(;row-1>0;row--)    //向上扫，左边界
         {
             if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row-1][column]==IMAGE_WHITE)    //黑-白
@@ -536,6 +537,15 @@ uint8 CircleIslandMid_L(void)
                 break;
             }
         }
+//        //下面是参考右环岛的方法写的另一种可以避免远处干扰的方法，若华师赛场有其他干扰可以启动这一种，但是要配合测距，因为在Exit处很可能误判
+//        for(;column-1>0;column--) //向左扫，黑洞右切点
+//        {
+//            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row][column-1]==IMAGE_WHITE)    //谷底右侧为白：误判了Exit处圆环和直道的夹角为黑洞
+//            {
+//                flag=0;
+//                break;
+//            }
+//        }
     }
     else    //判断是否满足车子靠右的情况（左边有一个接近正中间的，极小的黑洞）
     {
@@ -570,39 +580,39 @@ uint8 CircleIslandMid_L(void)
                 break;
             }
         }
-        //下面的程序防止在Exit处误判：将圆环与直道交界处误判为黑洞，上面还有一个真正的黑洞
-        if(flag==1) //上面条件成立的情况下作以下约束
-        {
-            for(;row-1>0;row--) //黑洞中点处向上扫，左边界
-            {
-                if(BinaryImage[row][1]==IMAGE_BLACK&&BinaryImage[row-1][1]==IMAGE_WHITE)    //黑-白
-                {
-                    for(;row-1>0;row--) //继续向上扫
-                    {
-                        if(BinaryImage[row][1]==IMAGE_WHITE&&BinaryImage[row-1][1]==IMAGE_BLACK)    //白-黑
-                        {
-                            for(;row-1>0;row--) //继续向上扫
-                            {
-                                if(BinaryImage[row][1]==IMAGE_BLACK&&BinaryImage[row-1][1]==IMAGE_WHITE)    //黑-白
-                                {
-                                    for(;row-1>0;row--) //继续向上扫
-                                    {
-                                        if(BinaryImage[row][1]==IMAGE_WHITE&&BinaryImage[row-1][1]==IMAGE_BLACK)    //白-黑
-                                        {
-                                            flag=0; //不符合约束条件
-                                            break;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-        }
+//        //下面的程序防止在Exit处误判：将圆环与直道交界处误判为黑洞，上面还有一个真正的黑洞（其实并没有很必要，因为上面的约束已经很严）
+//        if(flag==1) //上面条件成立的情况下作以下约束
+//        {
+//            for(;row-1>0;row--) //黑洞中点处向上扫，左边界
+//            {
+//                if(BinaryImage[row][1]==IMAGE_BLACK&&BinaryImage[row-1][1]==IMAGE_WHITE)    //黑-白
+//                {
+//                    for(;row-1>0;row--) //继续向上扫
+//                    {
+//                        if(BinaryImage[row][1]==IMAGE_WHITE&&BinaryImage[row-1][1]==IMAGE_BLACK)    //白-黑
+//                        {
+//                            for(;row-1>0;row--) //继续向上扫
+//                            {
+//                                if(BinaryImage[row][1]==IMAGE_BLACK&&BinaryImage[row-1][1]==IMAGE_WHITE)    //黑-白
+//                                {
+//                                    for(;row-1>0;row--) //继续向上扫
+//                                    {
+//                                        if(BinaryImage[row][1]==IMAGE_WHITE&&BinaryImage[row-1][1]==IMAGE_BLACK)    //白-黑
+//                                        {
+//                                            flag=0; //不符合约束条件
+//                                            break;
+//                                        }
+//                                    }
+//                                    break;
+//                                }
+//                            }
+//                            break;
+//                        }
+//                    }
+//                    break;
+//                }
+//            }
+//        }
     }
     //满足约束条件下的进一步判断
     if(flag==1)
@@ -653,7 +663,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL)
     {
         case 0: //此时小车未到达环岛，开始判断环岛出口部分路段，这里需要补线
         {
-            if(flag_exit==1)        //之前已识别到环岛出口
+            if(flag_exit==1&&encoder_dis_flag==1)        //之前已识别到环岛出口
             {
                 if(CircleIslandMid_L()==1)   //识别到环岛中部
                 {
@@ -661,8 +671,9 @@ uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL)
                     break;
                 }
             }
-            if(CircleIslandExit_L(InflectionL)==1)  //识别到环岛Exit作为开启环岛中部检测的条件
+            if(CircleIslandExit_L(InflectionL)==1&&flag_exit==0)  //识别到环岛Exit作为开启环岛中部检测的条件
             {
+                EncoderDistance(1, 0.3, 0, 0);  //开启测距：0.3m
                 flag_exit=1;
             }
             break;
@@ -1081,12 +1092,10 @@ uint8 CircleIslandEnd_R(void)
         if(row>bias_endline)        //补线终点低于前瞻终点
         {
             bias_endline=row;
-            LcdDrawRow(bias_endline, PURPLE);
         }
         if(start_row<bias_startline)//补线起点高于前瞻起点
         {
             bias_startline=start_row;
-            LcdDrawRow(bias_startline, BROWN);
         }
         return 1;
     }
@@ -1237,7 +1246,6 @@ uint8 CircleIslandMid_R(void)
             }
             break;
         }
-        LcdDrawPoint_V2(row, column, RED);
         //这里为了防止远处十字环的干扰，和左环岛不同，采用另外一种判断方法
         for(;column+1<MT9V03X_W-1;column++) //向右扫，黑洞左切点
         {
