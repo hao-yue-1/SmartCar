@@ -200,13 +200,13 @@ uint8 CrossLoopEnd_L(void)
     if((LostNum_LeftLine<90&&fabsf(Bias)<4)||flag==1) //符合约束条件或处于连续补线
     {
         Point StarPoint,EndPoint;
+        uint8 row=MT9V03X_H-5,column=4,flag_1=0;
         //寻找补线起点
-        uint8 row=MT9V03X_H-2,column=1,flag_1=0;    //寻找左拐点
         if(BinaryImage[row][column]==IMAGE_BLACK)   //左下角为黑（存在左拐点）
         {
-            for(;column<MT9V03X_W-1;column++)   //将指针移动到底部最右端
+            for(;column+1<MT9V03X_W-1;column++)   //将指针移动到底部最右端
             {
-                if(BinaryImage[row][column]==IMAGE_WHITE)
+                if(BinaryImage[row][column+1]==IMAGE_WHITE)
                 {
                     break;
                 }
@@ -233,18 +233,19 @@ uint8 CrossLoopEnd_L(void)
         }
         StarPoint.Y=row;    //起点：左拐点or左下角
         StarPoint.X=column;
+        uint8 start_row=row;
         //寻找补线终点
-        row=MT9V03X_H-2;column=MT9V03X_W-2;flag_1=0;    //寻找右拐点
+        row=MT9V03X_H-5;column=MT9V03X_W-5;flag_1=0;
         if(BinaryImage[row][column]==IMAGE_BLACK)       //右下角为黑（存在右拐点）
         {
-            for(;column+1>0;column--)   //将指针移动到底部最左端
+            for(;column-1>0;column--)   //将指针移动到底部最左端
             {
-                if(BinaryImage[row][column]==IMAGE_WHITE)
+                if(BinaryImage[row][column-1]==IMAGE_WHITE)
                 {
                     break;
                 }
             }
-            while(column-2>0&&row-2>0)  //向左上方寻找
+            while(column-2>0&&row-2>0)  //向左上方寻找右拐点
             {
                 if(BinaryImage[row][column-1]==IMAGE_BLACK||BinaryImage[row][column-2]==IMAGE_BLACK) //左黑
                 {
@@ -263,18 +264,38 @@ uint8 CrossLoopEnd_L(void)
                 }
                 break;  //探针没有移动
             }
-        }
-        for(;row-1>0;row--) //向上扫，右拐点
-        {
-            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)   //白-黑
+            for(;row-1>0;row--) //向上扫，寻找右拐点上方的边界
             {
-                break;
+                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)   //白-黑
+                {
+                    break;
+                }
+            }
+        }
+        else    //不存在右拐点
+        {
+            row=2*(MT9V03X_H/3);//防止下方小黑洞的干扰
+            for(;row-1>0;row--) //向上扫
+            {
+                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)   //白-黑
+                {
+                    break;
+                }
             }
         }
         EndPoint.Y=row;     //终点：右拐点上方边界处or右边界上方
         EndPoint.X=column;
         //补左线右转出环
         FillingLine('L', StarPoint, EndPoint);
+        //特殊情况求Bias，防止其他元素干扰
+        if(row>bias_endline)        //补线终点低于前瞻终点
+        {
+            bias_endline=row;
+        }
+        if(start_row<bias_startline)//补线起点高于前瞻起点
+        {
+            bias_startline=start_row;
+        }
         flag=1; //连续补线标志
         return 1;
     }
@@ -459,7 +480,7 @@ uint8 CrossLoopBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point Infl
            }
         }
     }
-   return 0;
+    return 0;
 }
 
 /*
@@ -539,13 +560,13 @@ uint8 CrossLoopEnd_R(void)
     if((LostNum_RightLine<90&&fabsf(Bias)<4)||flag==1) //符合约束条件或处于连续补线
     {
         Point StarPoint,EndPoint;
+        uint8 row=MT9V03X_H-5,column=MT9V03X_W-5,flag_1=0;
         //寻找补线起点
-        uint8 row=MT9V03X_H-2,column=MT9V03X_W-2,flag_1=0;    //寻找右拐点
         if(BinaryImage[row][column]==IMAGE_BLACK)   //右下角为黑（存在右拐点）
         {
-            for(;column>0;column--)   //将指针移动到底部最左端
+            for(;column-1>0;column--)   //将指针移动到底部最左端
             {
-                if(BinaryImage[row][column]==IMAGE_WHITE)
+                if(BinaryImage[row][column-1]==IMAGE_WHITE)
                 {
                     break;
                 }
@@ -572,13 +593,14 @@ uint8 CrossLoopEnd_R(void)
         }
         StarPoint.Y=row;    //起点：右拐点or右下角
         StarPoint.X=column;
+        uint8 start_row=row;
         //寻找补线终点
-        row=MT9V03X_H-2;column=1;flag_1=0;    //寻找左拐点
-        if(BinaryImage[row][column]==IMAGE_BLACK)       //右下角为黑（存在右拐点）
+        row=MT9V03X_H-5;column=4;flag_1=0;
+        if(BinaryImage[row][column]==IMAGE_BLACK)       //左下角为黑（存在左拐点）
         {
-            for(;column<MT9V03X_W-1;column++)   //将指针移动到底部最右端
+            for(;column+1<MT9V03X_W-1;column++)   //将指针移动到底部最右端
             {
-                if(BinaryImage[row][column]==IMAGE_WHITE)
+                if(BinaryImage[row][column+1]==IMAGE_WHITE)
                 {
                     break;
                 }
@@ -602,18 +624,38 @@ uint8 CrossLoopEnd_R(void)
                 }
                 break;  //探针没有移动
             }
-        }
-        for(;row-1>0;row--) //向上扫，左拐点
-        {
-            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)   //白-黑
+            for(;row-1>0;row--) //向上扫，左拐点
             {
-                break;
+                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)   //白-黑
+                {
+                    break;
+                }
+            }
+        }
+        else    //不存在左拐点
+        {
+            row=2*(MT9V03X_H/3);//防止下方小黑洞的干扰
+            for(;row-1>0;row--) //向上扫
+            {
+                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)   //白-黑
+                {
+                    break;
+                }
             }
         }
         EndPoint.Y=row;     //终点：左拐点上方边界处or左边界上方
         EndPoint.X=column;
         //补右线左转出环
         FillingLine('R', StarPoint, EndPoint);
+        //特殊情况求Bias，防止其他元素干扰
+        if(row>bias_endline)        //补线终点低于前瞻终点
+        {
+            bias_endline=row;
+        }
+        if(start_row<bias_startline)//补线起点高于前瞻起点
+        {
+            bias_startline=start_row;
+        }
         flag=1; //连续补线标志
         return 1;
     }
@@ -633,7 +675,6 @@ uint8 CrossLoopEnd_R(void)
 uint8 CrossLoopIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR)
 {
     static uint8 flag,flag_in,flag_end;
-
     switch(flag)
     {
         case 0: //小车识别十字回环的入口，进行补线直行

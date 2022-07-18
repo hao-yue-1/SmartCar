@@ -40,11 +40,16 @@ void ImageProcess()
     Point CrossRoadUpLPoint,CrossRoadUpRPoint;  //十字路口
     CrossRoadUpLPoint.X=0;CrossRoadUpLPoint.Y=0;CrossRoadUpRPoint.X=0;CrossRoadUpRPoint.Y=0;
     /*****************************扫线*****************************/
-    GetImagBasic(LeftLine, CentreLine, RightLine, 'L');
+    GetImagBasic(LeftLine, CentreLine, RightLine, 'R');
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-    CircleIslandIdentify_L(LeftLine, InflectionL);
+    if(CrossLoopIdentify_R(LeftLine, RightLine, InflectionL, InflectionR)==1)
+    {
+        gpio_set(LED_BLUE, 0);
+        Stop();
+    }
+//    CrossLoopEnd_R();
     /****************************状态机***************************/
 #if 0
     switch(flag)
@@ -222,8 +227,8 @@ void ImageProcess()
 #if 0
     for(uint8 i=0;i<MT9V03X_W-1;i++)
     {
-        lcd_drawpoint(i, bias_startline, RED);
-        lcd_drawpoint(i, bias_endline, RED);
+        lcd_drawpoint(i, bias_startline, YELLOW);
+        lcd_drawpoint(i, bias_endline, YELLOW);
     }
     lcd_showfloat(0, 0, Bias, 1, 2);
 #endif
