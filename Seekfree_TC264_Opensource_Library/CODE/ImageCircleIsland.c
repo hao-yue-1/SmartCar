@@ -387,7 +387,8 @@ uint8 CircleIslandEnd_L(void)
 uint8 CircleIslandExit_L(Point InflectionL)
 {
     static uint8 flag=0;    //连续补线flag
-    if((InflectionL.X!=0&&InflectionL.Y>85)||flag==1)  //符合约束条件or处于连续补线状态
+//    if((InflectionL.X!=0&&InflectionL.Y>85)||flag==1)  //符合约束条件or处于连续补线状态
+    if(1)
     {
         uint8 row=MT9V03X_H-5,column=4,flag_1=0;
         Point StarPoint,EndPoint;
@@ -646,6 +647,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL)
                 if(CircleIslandMid_L()==1)   //识别到环岛中部
                 {
                     flag_exit=0;flag=1; //跳转到状态1
+                    gpio_set(LED_WHITE, 0);
                     break;
                 }
             }
