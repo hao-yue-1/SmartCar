@@ -36,9 +36,10 @@ uint8   Garage_LastRightangleRow=20;            //车库的全局变量上一次从上往下遍
 #define R_GARAGE_LOSTRLINE_THR 35   //右边车库开启索贝尔的右边丢线阈值
 #define RINGARAGEENTRANCE_DEBUG 0                //右边入库入口处是否开启DEBUG
 #define RINGARAGEENTRANCE_SEEDGROW_THR 5        //右边入库入口种子生长列坐标的阈值
+#define RNOINGARAGE_DEBUG   0   //右车库不入库的DEBUG
 
-#define GARAGE_IDENTIFY_MODE 0    //哪种模式找上拐点
-#define GARAGE_DEBUG    0       //是否需要开启车库的DEBUG
+#define GARAGE_IDENTIFY_MODE 1    //哪种模式找上拐点
+#define GARAGE_DEBUG    1       //是否需要开启车库的DEBUG
 #define GARAGE_LED_DEBUG 1
 
 /********************************************************************************************
@@ -286,7 +287,6 @@ uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR)
                     Bias=DifferentBias(UpInflection.Y-5, UpInflection.Y-8, CentreLine);//直接以上拐点的上面正常的线去循迹
                 }
                 if(Bias>1.5) Bias=LastBias;//如果偏差往左太大则否认这一次的控制
-                else LastBias=Bias;//给上一次的偏差赋值
                 return 1;
             }
             default :break;
@@ -392,40 +392,35 @@ uint8 GarageLStatusIdentify(char Choose,Point InflectionL,Point InflectionR,uint
     return 0;
 }
 /********************************************************************************************
- ** 函数功能: 右车库识别补线函数
- ** 参    数: char Choose : 选择是否要入库，'Y'or'N'
- **           Point InflectionL:左拐点
+ ** 函数功能: 右车库不入库识别补线函数
+ ** 参    数: Point InflectionL:左拐点
  **           Point InflectionR:右拐点
  ** 返 回 值: 0：已经过了车库了
  **           1：还未过完车库
  ** 作    者: LJF
  ** 注    意: 这个函数更多的是在于补线，找到上拐点，而不是在于识别，识别由Sobel做，并且Sobel放入状态机的第一层判断
  *********************************************************************************************/
-uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
+uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
 {
-    Point UpInflection;//上拐点的变量
-    UpInflection.X=0,UpInflection.Y=0;//初始化为0
-    uint8 NoInflectionRFlag=0;//左库左拐点不存在的标志变量，用于选取哪种补线方式
-
-#if GARAGE_DEBUG
+#if RNOINGARAGE_DEBUG
     lcd_showint32(TFT_X_MAX-50, 0, InflectionL.X, 3);
     lcd_showint32(TFT_X_MAX-50, 1, InflectionR.X, 3);
 #endif
-
-#if GARAGEIDENTIFYMODE
-    //此处使用遍历数组找上拐点的方法
-    if(InflectionL.X==0 || (InflectionL.Y-InflectionR.Y)<10 || InflectionL.X>MT9V03X_H/2 || BinaryImage[InflectionL.Y+5][5]!=IMAGE_BLACK)
+    Point UpInflection;//上拐点的变量
+    UpInflection.X=0,UpInflection.Y=0;//初始化为0
+    uint8 NoInflectionRFlag=0;//左库左拐点不存在的标志变量，用于选取哪种补线方式
+    float LastBias=Bias;//记录上一次的Bias
+    //判断右拐点存不存在
+    if(InflectionR.X==0 || (InflectionL.Y-InflectionR.Y)<10 || InflectionR.X<MT9V03X_H/2 || BinaryImage[InflectionR.Y+5][MT9V03X_W-5]!=IMAGE_BLACK)
     {
-        if(BinaryImage[MT9V03X_H/2+10][3]==IMAGE_WHITE)
-        {
-            //从上往下遍历数组找到上拐点
-            GetUpInflection('R', 20, MT9V03X_H/2+15, &UpInflection);
-            NoInflectionLFlag=1;
-        }
-        else return 0;//否则说明左边都是黑的了直接返回已经过了左库
+        NoInflectionRFlag=1;
     }
-    else//下拐点存在
-        GetUpInflection('R', 20, InflectionL.Y+15, &UpInflection);
+#if GARAGE_IDENTIFY_MODE
+    //此处使用遍历数组找上拐点的方法
+    GetUpInflection('R', Garage_LastRightangleRow, bias_startline, &UpInflection);
+    if(UpInflection.Y<20)   Garage_LastRightangleRow=20;
+    else    Garage_LastRightangleRow=UpInflection.Y-10;
+    LcdDrawPoint_V2(UpInflection.Y, UpInflection.X, GREEN);
 #else
     //此处使用直角黑白跳变找上拐点法
     //如果是在斑马线路段了并且右拐点不存在,或者左右拐点之间的横坐标差太多，因为扫线的混乱拐点可能出现在斑马线中间
@@ -433,7 +428,7 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
     if(InflectionR.X==0 || InflectionR.X<MT9V03X_W/2 || BinaryImage[InflectionR.Y+5][MT9V03X_W-5]==IMAGE_WHITE)
     {
         //中间右边的的点去找上拐点,此处不随机播种，而是让它一定要找到白点作为找上拐点的种子
-        for(int row=MT9V03X_H/2+15;row<MT9V03X_H;row++)
+        for(int row=MT9V03X_H/2+15;row<MT9V03X_H-1;row++)
         {
             if(BinaryImage[row][MT9V03X_W-3]==IMAGE_WHITE)
             {
@@ -444,89 +439,34 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
         }
         if(NoInflectionRFlag!=1) return 0;//否则说明左边都是黑的了直接返回已经过了右库
     }
-    if(NoInflectionRFlag==1 && Choose=='Y')
-    {
-        for(int row=InflectionR.Y-10;row>10;row--)
-        {
-#if GARAGE_DEBUG
-           lcd_drawpoint(InflectionL.X, row, YELLOW);
-#endif
-            //从下往上白调黑
-            if(BinaryImage[row][InflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionR.X]==IMAGE_BLACK)
-            {
-                UpInflection.X=InflectionR.X;
-                UpInflection.Y=row-4;//现在这个if是找到行所以要给行赋值才能补到线
-                break;
-            }
-        }
-    }
-    else
-    {
-        GetRightangleUPInflection('R',InflectionR,&UpInflection,10,10);
-    }
+    GetRightangleUPInflection('R',InflectionR,&UpInflection,10,10);
 #endif
     //判断是否找到上拐点，满足才补线
     if(UpInflection.X!=0 && UpInflection.Y!=0)
     {
-        switch(Choose)
-        {
-            //入右库
-            case 'Y':
-            {
-                Point LeftDownPoint;
-                if(NoInflectionRFlag==1 && LeftLine[MT9V03X_H-5]<MT9V03X_W/2)//右拐点不存在并且下面那行不在斑马线上
-                {
-                    LeftDownPoint.X=LeftLine[MT9V03X_H-5];LeftDownPoint.Y=MT9V03X_H-5;
-                    InflectionR.X=MT9V03X_W-5,InflectionR.Y=MT9V03X_H-5;//给右边补垂直线的起点
-                    FillingLine('L', LeftDownPoint, UpInflection);//入右库补左线
-                    FillingLine('R', InflectionR, UpInflection);//入右库补右边垂直的线，消除斑马线扫线错乱影响
-                }
-                else if(NoInflectionRFlag==0 && LeftLine[MT9V03X_H-5]<MT9V03X_W/2)//右拐点存在，并且下面那行不在斑马线上
-                {
-                    LeftDownPoint.X=LeftLine[InflectionR.Y],LeftDownPoint.Y=InflectionR.Y;
-                    FillingLine('L', LeftDownPoint, UpInflection);//入右库补左线
-                    Unilaterally_Plan_CenterLine('M', 'L', LeftDownPoint.Y, UpInflection.Y);//半宽补线消除影响
-                }
-                else//否则以屏幕左下角作为补线起点
-                {
-                    LeftDownPoint.X=2,LeftDownPoint.Y=MT9V03X_H-5;
-                    FillingLine('L', LeftDownPoint, UpInflection);//入右库补左线
-                    FillingLine('R', InflectionR, UpInflection);//入右库补右边垂直的线，消除斑马线扫线错乱影响
-                }
 
-                //给偏差给舵机
-                Bias=DifferentBias_Garage(LeftDownPoint.Y, UpInflection.Y, CentreLine);
-                return 1;
-            }
-            //不入左库
-            case 'N':
+       if(NoInflectionRFlag==0)//如果没丢失下拐点则用下拐点下面巡线
+       {
+#if RNOINGARAGE_DEBUG
+            for(int i=0;i<MT9V03X_W-1;i++)
             {
-               if(NoInflectionRFlag==0)//如果没丢失下拐点则用下拐点下面巡线
-               {
-#if GARAGE_DEBUG
-                    for(int i=0;i<MT9V03X_W-1;i++)
-                    {
-                        lcd_drawpoint(i, InflectionR.Y+5, PURPLE);
-                        lcd_drawpoint(i, InflectionR.Y+2, PURPLE);
-                    }
-#endif
-                   Bias=DifferentBias(InflectionR.Y+5, InflectionR.Y+2, CentreLine);
-               }
-               else
-               {
-#if GARAGE_DEBUG
-                  for(int i=0;i<MT9V03X_W-1;i++)
-                  {
-                      lcd_drawpoint(i, UpInflection.Y-2, PURPLE);
-                      lcd_drawpoint(i, UpInflection.Y-5, PURPLE);
-                  }
-#endif
-                   Bias=DifferentBias(UpInflection.Y-2, UpInflection.Y-5, CentreLine);//直接以上拐点的上面正常的线去循迹
-               }
-               return 1;
+                lcd_drawpoint(i, InflectionR.Y+5, PURPLE);
+                lcd_drawpoint(i, InflectionR.Y+3, PURPLE);
             }
-            default :break;
-        }
+#endif
+           Bias=DifferentBias(InflectionR.Y+5, InflectionR.Y+3, CentreLine);
+       }
+       else
+       {
+#if RNOINGARAGE_DEBUG
+          for(int i=0;i<MT9V03X_W-1;i++)
+          {
+              lcd_drawpoint(i, UpInflection.Y-3, PURPLE);
+              lcd_drawpoint(i, UpInflection.Y-5, PURPLE);
+          }
+#endif
+           Bias=DifferentBias(UpInflection.Y-5, UpInflection.Y-3, CentreLine);//直接以上拐点的上面正常的线去循迹
+       }
     }
     return 0;
 }
@@ -539,7 +479,7 @@ uint8 GarageRIdentify(char Choose,Point InflectionL,Point InflectionR)
  **           1：元素状态结束
  ** 作    者: LJF
  *********************************************************************************************/
-uint8 GarageROStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag)
+uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag)
 {
     static uint8 StatusChange;//上一次识别的结果和状态变量
     uint8 NowFlag=0;//这次的识别结果
@@ -549,14 +489,12 @@ uint8 GarageROStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
         //第一个状态Sobel检测，通过了再开启识别函数
         case 0:
         {
-            gpio_set(LED_BLUE, 0);
             if(LostNum_RightLine>R_GARAGE_LOSTRLINE_THR)
             {
-                SobelResult=SobelTest(MT9V03X_H-1-20,50,40,MT9V03X_W-1-40);
+                SobelResult=SobelTest(65,50,50,MT9V03X_W-1-50);
             }
             if(SobelResult>ZebraTresholeR)
             {
-                gpio_set(LED_BLUE, 1);
                 StatusChange=1;
                 break;
             }
@@ -564,11 +502,11 @@ uint8 GarageROStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
         }
         case 1:
         {
-            NowFlag=GarageRIdentify('N', InflectionL, InflectionR);
+            NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
             *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
             if(NowFlag==0)
             {
-                gpio_set(LED_GREEN, 1);
+                return 1;//莽撞一点这里直接不再次sobel因为下一个是弯道，sobel可能会使得控制滞后
                 StatusChange=2;//跳转到结束状态
                 break;
             }
@@ -576,11 +514,10 @@ uint8 GarageROStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
         }
         case 2:
         {
-            gpio_set(LED_WHITE, 0);
-            SobelResult=SobelTest(MT9V03X_H-1-20,50,40,MT9V03X_W-1-40);
+            SobelResult=SobelTest(65,50,50,MT9V03X_W-1-50);
             if(SobelResult<ZebraTresholeR)
             {
-                gpio_set(LED_WHITE, 1);
+                gpio_set(LED_WHITE, 0);
                 return 1;//再次sobel一次确保状态机没出错
             }
             else
