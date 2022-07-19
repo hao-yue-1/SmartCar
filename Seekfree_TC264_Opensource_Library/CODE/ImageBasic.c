@@ -249,6 +249,10 @@ void GetDownInflection(int startline,int endline,int *LeftLine,int *RightLine,Po
 //        systick_delay_ms(STM0, 800);
     }
 }
+#define UPINFLECTION_DOWM_MIN_THRESHOLD  15  //上拐点列坐标与下面行数的差值最小阈值
+#define UPINFLECTION_UP_MAX_THRESHOLD  5  //上拐点列坐标与上面行数的差值最大阈值
+#define UPINFLECTION_COMPARE_INTERVAL 3 //上拐点两点之间比较间隔
+
 /************************************************************************
  ** 函数功能: 根据左右边界得到上拐点
  ** 参    数: char Choose：选择遍历左线还是右线
@@ -270,8 +274,8 @@ void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection)
             for (row = startline; row < endline; row++)
             {
                 //下三行的列坐标-这行列坐标大于阈值，不用ABS是为了速度更快
-                if (LeftLine[row] - LeftLine[row+UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_THRESHOLD
-                 && LeftLine[row - UPINFLECTION_COMPARE_INTERVAL] - LeftLine[row + UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_THRESHOLD)
+                if (LeftLine[row] - LeftLine[row+UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_DOWM_MIN_THRESHOLD
+                 && LeftLine[row - UPINFLECTION_COMPARE_INTERVAL] - LeftLine[row + UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_DOWM_MIN_THRESHOLD)
                 {
                     UpInflection->X = LeftLine[row]; UpInflection->Y = row;
                     /**************debug***********/
@@ -295,8 +299,9 @@ void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection)
             for(row = startline; row < endline; row++)
             {
                 //这行列坐标-下三行的列坐标大于阈值，不用ABS是为了速度更快
-                if (RightLine[row+UPINFLECTION_COMPARE_INTERVAL] - RightLine[row] >= UPINFLECTION_THRESHOLD
-                 && RightLine[row+UPINFLECTION_COMPARE_INTERVAL] - RightLine[row-UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_THRESHOLD)
+                if (RightLine[row+UPINFLECTION_COMPARE_INTERVAL] - RightLine[row] >= UPINFLECTION_DOWM_MIN_THRESHOLD
+                 && RightLine[row + UPINFLECTION_COMPARE_INTERVAL] - RightLine[row - UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_DOWM_MIN_THRESHOLD
+                 && RightLine[row]-RightLine[row-1]<=UPINFLECTION_UP_MAX_THRESHOLD)
                 {
                     UpInflection->X=RightLine[row];UpInflection->Y=row;
                    /**************debug***********/

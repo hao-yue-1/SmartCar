@@ -16,20 +16,28 @@
 #include "SEEKFREE_18TFT.h"
 #include "zf_gpio.h"
 
+extern uint8 bias_startline,bias_endline;        //动态前瞻
+uint8   Garage_LastRightangleRow=20;            //车库的全局变量上一次从上往下遍历边线数组寻找直角拐点的行数
+
 //Sobel算子检测
 #define FastABS(x) (x > 0 ? x : x * -1.0f)
 #define BinaryImage(i, j)    BinaryImage[i][j]
+//找拐点函数的debug
+#define SEEDGROWFINDUPINFLECTION_DEBUG 0         //种子生长找谷底是否开启DEBUG
+//左车库
 #define ZebraTresholeL 1200  //索贝尔测试的阈值
-#define ZebraTresholeR 1300  //索贝尔测试车库在右边的阈值
-
-#define GARAGE_IDENTIFY_MODE 0    //哪种模式找上拐点
 #define IN_L_GARAGE_ANGLE   50  //入左库开启陀螺仪积分的目标角度
-#define IN_R_GARAGE_ANGLE   60  //入右库开启陀螺仪积分的目标角度
 #define L_GARAGE_LOSTLLINE_MIN_THR 25   //左边车库开启索贝尔的左边丢线最小阈值
 #define L_GARAGE_LOSTLLINE_MAX_THR 35   //左边车库开启索贝尔的左边丢线最大阈值
 #define L_GARAGE_LOSTRLINE_MAX_THR 50   //左边车库开启索贝尔的右边丢线最大阈值
+//右车库
+#define ZebraTresholeR 1300  //索贝尔测试车库在右边的阈值
+#define IN_R_GARAGE_ANGLE   60  //入右库开启陀螺仪积分的目标角度
 #define R_GARAGE_LOSTRLINE_THR 35   //右边车库开启索贝尔的右边丢线阈值
+#define RINGARAGEENTRANCE_DEBUG 0                //右边入库入口处是否开启DEBUG
+#define RINGARAGEENTRANCE_SEEDGROW_THR 5        //右边入库入口种子生长列坐标的阈值
 
+#define GARAGE_IDENTIFY_MODE 0    //哪种模式找上拐点
 #define GARAGE_DEBUG    0       //是否需要开启车库的DEBUG
 #define GARAGE_LED_DEBUG 1
 
@@ -63,7 +71,107 @@ int64 SobelTest(uint8 starline,uint8 endline,uint8 starcloumn,uint8 endcloumn)
     }
     return Sobel;
 }
-
+/*********************************************************************************
+ ** 函数功能: 车库种子生长生长至谷底寻找Y上拐点
+ ** 参    数:char Choose：选择是在谷的左边还是右边
+ **          Point Seed
+ **          int endline
+ **          Point *UpInflectionC
+ **          char TRANSVERSE_THR:横向列坐标移动的阈值
+ ** 返 回 值: 无
+ ** 作    者: LJF
+ **********************************************************************************/
+void SeedGrowFindUpInflection_Garage(char Choose,Point Seed,int endline,Point *UpInflectionC,char TRANSVERSE_THR)
+{
+    char transversenum=0;//记录种子是否一直横向移动,种子横向生长的次数
+    Point tempSeed;//临时的种子
+    for(;Seed.Y<endline && Seed.X<MT9V03X_W-1 && Seed.X>0;)
+    {
+#if SEEDGROWFINDUPINFLECTION_DEBUG
+        lcd_drawpoint(Seed.X, Seed.Y, YELLOW);
+#endif
+        switch(Choose)
+        {
+            case 'L':
+                if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_BLACK)
+                {
+                    Seed.Y++,Seed.X++;
+                    transversenum=0;
+                }
+                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_WHITE)
+                {
+                    Seed.Y++;
+                    transversenum=0;
+                }
+                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_BLACK)
+                {
+                    Seed.X++;
+                    if(transversenum==0)//判断是否是第一次往右走
+                    {
+                        tempSeed=Seed;
+                    }
+                    transversenum++;//说明在往右边走
+                }
+                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_WHITE)
+                {
+                    if(transversenum!=0)//说明之前一直都是往右走找到了谷底
+                    {
+                        UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
+                    }
+                    else
+                    {
+                        UpInflectionC->Y=Seed.Y,UpInflectionC->X=Seed.X;
+                    }
+                    return;
+                }
+                break;
+            case 'R':
+                if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_BLACK)
+                {
+                    Seed.Y++,Seed.X--;
+                    transversenum=0;
+                }
+                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_WHITE)
+                {
+                    Seed.Y++;
+                    transversenum=0;
+                }
+                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_BLACK)
+                {
+                    Seed.X--;
+                    if(transversenum!=0)//判断是否是第一次往右走
+                    {
+                        tempSeed=Seed;
+                    }
+                    transversenum++;;//说明在往左边走
+                }
+                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_WHITE)
+                {
+                    if(transversenum!=0)//说明之前一直都是往右走找到了谷底
+                    {
+                        UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
+                    }
+                    else
+                    {
+                        UpInflectionC->Y=Seed.Y,UpInflectionC->X=Seed.X;
+                    }
+                    return;
+                }
+                break;
+            default:break;
+        }
+        //当种子横向生长的次数大于了阈值
+        if(transversenum>TRANSVERSE_THR)
+        {
+            UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
+            break;
+        }
+        if(Seed.X>MT9V03X_W-1 || Seed.X<0 || Seed.Y<0 || Seed.Y>MT9V03X_H-1)
+        {
+            break;//防止找不到死循环
+        }
+    }
+}
 /********************************************************************************************
  ** 函数功能: 左车库识别补线函数
  ** 参    数: char Choose : 选择是否要入库，'Y'or'N'
@@ -178,6 +286,7 @@ uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR)
                     Bias=DifferentBias(UpInflection.Y-5, UpInflection.Y-8, CentreLine);//直接以上拐点的上面正常的线去循迹
                 }
                 if(Bias>1.5) Bias=LastBias;//如果偏差往左太大则否认这一次的控制
+                else LastBias=Bias;//给上一次的偏差赋值
                 return 1;
             }
             default :break;
@@ -483,204 +592,6 @@ uint8 GarageROStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLF
     }
     return 0;
 }
-/********************************************************************************************
- ** 函数功能: 右边车库入库的状态机转移
- ** 参    数: Point InflectionL：左下拐点
- **           Point InflectionR: 右下拐点
- **           uint8* GarageLFlag：把状态机内的识别函数结果返回出去
- ** 返 回 值: 0：元素状态没结束
- **           1：元素状态结束
- ** 作    者: LJF
- *********************************************************************************************/
-uint8 GarageRIStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag)
-{
-    static uint8 StatusChange;//上一次识别的结果和状态变量
-    uint8 NowFlag=0;//这次的识别结果
-    int64 SobelResult=0;//索贝尔计算的结果
-    switch(StatusChange)
-    {
-        //第一个状态Sobel检测，通过了再开启识别函数
-        case 0:
-        {
-            if(LostNum_RightLine>R_GARAGE_LOSTRLINE_THR)
-            {
-                SobelResult=SobelTest(65,50,50,MT9V03X_W-1-50);
-            }
-            if(SobelResult>ZebraTresholeR)
-            {
-//                base_speed=100;//提前降速防止MCU复位
-                StatusChange=1;
-                break;
-            }
-            break;
-        }
-        case 1:
-        {
-            //开启陀螺仪积分判定是否入库成功
-            StartIntegralAngle_Z(IN_R_GARAGE_ANGLE);
-            StatusChange=2;
-            break;
-        }
-        case 2:
-        {
-//            gpio_set(LED_WHITE, 0);
-#if 1   //0:直接打死入库 1:补线打死入库
-            NowFlag=GarageRIdentify('Y', InflectionL, InflectionR);
-            *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
-#else
-            Bias=-5;//打死
-            *GarageLFlag=1;
-#endif
-            //检测是否入库成功，入库成功停车
-            if(icm_angle_z_flag==1)
-            {
-                Stop();
-                return 1;
-            }
-//            //如果右拐点不存在了，进入专门为入库写的函数
-//            if(InflectionR.X==0 || InflectionR.X<MT9V03X_W/2 || BinaryImage[InflectionR.Y+5][MT9V03X_W-5]==IMAGE_WHITE)
-//            {
-//                StatusChange=4
-//            }
-//            break;
-//        }
-        }
-//        case 3:
-//        {
-//            ;
-//        }
-    }
-    return 0;
-}
-/********************************************************************************************
- ** 函数功能: 完成出库（开环）
- ** 参    数: 无
- ** 返 回 值: 无
- ** 作    者: WBN
- *********************************************************************************************/
-void OutGarage(void)
-{
-//    systick_delay_ms(STM0,50);
-    //舵机向右打死并加上一定的延时实现出库
-    Bias=-10;
-    systick_delay_ms(STM0,300);
-}
-
-
-
-
-
-
-
-
-//以下是重写的右车库
-extern uint8 bias_startline,bias_endline;        //动态前瞻
-#define RINGARAGEENTRANCE_DEBUG 0                //右边入库入口处是否开启DEBUG
-#define SEEDGROWFINDUPINFLECTION_DEBUG 0         //种子生长找谷底是否开启DEBUG
-#define RINGARAGEENTRANCE_SEEDGROW_THR 5        //右边入库入口种子生长列坐标的阈值
-
-/*********************************************************************************
- ** 函数功能: 车库种子生长生长至谷底寻找Y上拐点
- ** 参    数:char Choose：选择是在谷的左边还是右边
- **          Point Seed
- **          int endline
- **          Point *UpInflectionC
- **          char TRANSVERSE_THR:横向列坐标移动的阈值
- ** 返 回 值: 无
- ** 作    者: LJF
- **********************************************************************************/
-void SeedGrowFindUpInflection_Garage(char Choose,Point Seed,int endline,Point *UpInflectionC,char TRANSVERSE_THR)
-{
-    char transversenum=0;//记录种子是否一直横向移动,种子横向生长的次数
-    Point tempSeed;//临时的种子
-    for(;Seed.Y<endline && Seed.X<MT9V03X_W-1 && Seed.X>0;)
-    {
-#if SEEDGROWFINDUPINFLECTION_DEBUG
-        lcd_drawpoint(Seed.X, Seed.Y, YELLOW);
-#endif
-        switch(Choose)
-        {
-            case 'L':
-                if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_BLACK)
-                {
-                    Seed.Y++,Seed.X++;
-                    transversenum=0;
-                }
-                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_WHITE)
-                {
-                    Seed.Y++;
-                    transversenum=0;
-                }
-                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_BLACK)
-                {
-                    Seed.X++;
-                    if(transversenum==0)//判断是否是第一次往右走
-                    {
-                        tempSeed=Seed;
-                    }
-                    transversenum++;//说明在往右边走
-                }
-                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X+1]==IMAGE_WHITE)
-                {
-                    if(transversenum!=0)//说明之前一直都是往右走找到了谷底
-                    {
-                        UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
-                    }
-                    else
-                    {
-                        UpInflectionC->Y=Seed.Y,UpInflectionC->X=Seed.X;
-                    }
-                    return;
-                }
-                break;
-            case 'R':
-                if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_BLACK)
-                {
-                    Seed.Y++,Seed.X--;
-                    transversenum=0;
-                }
-                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_WHITE)
-                {
-                    Seed.Y++;
-                    transversenum=0;
-                }
-                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_BLACK)
-                {
-                    Seed.X--;
-                    if(transversenum!=0)//判断是否是第一次往右走
-                    {
-                        tempSeed=Seed;
-                    }
-                    transversenum++;;//说明在往左边走
-                }
-                else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_WHITE)
-                {
-                    if(transversenum!=0)//说明之前一直都是往右走找到了谷底
-                    {
-                        UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
-                    }
-                    else
-                    {
-                        UpInflectionC->Y=Seed.Y,UpInflectionC->X=Seed.X;
-                    }
-                    return;
-                }
-                break;
-            default:break;
-        }
-        //当种子横向生长的次数大于了阈值
-        if(transversenum>TRANSVERSE_THR)
-        {
-            UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
-            break;
-        }
-        if(Seed.X>MT9V03X_W-1 || Seed.X<0 || Seed.Y<0 || Seed.Y>MT9V03X_H-1)
-        {
-            break;//防止找不到死循环
-        }
-    }
-}
-
 //右边入库入口状态识别函数
 uint8 RINGarageEntrance(Point InflectionL,Point InflectionR)
 {
@@ -695,6 +606,7 @@ uint8 RINGarageEntrance(Point InflectionL,Point InflectionR)
     Seed.X=0,Seed.Y=0;//初始化为0
     char NoInflectionRFlag=0;//1：不存在右拐点 0：存在右拐点
     static char GarageLUpInflection;//记录车库里面的左上直角点是否出现
+    static float LastBias;
     //判断右下拐点是否为不存在
     if(InflectionR.X==0 || InflectionR.X<MT9V03X_W/2 || BinaryImage[InflectionR.Y+5][MT9V03X_W-5]==IMAGE_WHITE)
     {
@@ -719,7 +631,21 @@ uint8 RINGarageEntrance(Point InflectionL,Point InflectionR)
         NoInflectionRFlag=0;
     }
     //开始找上拐点
-    GetRightangleUPInflection('R', InflectionR, &Seed, 1, 1);//黑白跳变找到的是种子点
+    if(GarageLUpInflection==1)//根据是否以及入了一定的角度来决定寻找上拐点的方式
+    {
+        GetRightangleUPInflection('R', InflectionR, &Seed, 1, 1);//黑白跳变找到的是种子点
+    }
+    else
+    {
+        GetUpInflection('R', Garage_LastRightangleRow, InflectionR.Y+15, &Seed);
+#if RINGARAGEENTRANCE_DEBUG
+        LcdDrawPoint_V2(Seed.Y, Seed.X, GREEN);
+#endif
+        //动态的寻找上拐点的起始行
+        if(Seed.Y<20)   Garage_LastRightangleRow=20;
+        else if(Seed.Y>60)  ;
+        else    Garage_LastRightangleRow=Seed.Y-10;
+    }
     SeedGrowFindUpInflection_Garage('L', Seed, MT9V03X_H-1, &UpInflection,RINGARAGEENTRANCE_SEEDGROW_THR);//种子生长法攀爬至谷底
 
     //判断是否找到了上拐点
@@ -738,17 +664,38 @@ uint8 RINGarageEntrance(Point InflectionL,Point InflectionR)
                 LDownPoint.Y=MT9V03X_H-2;LDownPoint.X=2;
             }
             RDownPoint.Y=MT9V03X_H-2;RDownPoint.X=MT9V03X_W-1;
+            RUpPoint.Y=2;RUpPoint.X=MT9V03X_W-1;
         }
         else
         {
+            for(int row=InflectionR.Y-5;row>10;row--)
+            {
+#if RINGARAGEENTRANCE_DEBUG
+                lcd_drawpoint(MT9V03X_W-2, row, PURPLE);
+#endif
+                if (BinaryImage[row][MT9V03X_W-2]==IMAGE_WHITE && BinaryImage[row-1][MT9V03X_W-2]==IMAGE_BLACK)
+                {
+                    RUpPoint.Y=row;RUpPoint.X=MT9V03X_W-1;
+                    break;
+                }
+                else
+                {
+                    RUpPoint.Y=2;RUpPoint.X=MT9V03X_W-1;
+                }
+            }
             LDownPoint.Y=InflectionR.Y;LDownPoint.X=LeftLine[InflectionR.Y-5];
-            RDownPoint.Y=InflectionR.Y;RDownPoint.X=MT9V03X_W-1;
+            RDownPoint.Y=InflectionR.Y;RDownPoint.X=InflectionR.X;
         }
-        RUpPoint.Y=2;RUpPoint.X=MT9V03X_W-1;
         FillinLine_V2('L', LDownPoint.Y, 2, LDownPoint, UpInflection);
-        FillingLine('R',RDownPoint , RUpPoint);
+#if RINGARAGEENTRANCE_DEBUG
+        LcdDrawPoint_V2(RUpPoint.Y, RUpPoint.X, GREEN);
+#endif
+        FillinLine_V2('R', RDownPoint.Y, 2, RDownPoint, RUpPoint);
         //求偏差的处理
+
         Bias=DifferentBias_Garage(bias_startline,bias_endline, CentreLine);
+        if(Bias>0) Bias=LastBias;//如果偏差是往左边的
+        else LastBias=Bias;//给上一次偏差赋值
         //结束的最后给静态局部变量判断是否需要变为1
         if(UpInflection.X<MT9V03X_W/2)
         {
@@ -759,31 +706,35 @@ uint8 RINGarageEntrance(Point InflectionL,Point InflectionR)
     return 0;
 }
 
-//右车库入库最几帧，判断是否入库成功
-uint8 RINGarageMid(void)
-{
-    uint8 row=MT9V03X_H-1;
-    for(;row>5;row--)
-    {
-        if(BinaryImage[row][MT9V03X_W-5]==IMAGE_BLACK)
-            break;
-    }
-    if(row>95) return 1;//实际测量得出：当车尾巴已经入库时右边丢线行数为90行
-    else       return 0;
-}
-
-//右车库入库状态机
+/*******************************************************
+ ** 函数功能: 右边车库入库的状态机转移
+ ** 参    数: Point InflectionL：左下拐点
+ **           Point InflectionR: 右下拐点
+ **           uint8* GarageLFlag：把状态机内的识别函数结果返回出去
+ ** 返 回 值: 0：元素状态没结束
+ **           1：元素状态结束
+ ** 作    者: LJF
+ *********************************************************/
 uint8 RINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag)
 {
-    static uint8 StatusChange;//上一次识别的结果和状态变量
+    static uint8 StatusChange;//状态变量
     uint8 NowFlag=0;//这次的识别结果
+    int64 SobelResult=0;//索贝尔计算的结果
     switch(StatusChange)
     {
         //识别斑马线
         case 0:
         {
-            StartIntegralAngle_Z(60);
-            StatusChange=1;
+            if(LostNum_RightLine>R_GARAGE_LOSTRLINE_THR)
+            {
+                SobelResult=SobelTest(65,50,50,MT9V03X_W-1-50);
+            }
+            if(SobelResult>ZebraTresholeR)
+            {
+                StartIntegralAngle_Z(IN_R_GARAGE_ANGLE);//开启陀螺仪积分入库
+                StatusChange=1;
+                break;
+            }
             break;
         }
         case 1:
@@ -800,7 +751,8 @@ uint8 RINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageL
         case 2:
         {
             //检测是否入库成功，入库成功停车
-            *GarageLFlag=0;
+            NowFlag=RINGarageEntrance(InflectionL, InflectionR);
+            *GarageLFlag=NowFlag;
             if(icm_angle_z_flag==1)
             {
                 gpio_set(LED_WHITE, 0);
@@ -808,16 +760,22 @@ uint8 RINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageL
                 return 1;
             }
             break;
-//            NowFlag=RINGarageMid();
-//            *GarageLFlag=0;
-//            if (NowFlag==0)
-//            {
-//                gpio_set(LED_WHITE, 0);
-//                Stop();
-//                return 1;
-//            }
-//            break;
         }
     }
     return 0;
+}
+
+
+/********************************************************************************************
+ ** 函数功能: 完成出库（开环）
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ *********************************************************************************************/
+void OutGarage(void)
+{
+//    systick_delay_ms(STM0,50);
+    //舵机向右打死并加上一定的延时实现出库
+    Bias=-10;
+    systick_delay_ms(STM0,300);
 }
