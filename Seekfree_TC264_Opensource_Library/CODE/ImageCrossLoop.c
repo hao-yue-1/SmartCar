@@ -387,16 +387,13 @@ uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point I
         {
             if(CrossLoopEnd_L()==1&&flag_end==0)  //第一次检测到回环出口
             {
-                StartIntegralAngle_Z(70);   //开启积分
+                StartIntegralAngle_Z(30);   //开启积分
                 flag_end=1;                 //避免重复开启积分
             }
-            if(flag_end==1)  //积分已开启
+            if(flag_end==1&&icm_angle_z_flag==1)  //积分已开启
             {
-                if(icm_angle_z_flag==1) //陀螺仪识别到已经出环
-                {
-                    flag_end=0;flag=3;  //跳转到未知状态，作废
-                    return 1;
-                }
+                flag_end=0;flag=3;  //跳转到未知状态，作废
+                return 1;
             }
             break;
         }
@@ -589,7 +586,7 @@ uint8 CrossLoopOverBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point 
 uint8 CrossLoopEnd_R(void)
 {
     static uint8 flag=0;    //连续补线flag，依赖第一次补线判断
-    if((LostNum_RightLine<90&&fabsf(Bias)<4)||flag==1) //符合约束条件或处于连续补线
+    if((LostNum_RightLine<90&&fabsf(Bias)<1.5)||flag==1) //符合约束条件或处于连续补线
     {
         Point StarPoint,EndPoint;
         uint8 row=MT9V03X_H-2,column=MT9V03X_W-2,flag_1=0,flag_2=0;
@@ -779,16 +776,13 @@ uint8 CrossLoopIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point I
         {
             if(CrossLoopEnd_R()==1&&flag_end==0)  //第一次检测到回环出口
             {
-                StartIntegralAngle_Z(70);   //开启积分
+                StartIntegralAngle_Z(30);   //开启积分
                 flag_end=1;                 //避免重复开启积分
             }
-            if(flag_end==1)  //积分已开启
+            if(flag_end==1&&icm_angle_z_flag==1)  //积分已开启
             {
-                if(icm_angle_z_flag==1) //陀螺仪识别到已经出环
-                {
-                    flag_end=0;flag=3;  //跳转到未知状态，作废
-                    return 1;
-                }
+                flag_end=0;flag=3;  //跳转到未知状态，作废
+                return 1;
             }
             break;
         }
