@@ -12,7 +12,6 @@
 #include "SEEKFREE_18TFT.h"
 #include "LED.h"
 
-extern uint8 stop_flag;
 void Stop(void);
 
 int16 speed_l,speed_r;      //电机左右速度目标值的全局变量
@@ -126,22 +125,10 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
     pwm_l=Speed_PI_Left(encoder_l,speed_l,MotorK_L);    //左右电机PID
     pwm_r=Speed_PI_Right(encoder_r,speed_r,MotorK_R);
 
-    //停车辅助
-    if((encoder_l==0||encoder_r==0)&&stop_flag==1)
-    {
-        MotorSetPWM(0, 0);
-        gpio_set(P21_4, 0);
-        while(1);
-    }
-
     MotorSetPWM(pwm_l,pwm_r);                   //电机PWM赋值
     EncoderDistance(0,0,encoder_l,encoder_r);   //采集编码器值，用于编码器测距
 
-    //野火上位机调试
-//    int data_l=encoder_l,data_r=encoder_r;     //野火上位机只支持int型数据，这里必须做强制转换
-//    set_computer_value(SEND_FACT_CMD, CURVES_CH1, &data_l, 1);      //发送左编码器
-//    set_computer_value(SEND_FACT_CMD, CURVES_CH2, &data_r, 1);      //发送右编码器
-    //VOFA上位机调试
+//    //VOFA上位机调试
 //    printf("%d,%d\n",encoder_l,encoder_r);  //发送左右编码器
 }
 

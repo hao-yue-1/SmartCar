@@ -19,7 +19,6 @@ uint8 Garage_flag=0;            //车库识别标志变量
 uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=160,speed_case_6=160,speed_case_7=170;
 uint32 SobelResult=0;
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
-uint8 stop_flag=0;
 
 /********************************************************************************************
  ** 函数功能: 对图像的各个元素之间的逻辑处理函数，最终目的是为了得出Bias给中断去控制
@@ -133,9 +132,10 @@ void ImageProcess()
  */
 void Stop(void)
 {
-    base_speed=-5;   //设置目标速度为0
-    stop_flag=1;     //开启辅助停车防止静差导致车滑行
+    base_speed=0;                   //设置目标速度为0
+    MotorK_L.I=1.5;MotorK_R.I=1.5;  //修改PID参数快速停车
     pit_disable_interrupt(CCU6_0, PIT_CH1); //关闭舵机中断
+    gpio_set(P21_4, 0);
 }
 
 /*

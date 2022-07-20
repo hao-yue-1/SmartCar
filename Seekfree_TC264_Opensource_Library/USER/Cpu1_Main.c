@@ -29,6 +29,7 @@
 #include "ICM20602.h"       //陀螺仪
 #include "LED.h"
 #include "Motor.h"
+#include "oled.h"
 
 //将本语句与#pragma section all restore语句之间的全局变量都放在CPU1的RAM中
 
@@ -49,9 +50,13 @@ void core1_main(void)
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
     enableInterrupts();
 
-    //**********按键调参*************
+    //**********按键调参**************
+//    OLED_init();
+//    OLED_clear();
+//    KeyPID();
+//    systick_delay_ms(STM0,3000);
     //*******************************
-    EncoderDistance(2, 6, 0, 0);
+    EncoderDistance(2, 4, 0, 0);
     pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化电机定时器中断
     pit_interrupt_ms(CCU6_0,PIT_CH1,20);//初始化舵机定时器中断
 

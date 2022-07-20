@@ -60,7 +60,6 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	    speed_r=(41/(41+15*tan(radian)))*base_speed;    //右转右轮减速    //此处由前轮轮距和前后轮轴距决定，一般不需要改动
 	    speed_l=base_speed;
 	}
-//	MotorSetTarget(speed_l, speed_r);   //设置目标值，限幅
 	MotorCtrl(speed_l,speed_r);         //PID控制电机速度
 	//调试
 	gpio_set(P20_8,0);

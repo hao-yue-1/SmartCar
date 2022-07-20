@@ -121,10 +121,10 @@ void KeyPID(void)
                 {
                     case 0:SteerK.P+=1;     break;
                     case 1:SteerK.D+=1;     break;
-                    case 2:MotorK_L.P+=1;   break;
-                    case 3:MotorK_L.I+=1;   break;
+                    case 2:MotorK_L.P+=10;   break;
+                    case 3:MotorK_L.I+=0.1;   break;
                     case 4:MotorK_R.P+=1;   break;
-                    case 5:MotorK_R.I+=1;   break;
+                    case 5:MotorK_R.I+=0.1;   break;
                 }
                 PIDParameterDisplay(key_num);
                 break;
@@ -135,10 +135,10 @@ void KeyPID(void)
                 {
                     case 0:SteerK.P-=1;     break;
                     case 1:SteerK.D-=1;     break;
-                    case 2:MotorK_L.P-=1;   break;
-                    case 3:MotorK_L.I-=1;   break;
-                    case 4:MotorK_R.P-=1;   break;
-                    case 5:MotorK_R.I-=1;   break;
+                    case 2:MotorK_L.P-=10;   break;
+                    case 3:MotorK_L.I-=0.1;   break;
+                    case 4:MotorK_R.P-=10;   break;
+                    case 5:MotorK_R.I-=0.1;   break;
                 }
                 PIDParameterDisplay(key_num);
                 break;
