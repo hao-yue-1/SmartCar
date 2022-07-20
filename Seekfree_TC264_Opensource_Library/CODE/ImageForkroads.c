@@ -141,6 +141,10 @@ void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflec
         {
             UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
         }
+        if(Seed.X<0 || Seed.X>MT9V03X_W-1 || Seed.Y<0 || Seed.Y>MT9V03X_H-1)
+        {
+            break;//如果找的线超出了屏幕则退出，避免程序卡死
+        }
     }
 }
 /*********************************************************************************
@@ -293,7 +297,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
                 {
                     Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);
                 }
-                gpio_toggle(LED_BLUE);
+//                gpio_toggle(LED_BLUE);
                 return 1;//三个拐点存在三岔成立：正入三岔
             }
         }
@@ -338,7 +342,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             {
                 Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);
             }
-            gpio_toggle(LED_GREEN);
+//            gpio_toggle(LED_GREEN);
             return 1;//三岔正入丢失左右拐点那一帧
         }
     }
@@ -370,7 +374,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             {
                 Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);
             }
-            gpio_toggle(LED_RED);
+//            gpio_toggle(LED_RED);
             return 1;//三岔左斜入三岔
         }
     }
@@ -408,7 +412,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             {
                 Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);
             }
-            gpio_toggle(LED_WHITE);
+//            gpio_toggle(LED_WHITE);
             return 1;//三岔右斜入三岔
         }
     }
@@ -425,20 +429,10 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
  *********************************************************************************************/
 uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *ForkFlag)
 {
-    static uint8 StatusChange,num1,num3,numspecial;//三岔识别函数的临时状态变量，用来看状态是否跳转
+    static uint8 StatusChange,num1,num3;//三岔识别函数的临时状态变量，用来看状态是否跳转
     uint8 NowFlag=0;//这次的识别结果
-
     NowFlag=ForkIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);
     *ForkFlag=NowFlag;//把识别结果送出去
-    //特殊保护
-    if(numspecial<200)//防止很久都没有出现进入入口的状态，及时去判断出口
-    {
-        numspecial++;
-    }
-    else if(StatusChange<1)//判断状态有没有度过入口状态，若没有则强制跳过
-    {
-        StatusChange=2;
-    }
     //状态机开始部分
     switch(StatusChange)
     {
@@ -500,28 +494,21 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
  **           1：三岔已结束
  ** 作    者: LJF
  *********************************************************************************************/
-uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *NowFlag)
+uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *ForkFlag)
 {
-    static uint8 StatusChange,num1,num3,numspecial;//三岔识别函数的零食状态变量，用来看状态是否跳转
-
-    if(numspecial<255)//防止很久都没有出现进入入口的状态，及时去判断出口
-    {
-        numspecial++;
-    }
-    else if(StatusChange<1)//判断状态有没有度过入口状态，若没有则强制跳过
-    {
-        StatusChange=2;
-    }
-
+    static uint8 StatusChange,num1,num3;//三岔识别函数的临时状态变量，用来看状态是否跳转
+    uint8 NowFlag=0;//这次的识别结果
+    NowFlag=ForkIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);
+    *ForkFlag=NowFlag;//把识别结果送出去
+    //状态机开始部分
     switch(StatusChange)
     {
         //入口状态
         case 0:
         {
-            if(*NowFlag==1)
+            if(NowFlag==1)
             {
-                SteerK.P=18.25;//减小KP进入三岔
-                StatusChange=1; //只要开始识别到了三岔就说明已经是入口阶段了
+                StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
             }
             break;
         }
@@ -530,25 +517,19 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *Now
         {
             if(num1<100)  //给足够长的时间让车走到三岔运行中
             {
-                if(num1==50)
-                {
-                    SteerK.D=3;//进入直到之后D减小防止振荡
-                    base_speed+=15; //进入三岔提速，确保是正常进入的三岔才会触发
-                }
                 num1++;
                 break;
             }
-            if(*NowFlag==0)
+            else if(NowFlag==0)
             {
-                StatusChange=2; //过了中间过度态之后跳转至检测出口
-                base_speed-=5; //检测出口减速
+                StatusChange=2;//过了中间过度态之后跳转至检测出口
             }
             break;
         }
         //出口状态
         case 2:
         {
-            if(*NowFlag==1)
+            if(NowFlag==1)
             {
                 StatusChange=3;
             }
@@ -557,14 +538,13 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *Now
         //确保已经出三岔了，否则三岔口就出三岔了，使得出三岔其实是扫线出的
         case 3:
         {
-            if(num3<50)
+            if(num3<35)  //给足够长的时间让车走出三岔中
             {
                 num3++;
                 break;
             }
             else
             {
-                SteerK.P=19.25;//还原KP
                 return 1;
             }
         }
@@ -572,4 +552,3 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *Now
     }
     return 0;
 }
-
