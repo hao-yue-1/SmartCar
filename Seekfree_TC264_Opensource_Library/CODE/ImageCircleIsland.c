@@ -306,13 +306,30 @@ uint8 CircleIslandOverBegin_L(int *LeftLine)
 uint8 CircleIslandEnd_L(void)
 {
     static uint8 flag=0;    //保证补线的连续性，依赖于第一次判断
-    if((LostNum_LeftLine<90&&fabsf(Bias)<4)||flag==1)  //符合约束条件或处于连续补线
+    if((LostNum_LeftLine<90&&fabsf(Bias)<3)||flag==1)  //符合约束条件或处于连续补线
     {
         Point StarPoint,EndPoint;
+        uint8 row=MT9V03X_H-2,column=MT9V03X_W-2,flag_1=0,flag_2=0;
         //寻找补线起点
-        uint8 row=MT9V03X_H-2,column=MT9V03X_W-2,flag_1;
-        if(BinaryImage[row][column]==IMAGE_BLACK)   //右下角为黑（可能存在右拐点）
+        if(BinaryImage[row][column]==IMAGE_BLACK)   //右下角为黑
         {
+            flag_2=1;   //存在右拐点
+        }
+        else                                        //右下角为白
+        {
+            for(;row-1>2*(MT9V03X_H/3);row--)   //向上扫，右下角
+            {
+                //白-黑跳变点在图像下方三分之一处
+                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+                {
+                    flag_2=1;
+                    break;
+                }
+            }
+        }
+        if(flag_2==1)   //存在右拐点
+        {
+            //向左上方寻找拐点
             for(;column-1>0;column--)   //将指针移动到底部最左端
             {
                 if(BinaryImage[row][column-1]==IMAGE_WHITE)
@@ -320,14 +337,14 @@ uint8 CircleIslandEnd_L(void)
                     break;
                 }
             }
-            while(column-1>0&&row-1>0)  //向左上方寻找
+            while(column-1>0&&row-1>0)  //左上
             {
                 if(BinaryImage[row][column-1]==IMAGE_BLACK) //左黑
                 {
                     column--;   //左移
                     flag_1=1;
                 }
-                if(BinaryImage[row-1][column]==IMAGE_BLACK) //上黑
+                if(BinaryImage[row-1][column]==IMAGE_BLACK&&flag_1==0) //上黑（由于拐点的左边界线较缓，限制先左移后上移）
                 {
                     row--;      //上移
                     flag_1=1;
@@ -339,7 +356,10 @@ uint8 CircleIslandEnd_L(void)
                 }
                 break;
             }
-            flag_1=1;   //标记找到了右拐点，为下面找终点提供分类依据
+        }
+        else            //不存在右拐点
+        {
+            row=MT9V03X_H-2;
         }
         StarPoint.Y=row;    //起点：右拐点or右下角
         StarPoint.X=column;
@@ -647,7 +667,6 @@ uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL)
                 if(CircleIslandMid_L()==1)   //识别到环岛中部
                 {
                     flag_exit=0;flag=1; //跳转到状态1
-                    gpio_set(LED_WHITE, 0);
                     break;
                 }
             }
@@ -696,7 +715,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL)
         {
             if(CircleIslandEnd_L()==1&&flag_end==0)  //第一次检测到环岛出口
             {
-                StartIntegralAngle_Z(70);   //开启积分
+                StartIntegralAngle_Z(60);   //开启积分
                 flag_end=1;
             }
             if(flag_end==1)  //积分已经开启
@@ -1016,12 +1035,28 @@ uint8 CircleIslandOverBegin_R(int *RightLine)
 uint8 CircleIslandEnd_R(void)
 {
     static uint8 flag=0;    //保证补线的连续性，依赖于第一次判断
-    if((LostNum_RightLine<90&&fabsf(Bias)<4)||flag==1)  //符合约束条件或处于连续补线
+    if((LostNum_RightLine<90&&fabsf(Bias)<3)||flag==1)  //符合约束条件或处于连续补线
     {
         Point StarPoint,EndPoint;
+        uint8 row=MT9V03X_H-2,column=1,flag_1=0,flag_2=0;
         //寻找补线起点
-        uint8 row=MT9V03X_H-2,column=1,flag_1;
         if(BinaryImage[row][column]==IMAGE_BLACK)   //左下角为黑（可能存在左拐点）
+        {
+            flag_2=1;
+        }
+        else
+        {
+            for(;row-1>2*(MT9V03X_H/3);row--)   //向上扫，左下角
+            {
+                //白-黑跳变点在图像下方三分之一处
+                if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+                {
+                    flag_2=1;
+                    break;
+                }
+            }
+        }
+        if(flag_2==1)   //存在左拐点
         {
             for(;column+1<MT9V03X_W-1;column++)   //将指针移动到底部最右端
             {
@@ -1030,14 +1065,14 @@ uint8 CircleIslandEnd_R(void)
                     break;
                 }
             }
-            while(column+1<MT9V03X_W-1&&row-1>0)  //向右上方寻找
+            while(column+1<MT9V03X_W-1&&row-1>0)  //右上
             {
                 if(BinaryImage[row][column+1]==IMAGE_BLACK) //右黑
                 {
                     column++;   //右移
                     flag_1=1;
                 }
-                if(BinaryImage[row-1][column]==IMAGE_BLACK) //上黑
+                if(BinaryImage[row-1][column]==IMAGE_BLACK&&flag_1==0) //上黑（由于拐点的右边界线较缓，限制先右移后上移）
                 {
                     row--;      //上移
                     flag_1=1;
@@ -1049,7 +1084,10 @@ uint8 CircleIslandEnd_R(void)
                 }
                 break;
             }
-            flag_1=1;   //标记找到了右拐点，为下面找终点提供分类依据
+        }
+        else            //不存在左拐点
+        {
+            row=MT9V03X_H-2;
         }
         StarPoint.Y=row;    //起点：左拐点or左下角
         StarPoint.X=column;
@@ -1359,7 +1397,7 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
         {
             if(CircleIslandEnd_R()==1&&flag_end==0)  //第一次检测到环岛出口
             {
-                StartIntegralAngle_Z(70);   //开启积分
+                StartIntegralAngle_Z(60);   //开启积分
                 flag_end=1;
             }
             if(flag_end==1)  //积分已经开启
