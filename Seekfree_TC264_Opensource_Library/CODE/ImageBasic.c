@@ -5,7 +5,7 @@
 #include "LED.h"
 #include "zf_gpio.h"
 
-#define FINE_RIGHT_ANGLE_INFLECTION_DEBUG   0   //遍历图像黑白跳变找直角拐点预编译的宏定义1：开启 0：关闭
+#define FINE_RIGHT_ANGLE_INFLECTION_DEBUG   1   //遍历图像黑白跳变找直角拐点预编译的宏定义1：开启 0：关闭
 
 //变量定义
 uint8 Mid=MT9V03X_W/2;                        //初始化扫线的中点为图像中点
@@ -275,7 +275,8 @@ void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection)
             {
                 //下三行的列坐标-这行列坐标大于阈值，不用ABS是为了速度更快
                 if (LeftLine[row] - LeftLine[row+UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_DOWM_MIN_THRESHOLD
-                 && LeftLine[row - UPINFLECTION_COMPARE_INTERVAL] - LeftLine[row + UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_DOWM_MIN_THRESHOLD)
+                 && LeftLine[row - UPINFLECTION_COMPARE_INTERVAL] - LeftLine[row + UPINFLECTION_COMPARE_INTERVAL] >= UPINFLECTION_DOWM_MIN_THRESHOLD
+                 && LeftLine[row-1]-LeftLine[row]<=UPINFLECTION_UP_MAX_THRESHOLD)
                 {
                     UpInflection->X = LeftLine[row]; UpInflection->Y = row;
                     /**************debug***********/
