@@ -26,9 +26,12 @@
 /*起跑线相关函数*/
 void OutGarage(void);       //出库
 int64 SobelTest(uint8 starline,uint8 endline,uint8 starcloumn,uint8 endcloumn);      //Sobel算子检测起跑线
-void SeedGrowFindUpInflection_Garage(char Choose,Point Seed,int endline,Point *UpInflectionC,char TRANSVERSE_THR);//车库的种子生长找谷底
+void SeedGrowFindValley_Garage(char Choose,Point Seed,int endline,Point *UpInflectionC,char TRANSVERSE_THR);//车库的种子生长找谷底
+void SeedGrowFindPeak_Garage(char Choose,Point Seed,int endline,Point *PeakInflection,char TRANSVERSE_THR);//车库种子生长找到山顶，跟上面函数相反
 uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR);             //左车库识别
 uint8 GarageLStatusIdentify(char Choose,Point InflectionL,Point InflectionR,uint8* GarageLFlag);  //左车库的状态机转移
+uint8 LINGarageEntrance(Point InflectionL,Point InflectionR);//左车库入库识别补线函数
+uint8 LINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag);//左侧车库入库状态机
 uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR);             //右车库不入库识别函数
 uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag);//车库右边不入库状态机
 uint8 RINGarageEntrance(Point InflectionL,Point InflectionR);//右车库入口状态识别函数
