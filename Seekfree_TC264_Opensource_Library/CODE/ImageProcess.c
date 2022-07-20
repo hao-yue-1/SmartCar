@@ -133,10 +133,9 @@ void ImageProcess()
  */
 void Stop(void)
 {
-    base_speed=0;   //设置目标速度为0
-    stop_flag=1;    //开启辅助停车防止静差导致车滑行
+    base_speed=-5;   //设置目标速度为0
+    stop_flag=1;     //开启辅助停车防止静差导致车滑行
     pit_disable_interrupt(CCU6_0, PIT_CH1); //关闭舵机中断
-    gpio_set(P21_4, 0);
 }
 
 /*

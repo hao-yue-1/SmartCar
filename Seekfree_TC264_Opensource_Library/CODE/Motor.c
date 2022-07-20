@@ -127,9 +127,10 @@ void MotorCtrl(int16 speed_l,int16 speed_r)
     pwm_r=Speed_PI_Right(encoder_r,speed_r,MotorK_R);
 
     //Í£³µ¸¨Öú
-    if((encoder_l<10||encoder_r<10)&&stop_flag==1)
+    if((encoder_l==0||encoder_r==0)&&stop_flag==1)
     {
         MotorSetPWM(0, 0);
+        gpio_set(P21_4, 0);
         while(1);
     }
 
