@@ -577,8 +577,8 @@ uint8 LINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageL
             *GarageLFlag=NowFlag;
             if(icm_angle_z_flag==1)
             {
-                gpio_set(LED_WHITE, 0);
-                Stop();
+//                gpio_set(LED_WHITE, 0);
+//                Stop();
                 return 1;
             }
             break;

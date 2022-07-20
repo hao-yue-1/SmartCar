@@ -55,12 +55,18 @@ void ImageProcess()
         }
         case 1: //识别右车库，直行
         {
-
+            if(RNINGarageStatusIdentify(InflectionL, InflectionR, &Garage_flag)==1)
+            {
+                flag=2;
+            }
             break;
         }
         case 2: //识别第一遍三岔
         {
-
+            if(ForkFStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
+            {
+                flag=3;
+            }
             break;
         }
         case 3: //识别右环岛
@@ -90,12 +96,18 @@ void ImageProcess()
         }
         case 6: //识别第二遍三岔
         {
-            Stop();
+            if(ForkSStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
+            {
+                flag=3;
+            }
             break;
         }
         case 7: //识别左车库，入库
         {
-
+            if(LINGarageStatusIdentify(InflectionL, InflectionR, &Garage_flag)==1)
+            {
+                Stop();
+            }
             break;
         }
     }
