@@ -11,6 +11,7 @@
 #include <stdlib.h> //abs函数，fabs在math.h
 #include "LED.h"
 #include "zf_gpio.h"
+#include "Motor.h"//编码器测距
 
 #define L_FINDWHIDE_THRE  10 //Y拐点中间找左边白色区域停止的阈值
 #define R_FINDWHIDE_THRE  150//Y拐点中间找右边白色区域停止的阈值
@@ -19,6 +20,7 @@
 #define SEED_TRANSVERSE_GROW_THRE    8//三岔种子生长横向生长的阈值范围，超出则默认横向生长的第一个为拐点
 #define FORK_INFLECTION_WIDTH  120//打开三岔debug,当拐点在60行附近左右拐点的差值，补全的时候，依据没有丢失的拐点的行数做一个简单的比例关系到单边循迹思路上
 #define FORK_DEBUG  0
+#define FORK_LED_DEBUG  0   //状态机的LEDdebug
 
 extern uint8 bias_startline,bias_endline;        //动态前瞻
 
@@ -429,7 +431,7 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
  *********************************************************************************************/
 uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *ForkFlag)
 {
-    static uint8 StatusChange,num1,num3;//三岔识别函数的临时状态变量，用来看状态是否跳转
+    static uint8 StatusChange,num4;//三岔识别函数的临时状态变量，用来看状态是否跳转
     uint8 NowFlag=0;//这次的识别结果
     NowFlag=ForkIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);
     *ForkFlag=NowFlag;//把识别结果送出去
@@ -439,47 +441,83 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
         //入口状态
         case 0:
         {
+#if FORK_LED_DEBUG
+            gpio_set(LED_RED, 0);
+#endif
             if(NowFlag==1)
             {
+#if FORK_LED_DEBUG
+                gpio_set(LED_RED, 1);
+#endif
+                EncoderDistance(1, 0.5, 0, 0);//开启测距
                 StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
             }
             break;
         }
-        //中途状态
+        //入口到坡道起点的状态
         case 1:
         {
-            if(num1<100)  //给足够长的时间让车走到三岔运行中
+#if FORK_LED_DEBUG
+            gpio_set(LED_YELLOW, 0);
+#endif
+            if(encoder_dis_flag==1)
             {
-                num1++;
-                break;
-            }
-            else if(NowFlag==0)
-            {
-                StatusChange=2;//过了中间过度态之后跳转至检测出口
+#if FORK_LED_DEBUG
+                gpio_set(LED_YELLOW, 1);
+#endif
+                base_speed=160;
+                EncoderDistance(1, 0.5, 0, 0);//开启测距,坡道
+                StatusChange=2;
             }
             break;
         }
-        //出口状态
+        //坡道中途状态
         case 2:
         {
-            if(NowFlag==1)
+#if FORK_LED_DEBUG
+            gpio_set(LED_WHITE, 0);
+#endif
+            if(encoder_dis_flag==1)
             {
+#if FORK_LED_DEBUG
+                gpio_set(LED_WHITE, 1);
+#endif
+                base_speed=200;//恢复速度
                 StatusChange=3;
             }
             break;
         }
-        //确保已经出三岔了，否则三岔口就出三岔了，使得出三岔其实是扫线出的
+        //三岔检测出口状态
         case 3:
         {
-            if(num3<35)  //给足够长的时间让车走出三岔中
+#if FORK_LED_DEBUG
+            gpio_set(LED_BLUE, 0);
+#endif
+            if(NowFlag==1)
             {
-                num3++;
-                break;
+#if FORK_LED_DEBUG
+                gpio_set(LED_BLUE, 1);
+#endif
+                StatusChange=4;
             }
-            else
+            break;
+        }
+        //出三岔的状态
+        case 4:
+        {
+            if(NowFlag==1)
+            {
+                StatusChange=5;
+            }
+            break;
+        }
+        case 5:
+        {
+            if(NowFlag==0)
             {
                 return 1;
             }
+            break;
         }
         default:break;
     }
@@ -532,6 +570,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
             if(NowFlag==1)
             {
                 StatusChange=3;
+                EncoderDistance(1, 1, 0, 0);//开启测距,晚点再进入sobel判断入库
             }
             break;
         }

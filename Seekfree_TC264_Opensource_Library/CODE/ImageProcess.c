@@ -30,7 +30,7 @@ int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0}
 void ImageProcess()
 {
     /***************************变量定义****************************/
-    static uint8 flag=4;  //状态机跳转标志位
+    static uint8 flag;  //状态机跳转标志位
     static uint8 case_5,case_0,case_2,case_1,case_4,case_6,case_3;  //数帧数
     Point InflectionL,InflectionR;     //左右下拐点
     InflectionL.X=0;InflectionL.Y=0;InflectionR.X=0;InflectionR.Y=0;
@@ -43,14 +43,14 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-//    CircleIslandIdentify_R(RightLine, InflectionR);
+//    Fork_flag=ForkIdentify(LeftLine, RightLine, InflectionL, InflectionR);
     /****************************状态机***************************/
-#if 0
+#if 1
     switch(flag)
     {
         case 0: //识别左十字回环
         {
-
+            flag=1;
             break;
         }
         case 1: //识别右车库，直行
