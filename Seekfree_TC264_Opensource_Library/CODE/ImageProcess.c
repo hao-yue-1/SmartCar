@@ -56,27 +56,26 @@ void ImageProcess()
         }
         case 1: //识别右车库，直行
         {
-            if(encoder_flag==1)//查询编码器，等编码器状态到了才跳转
-            {
-                if(encoder_dis_flag==1)//此处标定到三岔入口
-                {
-                    encoder_flag=0;
-                    flag=2;
-                }
-                break;
-            }
             if(RNINGarageStatusIdentify(InflectionL, InflectionR, &Garage_flag)==1)
             {
                 EncoderDistance(1, 1.6, 0, 0);//此处为跑普通赛道，防止三岔误判
                 encoder_flag=1;
+                flag=2;
             }
             break;
         }
         case 2: //识别第一遍三岔
         {
+            if(encoder_flag==1)//查询编码器，等编码器状态到了才跳转
+            {
+                if(encoder_dis_flag==1)//此处标定到三岔入口
+                {
+                    encoder_flag=0;
+                }
+                break;
+            }
             if(ForkFStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
-                Stop();
                 flag=3;
             }
             break;

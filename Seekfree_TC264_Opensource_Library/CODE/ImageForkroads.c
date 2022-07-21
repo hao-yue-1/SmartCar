@@ -596,7 +596,7 @@ uint8 ForkTurnRIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point
  *********************************************************************************************/
 uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *ForkFlag)
 {
-    static uint8 StatusChange,numentrance;//三岔识别函数的临时状态变量，用来看状态是否跳转
+    static uint8 StatusChange,fork_encooder_flag;//状态转移变量、三岔是否开启编码器测距的标志
     uint8 NowFlag=0;//这次的识别结果
     NowFlag=ForkTurnRIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);
     *ForkFlag=NowFlag;//把识别结果送出去
@@ -608,6 +608,8 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
         {
             if(NowFlag==1)
             {
+                EncoderDistance(1, 0.5, 0, 0);//避免因为误判或者三岔口中有一帧没判断到而把状态打乱
+                fork_encooder_flag=1;
                 StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
             }
             break;
@@ -615,13 +617,17 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
         //走完入口状态
         case 1:
         {
-            if(numentrance<5)
+            if(fork_encooder_flag==1)
             {
-                numentrance++;
+                if(encoder_dis_flag==1)//测距完成
+                {
+                    fork_encooder_flag=0;
+                }
                 break;
             }
             if(NowFlag==0)
             {
+                base_speed+=10;
                 StatusChange=2;
             }
             break;
@@ -631,6 +637,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
         {
             if(NowFlag==1)
             {
+                base_speed-=10;
                 StatusChange=3;
             }
             break;
