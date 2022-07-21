@@ -596,9 +596,72 @@ uint8 ForkTurnRIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point
  *********************************************************************************************/
 uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *ForkFlag)
 {
-    static uint8 StatusChange,num4;//三岔识别函数的临时状态变量，用来看状态是否跳转
+    static uint8 StatusChange,numentrance;//三岔识别函数的临时状态变量，用来看状态是否跳转
     uint8 NowFlag=0;//这次的识别结果
-    NowFlag=ForkIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);
+    NowFlag=ForkTurnRIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);
+    *ForkFlag=NowFlag;//把识别结果送出去
+    //状态机开始部分
+    switch(StatusChange)
+    {
+        //入口状态
+        case 0:
+        {
+            if(NowFlag==1)
+            {
+                StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
+            }
+            break;
+        }
+        //走完入口状态
+        case 1:
+        {
+            if(numentrance<5)
+            {
+                numentrance++;
+                break;
+            }
+            if(NowFlag==0)
+            {
+                StatusChange=2;
+            }
+            break;
+        }
+        //中途状态
+        case 2:
+        {
+            if(NowFlag==1)
+            {
+                StatusChange=3;
+            }
+            break;
+        }
+        //出口
+        case 3:
+        {
+            if(NowFlag==0)
+            {
+                return 1;
+            }
+            break;
+        }
+        default:break;
+    }
+    return 0;
+}
+
+/********************************************************************************************
+ ** 函数功能: 三岔状态跳转判断函数
+ ** 参    数: Point InflectionL：左下拐点
+ **           Point InflectionR：右下拐点
+ ** 返 回 值:  0：三岔还未结束
+ **           1：三岔已结束
+ ** 作    者: LJF
+ *********************************************************************************************/
+uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *ForkFlag)
+{
+    static uint8 StatusChange,numentrance;//三岔识别函数的临时状态变量，用来看状态是否跳转
+    uint8 NowFlag=0;//这次的识别结果
+    NowFlag=ForkTurnRIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);
     *ForkFlag=NowFlag;//把识别结果送出去
     //状态机开始部分
     switch(StatusChange)
@@ -614,7 +677,6 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
 #if FORK_LED_DEBUG
                 gpio_set(LED_RED, 1);
 #endif
-                EncoderDistance(1, 0.5, 0, 0);//开启测距
                 StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
             }
             break;
@@ -625,13 +687,17 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
 #if FORK_LED_DEBUG
             gpio_set(LED_YELLOW, 0);
 #endif
-            if(encoder_dis_flag==1)
+            if(numentrance<5)
+            {
+                numentrance++;
+                break;
+            }
+            if(NowFlag==0)
             {
 #if FORK_LED_DEBUG
                 gpio_set(LED_YELLOW, 1);
 #endif
-                base_speed=160;
-                EncoderDistance(1, 0.5, 0, 0);//开启测距,坡道
+                EncoderDistance(1, 0.7, 0, 0);//开启测距,测距上坡减速
                 StatusChange=2;
             }
             break;
@@ -647,7 +713,8 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
 #if FORK_LED_DEBUG
                 gpio_set(LED_WHITE, 1);
 #endif
-                base_speed=200;//恢复速度
+                base_speed=150;
+                EncoderDistance(1, 1.2, 0, 0);//开启测距,坡道
                 StatusChange=3;
             }
             break;
@@ -658,11 +725,12 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
 #if FORK_LED_DEBUG
             gpio_set(LED_BLUE, 0);
 #endif
-            if(NowFlag==1)
+            if(encoder_dis_flag==1)
             {
 #if FORK_LED_DEBUG
                 gpio_set(LED_BLUE, 1);
 #endif
+                base_speed=200;//恢复速度
                 StatusChange=4;
             }
             break;
@@ -689,70 +757,3 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
     return 0;
 }
 
-/********************************************************************************************
- ** 函数功能: 三岔状态跳转判断函数
- ** 参    数: Point InflectionL：左下拐点
- **           Point InflectionR：右下拐点
- ** 返 回 值:  0：三岔还未结束
- **           1：三岔已结束
- ** 作    者: LJF
- *********************************************************************************************/
-uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *ForkFlag)
-{
-    static uint8 StatusChange,num1,num3;//三岔识别函数的临时状态变量，用来看状态是否跳转
-    uint8 NowFlag=0;//这次的识别结果
-    NowFlag=ForkIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);
-    *ForkFlag=NowFlag;//把识别结果送出去
-    //状态机开始部分
-    switch(StatusChange)
-    {
-        //入口状态
-        case 0:
-        {
-            if(NowFlag==1)
-            {
-                StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
-            }
-            break;
-        }
-        //中途状态
-        case 1:
-        {
-            if(num1<100)  //给足够长的时间让车走到三岔运行中
-            {
-                num1++;
-                break;
-            }
-            else if(NowFlag==0)
-            {
-                StatusChange=2;//过了中间过度态之后跳转至检测出口
-            }
-            break;
-        }
-        //出口状态
-        case 2:
-        {
-            if(NowFlag==1)
-            {
-                StatusChange=3;
-                EncoderDistance(1, 1, 0, 0);//开启测距,晚点再进入sobel判断入库
-            }
-            break;
-        }
-        //确保已经出三岔了，否则三岔口就出三岔了，使得出三岔其实是扫线出的
-        case 3:
-        {
-            if(num3<35)  //给足够长的时间让车走出三岔中
-            {
-                num3++;
-                break;
-            }
-            else
-            {
-                return 1;
-            }
-        }
-        default:break;
-    }
-    return 0;
-}
