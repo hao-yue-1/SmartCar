@@ -63,6 +63,7 @@ void ForkFindSpecialPoint(int row,int cloumn,Point *LeftUpPoint);//Èı²íÌØÊâ´¦Àí£
 void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflectionC);//Èı²íÖÖ×ÓÉú³¤Éú³¤ÖÁ¹Èµ×
 void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionC);     //ËÑÑ°³öÈı²íÉÏ¹Õµã
 uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR);   //Èı²íÊ¶±ğ
+uint8 ForkTurnRIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point DownInflectionR);//Èı²íÍùÓÒ±ß×ßµÄÊ¶±ğ²¹Ïß´¦Àíº¯Êı
 uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *NowFlag);           //µÚÒ»±éÈı²í×´Ì¬Ìø×ªÅĞ¶Ïº¯Êı
 uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *NowFlag);           //µÚ¶ş±éÈı²í×´Ì¬Ìø×ªÅĞ¶Ïº¯Êı
 /*Ê®×ÖÏà¹Øº¯Êı*/
