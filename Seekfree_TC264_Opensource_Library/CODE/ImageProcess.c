@@ -30,8 +30,7 @@ int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0}
 void ImageProcess()
 {
     /***************************变量定义****************************/
-    static uint8 flag;  //状态机跳转标志位
-    static uint8 case_5,case_0,case_2,case_1,case_4,case_6,case_3;  //数帧数
+    static uint8 flag,encoder_flag;  //状态机跳转标志位,是否查询编码器的flag
     Point InflectionL,InflectionR;     //左右下拐点
     InflectionL.X=0;InflectionL.Y=0;InflectionR.X=0;InflectionR.Y=0;
     Point ForkUpPoint;  //三岔
@@ -43,21 +42,33 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-//    Fork_flag=ForkIdentify(LeftLine, RightLine, InflectionL, InflectionR);
     /****************************状态机***************************/
 #if 1
     switch(flag)
     {
         case 0: //识别左十字回环
         {
-            flag=1;
+            if(CrossLoopIdentify_L(LeftLine, RightLine, InflectionL, InflectionR)==1)
+            {
+                flag=1;
+            }
             break;
         }
         case 1: //识别右车库，直行
         {
+            if(encoder_flag==1)//查询编码器，等编码器状态到了才跳转
+            {
+                if(encoder_dis_flag==1)//此处标定到三岔入口
+                {
+                    encoder_flag=0;
+                    flag=2;
+                }
+                break;
+            }
             if(RNINGarageStatusIdentify(InflectionL, InflectionR, &Garage_flag)==1)
             {
-                flag=2;
+                EncoderDistance(1, 1.6, 0, 0);//此处为跑普通赛道，防止三岔误判
+                encoder_flag=1;
             }
             break;
         }
@@ -65,6 +76,7 @@ void ImageProcess()
         {
             if(ForkFStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
+                Stop();
                 flag=3;
             }
             break;
@@ -98,7 +110,7 @@ void ImageProcess()
         {
             if(ForkSStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
-                flag=3;
+                flag=7;
             }
             break;
         }
@@ -119,6 +131,7 @@ void ImageProcess()
     }
     else
     {
+//        gpio_toggle(LED_GREEN);
         Bias=DifferentBias(bias_startline,bias_endline,CentreLine); //动态前瞻计算偏差
         bias_startline=95;bias_endline=50;                          //恢复默认前瞻
     }
@@ -129,7 +142,7 @@ void ImageProcess()
         lcd_drawpoint(i, bias_startline, YELLOW);
         lcd_drawpoint(i, bias_endline, YELLOW);
     }
-    lcd_showfloat(0, 0, Bias, 1, 2);
+    lcd_showfloat(0, 1, Bias, 1, 2);
 #endif
 }
 

@@ -15,6 +15,7 @@
 #include "LED.h" //debug
 #include "SEEKFREE_18TFT.h"
 #include "zf_gpio.h"
+#include "Motor.h"
 
 extern uint8 bias_startline,bias_endline;        //动态前瞻
 uint8   Garage_LastRightangleRow=20;            //车库的全局变量上一次从上往下遍历边线数组寻找直角拐点的行数
@@ -37,7 +38,7 @@ uint8   Garage_LastRightangleRow=20;            //车库的全局变量上一次从上往下遍
 #define LIN_GARAGE_LOSTRLINE_MAX_THR 30 //左边车库入库左丢线数的最大阈值
 #define LINGARAGEENTRANCE_SEEDGROW_THR 100        //左边入库入口种子生长列坐标的阈值
 //右车库
-#define ZebraTresholeR 1300  //索贝尔测试车库在右边的阈值
+#define ZebraTresholeR 1100  //索贝尔测试车库在右边的阈值
 #define IN_R_GARAGE_ANGLE   60  //入右库开启陀螺仪积分的目标角度
 #define R_GARAGE_LOSTRLINE_THR 35   //右边车库开启索贝尔的右边丢线阈值
 #define RINGARAGEENTRANCE_SEEDGROW_THR 5        //右边入库入口种子生长列坐标的阈值
@@ -603,10 +604,12 @@ uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
 #endif
     Point UpInflection;//上拐点的变量
     UpInflection.X=0,UpInflection.Y=0;//初始化为0
-    uint8 NoInflectionRFlag=0;//左库左拐点不存在的标志变量，用于选取哪种补线方式
-    float LastBias=Bias;//记录上一次的Bias
+    uint8 NoInflectionRFlag=0,black_width=0;//左库左拐点不存在的标志变量，用于选取哪种补线方式，拐点左边的黑色宽度
     //判断右拐点存不存在
-    if(InflectionR.X==0 || (InflectionL.Y-InflectionR.Y)<10 || InflectionR.X<MT9V03X_H/2 || BinaryImage[InflectionR.Y+5][MT9V03X_W-5]!=IMAGE_BLACK)
+#if RNOINGARAGE_DEBUG
+    LcdDrawPoint_V2(InflectionR.Y+5, MT9V03X_W-5, YELLOW);
+#endif
+    if(InflectionR.X==0 || (InflectionR.Y-InflectionL.Y)<10 || InflectionR.X<MT9V03X_H/2 || BinaryImage[InflectionR.Y+5][MT9V03X_W-5]!=IMAGE_BLACK)
     {
         NoInflectionRFlag=1;
     }
@@ -615,7 +618,9 @@ uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
     GetUpInflection('R', Garage_LastRightangleRow, bias_startline, &UpInflection);
     if(UpInflection.Y<20)   Garage_LastRightangleRow=20;
     else    Garage_LastRightangleRow=UpInflection.Y-10;
+#if RNOINGARAGE_DEBUG
     LcdDrawPoint_V2(UpInflection.Y, UpInflection.X, GREEN);
+#endif
 #else
     //此处使用直角黑白跳变找上拐点法
     //如果是在斑马线路段了并且右拐点不存在,或者左右拐点之间的横坐标差太多，因为扫线的混乱拐点可能出现在斑马线中间
@@ -637,9 +642,22 @@ uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
     GetRightangleUPInflection('R',InflectionR,&UpInflection,10,10);
 #endif
     //判断是否找到上拐点，满足才补线
-    if(UpInflection.X!=0 && UpInflection.Y!=0)
+    if(UpInflection.X!=0 && UpInflection.Y!=0 && UpInflection.X>40 && UpInflection.Y>30)
     {
-
+//        //特殊检测一下别让上拐点走到斑马线上这里进行一次判断,判断是否在斑马线上
+        for(int cloumn=UpInflection.X;cloumn>UpInflection.X-30;cloumn--)
+        {
+            if(BinaryImage[UpInflection.Y][cloumn]==IMAGE_BLACK)
+            {
+                black_width++;
+            }
+//            lcd_showint8(6, 2, black_width);
+            if(black_width>10)
+                return 0;
+        }
+#if RNOINGARAGE_DEBUG
+        lcd_showint8(6, 0, NoInflectionRFlag);
+#endif
        if(NoInflectionRFlag==0)//如果没丢失下拐点则用下拐点下面巡线
        {
 #if RNOINGARAGE_DEBUG
@@ -660,8 +678,9 @@ uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
               lcd_drawpoint(i, UpInflection.Y-5, PURPLE);
           }
 #endif
-           Bias=DifferentBias(UpInflection.Y-5, UpInflection.Y-3, CentreLine);//直接以上拐点的上面正常的线去循迹
+           Bias=DifferentBias(UpInflection.Y-3, UpInflection.Y-5, CentreLine);//直接以上拐点的上面正常的线去循迹
        }
+       return 1;
     }
     return 0;
 }
@@ -679,48 +698,63 @@ uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* Garage
     static uint8 StatusChange;//上一次识别的结果和状态变量
     uint8 NowFlag=0;//这次的识别结果
     int64 SobelResult=0;//索贝尔计算的结果
+    //因为右车库不入库不需要做处理也行所以此处的状态机条件很宽松
     switch(StatusChange)
     {
         //第一个状态Sobel检测，通过了再开启识别函数
         case 0:
         {
-            if(LostNum_RightLine>R_GARAGE_LOSTRLINE_THR)
-            {
-                SobelResult=SobelTest(65,50,50,MT9V03X_W-1-50);
-            }
+            EncoderDistance(1, 0.7, 0, 0);
+            SobelResult=SobelTest(80,50,50,MT9V03X_W-1-50);
             if(SobelResult>ZebraTresholeR)
             {
-                StatusChange=1;
+//                gpio_set(LED_WHITE, 0);
+                NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
+                *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
+                StatusChange=2;
                 break;
             }
+            StatusChange=1;//状态0为开启编码器状态
             break;
         }
         case 1:
         {
-            NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
-            *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
-            if(NowFlag==0)
+            SobelResult=SobelTest(80,50,50,MT9V03X_W-1-50);
+            if(SobelResult>ZebraTresholeR)
+            {
+//                gpio_set(LED_WHITE, 0);
+                NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
+                *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
+                StatusChange=2;
+                break;
+            }
+            if(encoder_dis_flag==1)
             {
                 return 1;//莽撞一点这里直接不再次sobel因为下一个是弯道，sobel可能会使得控制滞后
-                StatusChange=2;//跳转到结束状态
-                break;
             }
             break;
         }
         case 2:
         {
-            SobelResult=SobelTest(65,50,50,MT9V03X_W-1-50);
-            if(SobelResult<ZebraTresholeR)
+            NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
+            *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
+            if(encoder_dis_flag==1)
             {
-                gpio_set(LED_WHITE, 0);
-                return 1;//再次sobel一次确保状态机没出错
+                return 1;//莽撞一点这里直接不再次sobel因为下一个是弯道，sobel可能会使得控制滞后
             }
-            else
-            {
-                StatusChange=1;//否则回到状态1继续判断
-                break;
-            }
+//            SobelResult=SobelTest(65,50,50,MT9V03X_W-1-50);
+//            if(SobelResult<ZebraTresholeR)
+//            {
+//                return 1;//再次sobel一次确保状态机没出错
+//            }
+//            else
+//            {
+//                StatusChange=1;//否则回到状态1继续判断
+//                break;
+//            }
+            break;
         }
+        default:break;
     }
     return 0;
 }
@@ -887,7 +921,7 @@ uint8 RINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageL
             *GarageLFlag=NowFlag;
             if(icm_angle_z_flag==1)
             {
-                gpio_set(LED_WHITE, 0);
+//                gpio_set(LED_WHITE, 0);
                 Stop();
                 return 1;
             }
