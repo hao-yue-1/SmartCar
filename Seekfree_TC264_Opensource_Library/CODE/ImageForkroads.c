@@ -177,6 +177,8 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
     if(UpInflectionC->X<0) UpInflectionC->X=0;
     if(UpInflectionC->X>MT9V03X_W-1) UpInflectionC->X=MT9V03X_W-1;
     row = (DownInflectionL.Y + DownInflectionR.Y) / 2;//起始行为左右拐点行的均值
+    if(row<0) row=0;
+    if(row>MT9V03X_H-1) row=MT9V03X_H-1;//避免溢出，增强程序健壮性
     for (; row > 20; row--)
     {
 #if FORK_DEBUG
@@ -243,6 +245,31 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
         }
 #endif
         SeedGrowFindUpInflection(Choose, Seed, ROW_FINDWHIDE_THRE, UpInflectionC);
+        //在此再次验证一次推箱子找到的拐点是不是真的拐点，防止误判
+        for (cloumnL = UpInflectionC->X; cloumnL > L_FINDWHIDE_THRE; cloumnL--)
+        {
+            if (BinaryImage[UpInflectionC->Y+5][cloumnL] == IMAGE_WHITE && BinaryImage[UpInflectionC->Y+5][cloumnL-3]==IMAGE_WHITE)
+            {
+                break;
+            }
+            if (cloumnL == L_FINDWHIDE_THRE + 1 )
+            {
+                UpInflectionC->Y=0;//如果找不到白色的判定为误判
+                break;
+            }
+        }
+        for (cloumnR = UpInflectionC->X; cloumnR < R_FINDWHIDE_THRE; cloumnR++)
+        {
+            if (BinaryImage[UpInflectionC->Y+5][cloumnR] == IMAGE_WHITE && BinaryImage[UpInflectionC->Y+5][cloumnR+3] == IMAGE_WHITE)
+            {
+                break;
+            }
+            if (cloumnR == R_FINDWHIDE_THRE - 1)
+            {
+                UpInflectionC->Y=0;//如果找不到白色的判定为误判
+                break;
+            }
+        }
     }
     else
     {
@@ -596,7 +623,7 @@ uint8 ForkTurnRIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point
  *********************************************************************************************/
 uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *ForkFlag)
 {
-    static uint8 StatusChange,fork_encooder_flag;//状态转移变量、三岔是否开启编码器测距的标志
+    static uint8 StatusChange,num;//状态转移变量、出口帧数延迟
     uint8 NowFlag=0;//这次的识别结果
     NowFlag=ForkTurnRIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);
     *ForkFlag=NowFlag;//把识别结果送出去
@@ -606,10 +633,15 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
         //入口状态
         case 0:
         {
+#if FORK_LED_DEBUG
+            gpio_set(LED_RED, 0);
+#endif
             if(NowFlag==1)
             {
-                EncoderDistance(1, 0.5, 0, 0);//避免因为误判或者三岔口中有一帧没判断到而把状态打乱
-                fork_encooder_flag=1;
+#if FORK_LED_DEBUG
+                gpio_set(LED_RED, 1);
+#endif
+                EncoderDistance(1, 1.7, 0, 0);//避免因为误判或者三岔口中有一帧没判断到而把状态打乱
                 StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
             }
             break;
@@ -617,16 +649,14 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
         //走完入口状态
         case 1:
         {
-            if(fork_encooder_flag==1)
-            {
-                if(encoder_dis_flag==1)//测距完成
-                {
-                    fork_encooder_flag=0;
-                }
-                break;
-            }
+#if FORK_LED_DEBUG
+            gpio_set(LED_YELLOW, 0);
+#endif
             if(NowFlag==0)
             {
+#if FORK_LED_DEBUG
+                gpio_set(LED_YELLOW, 1);
+#endif
                 base_speed+=10;
                 StatusChange=2;
             }
@@ -635,17 +665,50 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
         //中途状态
         case 2:
         {
+#if FORK_LED_DEBUG
+            gpio_set(LED_BLUE, 0);
+#endif
             if(NowFlag==1)
             {
-                base_speed-=10;
-                StatusChange=3;
+                if(encoder_dis_flag!=1)//测距没完成
+                {
+#if FORK_LED_DEBUG
+                    gpio_set(LED_BLUE, 1);
+#endif
+                    base_speed-=10;//因为还没进入口所以速度降回去
+                    EncoderDistance(1, 1.7, 0, 0);//避免因为误判或者三岔口中有一帧没判断到而把状态打乱
+                    StatusChange=1;//如果还没有测完距我就认为我上一次的识别到三岔为误判，则返回三岔入口状态
+                }
+                else
+                {
+#if FORK_LED_DEBUG
+                    gpio_set(LED_BLUE, 1);
+#endif
+                    base_speed-=10;
+                    StatusChange=3;
+                }
             }
             break;
         }
         //出口
         case 3:
         {
+#if FORK_LED_DEBUG
+            gpio_set(LED_WHITE, 0);
+#endif
             if(NowFlag==0)
+            {
+#if FORK_LED_DEBUG
+                gpio_set(LED_WHITE, 1);
+#endif
+                EncoderDistance(1, 0.5, 0, 0);
+                StatusChange=4;
+            }
+            break;
+        }
+        case 4:
+        {
+            if(encoder_dis_flag==1)
             {
                 return 1;
             }
@@ -666,7 +729,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
  *********************************************************************************************/
 uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *ForkFlag)
 {
-    static uint8 StatusChange,numentrance;//三岔识别函数的临时状态变量，用来看状态是否跳转
+    static uint8 StatusChange,numentrance,fork_encooder_flag;//三岔识别函数的临时状态变量，用来看状态是否跳转
     uint8 NowFlag=0;//这次的识别结果
     NowFlag=ForkTurnRIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);
     *ForkFlag=NowFlag;//把识别结果送出去
@@ -747,12 +810,22 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
         {
             if(NowFlag==1)
             {
+                EncoderDistance(1, 0.5, 0, 0);//避免因为误判或者三岔口中有一帧没判断到而把状态打乱
+                fork_encooder_flag=1;
                 StatusChange=5;
             }
             break;
         }
         case 5:
         {
+            if(fork_encooder_flag==1)
+            {
+                if(encoder_dis_flag==1)//测距完成
+                {
+                    fork_encooder_flag=0;
+                }
+                break;
+            }
             if(NowFlag==0)
             {
                 return 1;

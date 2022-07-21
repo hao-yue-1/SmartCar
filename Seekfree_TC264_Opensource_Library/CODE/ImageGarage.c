@@ -552,6 +552,7 @@ uint8 LINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageL
             }
             if(SobelResult>IN_GARAGE_ZEBRA_THR_L)
             {
+                gpio_set(LED_GREEN, 0);
                 StartIntegralAngle_Z(50);//开启陀螺仪积分入库
                 NowFlag=LINGarageEntrance(InflectionL, InflectionR);
                 *GarageLFlag=NowFlag;
@@ -578,8 +579,6 @@ uint8 LINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageL
             *GarageLFlag=NowFlag;
             if(icm_angle_z_flag==1)
             {
-//                gpio_set(LED_WHITE, 0);
-//                Stop();
                 return 1;
             }
             break;
@@ -667,7 +666,8 @@ uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
                 lcd_drawpoint(i, InflectionR.Y+3, PURPLE);
             }
 #endif
-           Bias=DifferentBias(InflectionR.Y+5, InflectionR.Y+3, CentreLine);
+//           Bias=DifferentBias(InflectionR.Y+5, InflectionR.Y+3, CentreLine);
+            Bias=DifferentBias(UpInflection.Y-3, UpInflection.Y-5, CentreLine);
        }
        else
        {
