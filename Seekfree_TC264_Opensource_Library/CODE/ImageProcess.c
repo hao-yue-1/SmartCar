@@ -12,6 +12,7 @@
 #include "LED.h"
 #include <stdio.h>
 #include "zf_ccu6_pit.h"
+#include "ICM20602.h"
 
 #define STATE_LED_DEBUG 0
 
@@ -34,7 +35,7 @@ uint8 process_flag=3;   //状态机跳转标志
 void ImageProcess()
 {
     /***************************变量定义****************************/
-    static uint8 encoder_flag;  //是否查询编码器的flag
+    static uint8 encoder_flag,icm_flag;  //是否查询编码器的flag,是否查询陀螺仪的flag
     Point InflectionL,InflectionR;     //左右下拐点
     InflectionL.X=0;InflectionL.Y=0;InflectionR.X=0;InflectionR.Y=0;
     /*****************************扫线*****************************/
@@ -83,13 +84,13 @@ void ImageProcess()
             {
                 if(encoder_dis_flag==1)//此处标定到三岔入口
                 {
-#if STATE_LED_DEBUG
-                    gpio_set(LED_WHITE, 0);
-#endif
                     encoder_flag=0;
                 }
                 break;
             }
+#if STATE_LED_DEBUG
+                    gpio_set(LED_WHITE, 0);
+#endif
             if(ForkFStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
 #if STATE_LED_DEBUG
@@ -129,24 +130,52 @@ void ImageProcess()
         }
         case 5: //识别左环岛
         {
+#if STATE_LED_DEBUG
+            gpio_set(LED_RED, 0);
+#endif
             if(CircleIslandIdentify_L(LeftLine, InflectionL)==1)
             {
+#if STATE_LED_DEBUG
+                gpio_set(LED_RED, 1);
+#endif
+                StartIntegralAngle_Z(30);//出状态之后转了30度左右才开启三岔识别，避免状态机出错导致误判
+                icm_flag=1;
                 process_flag=6;
             }
             break;
         }
         case 6: //识别第二遍三岔
         {
+            if(icm_flag==1)
+            {
+                if(icm_angle_z_flag==1)
+                {
+                    icm_flag=0;
+                }
+                break;
+            }
+#if STATE_LED_DEBUG
+            gpio_set(LED_YELLOW, 0);
+#endif
             if(ForkSStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
+#if STATE_LED_DEBUG
+            gpio_set(LED_YELLOW, 1);
+#endif
                 process_flag=7;
             }
             break;
         }
         case 7: //识别左车库，入库
         {
+#if STATE_LED_DEBUG
+            gpio_set(LED_WHITE, 0);
+#endif
             if(LINGarageStatusIdentify(InflectionL, InflectionR, &Garage_flag)==1)
             {
+#if STATE_LED_DEBUG
+            gpio_set(LED_WHITE, 1);
+#endif
                 Stop();
             }
             break;
