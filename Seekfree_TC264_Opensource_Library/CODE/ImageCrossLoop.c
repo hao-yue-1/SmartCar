@@ -368,19 +368,19 @@ uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point I
         }
         case 1: //小车在环中自主寻迹
         {
-            if(flag_in==1)
+            if(flag_in==1&&icm_angle_z_flag==1) //陀螺仪识别到已经入环
             {
-                if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
-                {
-                    flag_in=0;flag=2;   //跳转到状态2
-                    break;
-                }
-            }
+                flag_in=0;flag=2;   //跳转到状态2
+                break;
+             }
             if(flag_in==0)
             {
                 StartIntegralAngle_Z(200);  //开启陀螺仪辅助出环
                 flag_in=1;                  //避免重复开启陀螺仪
             }
+            //环内寻迹求Bias
+            Circle_flag=1;  //标志环内寻迹
+            Bias=DifferentBias_Circle(bias_startline,bias_endline,CentreLine);
             break;
         }
         case 2: //小车识别十字回环的出口，右转出环
@@ -757,19 +757,19 @@ uint8 CrossLoopIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point I
         }
         case 1: //小车在环中，自主寻迹
         {
-            if(flag_in==1)
+            if(flag_in==1&&icm_angle_z_flag==1) //陀螺仪识别到已经入环
             {
-                if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
-                {
-                    flag_in=0;flag=2;   //跳转到状态2
-                    break;
-                }
+                flag_in=0;flag=2;   //跳转到状态2
+                break;
             }
             if(flag_in==0)
             {
                 StartIntegralAngle_Z(200);  //开启陀螺仪辅助出环
                 flag_in=1;                  //避免重复开启陀螺仪
             }
+            //环内寻迹求Bias
+            Circle_flag=1;  //标志环内寻迹
+            Bias=DifferentBias_Circle(bias_startline,bias_endline,CentreLine);
             break;
         }
         case 2: //小车识别十字回环的出口，右转出环

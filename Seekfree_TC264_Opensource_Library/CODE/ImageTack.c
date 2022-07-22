@@ -251,7 +251,6 @@ float DifferentBias_Circle(uint8 startline,uint8 endline,int *CentreLine)
         }
         else if(abs(CentreLine[i]-CentreLine[i+1])>MT9V03X_W/3)  //中线发生突变，跳出累积
         {
-            lcd_showuint8(0, 0, 0);
             break;
         }
         else

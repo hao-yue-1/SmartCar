@@ -18,10 +18,11 @@
 uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
+uint8 Circle_flag=0;            //环内寻迹标志变量
 uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=160,speed_case_6=160,speed_case_7=170;
 uint32 SobelResult=0;
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
-uint8 process_flag=0;   //状态机跳转标志
+uint8 process_flag=3;   //状态机跳转标志
 
 /********************************************************************************************
  ** 函数功能: 对图像的各个元素之间的逻辑处理函数，最终目的是为了得出Bias给中断去控制
@@ -153,10 +154,10 @@ void ImageProcess()
     }
 #endif
     /***************************偏差计算**************************/
-    if(Fork_flag!=0||Garage_flag!=0)    //在识别函数里面已经计算了Bias
+    if(Fork_flag!=0||Garage_flag!=0||Circle_flag!=0)    //在识别函数里面已经计算了Bias
     {
 //        gpio_toggle(LED_GREEN);
-        Garage_flag=0;Fork_flag=0;      //重置flag
+        Garage_flag=0;Fork_flag=0;Circle_flag=0;      //重置flag
     }
     else
     {

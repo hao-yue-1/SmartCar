@@ -681,7 +681,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL)
         {
             if(CircleIslandBegin_L()==1&&flag_in==0) //识别到环岛入口
             {
-                StartIntegralAngle_Z(45);   //开启陀螺仪辅助入环
+                StartIntegralAngle_Z(30);   //开启陀螺仪辅助入环
                 flag_in=1;                  //避免重复开启陀螺仪
             }
             if(flag_in==1)  //之前已经识别到环岛入口
@@ -696,19 +696,19 @@ uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL)
         }
         case 2: //此时小车在环中，自主寻迹
         {
-            if(flag_in==1)
+            if(flag_in==1&&icm_angle_z_flag==1) //陀螺仪识别到已经入环
             {
-                if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
-                {
-                    flag_in=0;flag=3;   //跳转到状态3
-                    break;
-                }
+                flag_in=0;flag=3;   //跳转到状态3
+                break;
             }
             if(flag_in==0)
             {
                 StartIntegralAngle_Z(180);  //开启陀螺仪辅助出环
                 flag_in=1;                  //避免重复开启陀螺仪
             }
+            //环内寻迹求Bias
+            Circle_flag=1;  //标志环内寻迹
+            Bias=DifferentBias_Circle(bias_startline,bias_endline,CentreLine);
             break;
         }
         case 3: //此时小车已经接近环岛出口，开始判断环岛出口
@@ -1372,7 +1372,6 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
                 if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
                 {
                     flag_in=0;flag=2;   //跳转到状态2
-                    gpio_set(LED_WHITE, 0);
                     break;
                 }
             }
@@ -1380,19 +1379,19 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
         }
         case 2: //此时小车在环中，自主寻迹
         {
-            if(flag_in==1)
+            if(flag_in==1&&icm_angle_z_flag==1) //陀螺仪识别到已经入环
             {
-                if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
-                {
-                    flag_in=0;flag=3;   //跳转到状态3
-                    break;
-                }
+                flag_in=0;flag=3;   //跳转到状态3
+                break;
             }
             if(flag_in==0)
             {
                 StartIntegralAngle_Z(180);  //开启陀螺仪辅助出环
                 flag_in=1;                  //避免重复开启陀螺仪
             }
+            //环内寻迹求Bias
+            Circle_flag=1;  //标志环内寻迹
+            Bias=DifferentBias_Circle(bias_startline,bias_endline,CentreLine);
             break;
         }
         case 3: //此时小车已经接近环岛出口，开始判断环岛出口
