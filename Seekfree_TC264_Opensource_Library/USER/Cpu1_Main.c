@@ -36,6 +36,7 @@
 uint8 outgarage_flag=0;     //出库的flag
 uint8 key_flag=0;           //按键调参的flag
 int16 base_speed=200;       //基础速度
+float encoder_distance=4;   //编码器测距
 
 void core1_main(void)
 {
@@ -50,15 +51,15 @@ void core1_main(void)
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
     enableInterrupts();
 
-    //**********按键调参**************
-//    OLED_init();
-//    OLED_clear();
-//    KeyPID();
-//    systick_delay_ms(STM0,3000);
-    //*******************************
-    EncoderDistance(2, 4, 0, 0);
+    //按键调参
+    KeyProcess();
+    systick_delay_ms(STM0,3000);    //预留拔键盘时间
+    //开启驱动
+    EncoderDistance(2, encoder_distance, 0, 0);
     pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化电机定时器中断
     pit_interrupt_ms(CCU6_0,PIT_CH1,20);//初始化舵机定时器中断
+    //完成出库
+
 
     while (TRUE)
     {

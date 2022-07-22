@@ -13,6 +13,8 @@
 #include "LED.h"
 #include "oled.h"           //OLED显示
 
+extern float encoder_distance;
+
 /*
  ** 函数功能: 初始化按键对应IO口
  ** 参    数: 无
@@ -170,6 +172,109 @@ void KeyPID(void)
                 OLED_ShowFloat(0, 4, MotorK_L.I, 2);
                 OLED_ShowFloat(0, 5, MotorK_R.P, 2);
                 OLED_ShowFloat(0, 6, MotorK_R.I, 2);
+                return;
+            }
+        }
+        systick_delay_ms(STM0,100);
+    }
+}
+
+/*
+ ** 函数功能: 按键Process调参的OLED参数显示
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void ProcessParameterDisplay(uint8 key_num)
+{
+    OLED_clear();
+    switch(key_num)
+    {
+        case 0: //状态机状态
+        {
+            OLED_ShowStr(0, 1, "process_flag:", 2);
+            OLED_ShowNum(0, 4, process_flag, 1, 1);
+            break;
+        }
+        case 1: //速度
+        {
+            OLED_ShowStr(0, 1, "base_speed:", 2);
+            OLED_ShowNum(0, 4, base_speed, 3, 1);
+            break;
+        }
+        case 2: //编码器测距
+        {
+            OLED_ShowStr(0, 1, "encoder_distance", 2);
+            OLED_ShowFloat(0, 4, encoder_distance, 1);
+            break;
+        }
+    }
+}
+
+/*
+ ** 函数功能: 按键Process调参
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void KeyProcess(void)
+{
+    OLED_clear();
+    OLED_ShowNum(0, 1, process_flag, 1, 1);
+    OLED_ShowNum(0, 2, base_speed, 1, 1);
+    OLED_ShowFloat(0, 3, encoder_distance, 1);
+
+    uint8 key_num=0;
+    while(1)
+    {
+        switch(KeyScan())
+        {
+            case KEY_UP:    //增大参数值
+            {
+                switch(key_num)
+                {
+                    case 0: process_flag++;         break;
+                    case 1: base_speed+=5;          break;
+                    case 2: encoder_distance+=1;    break;
+                }
+                ProcessParameterDisplay(key_num);
+                break;
+            }
+            case KEY_DOWN:  //减小参数值
+            {
+                switch(key_num)
+                {
+                    case 0: process_flag--;         break;
+                    case 1: base_speed-=5;          break;
+                    case 2: encoder_distance-=1;    break;
+                }
+                ProcessParameterDisplay(key_num);
+                break;
+            }
+            case KEY_LEFT:  //向后切换参数
+            {
+                if(key_num>0)
+                {
+                    key_num--;
+                }
+                ProcessParameterDisplay(key_num);
+                break;
+            }
+            case KEY_RIGHT: //向前切换参数
+            {
+                if(key_num<2)
+                {
+                    key_num++;
+                }
+                ProcessParameterDisplay(key_num);
+                break;
+            }
+            case KEY_ENTER: //退出调参
+            {
+                OLED_clear();
+                OLED_ShowNum(0, 1, process_flag, 1, 1);
+                OLED_ShowNum(0, 2, base_speed, 3, 1);
+                OLED_ShowFloat(0, 3, encoder_distance, 1);
                 return;
             }
         }

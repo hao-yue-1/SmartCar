@@ -26,5 +26,6 @@
 void KeyInit(void);
 uint8 KeyScan(void);
 void KeyPID(void);
+void KeyProcess(void);
 
 #endif /* CODE_KEY_H_ */

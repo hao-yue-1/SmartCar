@@ -21,6 +21,7 @@ uint8 Garage_flag=0;            //车库识别标志变量
 uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=160,speed_case_6=160,speed_case_7=170;
 uint32 SobelResult=0;
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
+uint8 process_flag=0;   //状态机跳转标志
 
 /********************************************************************************************
  ** 函数功能: 对图像的各个元素之间的逻辑处理函数，最终目的是为了得出Bias给中断去控制
@@ -32,7 +33,7 @@ int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0}
 void ImageProcess()
 {
     /***************************变量定义****************************/
-    static uint8 flag=1,encoder_flag;  //状态机跳转标志位,是否查询编码器的flag
+    static uint8 encoder_flag;  //是否查询编码器的flag
     Point InflectionL,InflectionR;     //左右下拐点
     InflectionL.X=0;InflectionL.Y=0;InflectionR.X=0;InflectionR.Y=0;
     /*****************************扫线*****************************/
@@ -42,7 +43,7 @@ void ImageProcess()
     /*************************特殊元素判断*************************/
     /****************************状态机***************************/
 #if 1
-    switch(flag)
+    switch(process_flag)
     {
         case 0: //识别左十字回环
         {
@@ -54,7 +55,7 @@ void ImageProcess()
 #if STATE_LED_DEBUG
                 gpio_set(LED_RED, 1);
 #endif
-                flag=1;
+                process_flag=1;
             }
             break;
         }
@@ -71,7 +72,7 @@ void ImageProcess()
                 EncoderDistance(1, 1.6, 0, 0);//此处为跑普通赛道，防止三岔误判
                 encoder_flag=1;
                 base_speed=220;
-                flag=2;
+                process_flag=2;
             }
             break;
         }
@@ -93,8 +94,7 @@ void ImageProcess()
 #if STATE_LED_DEBUG
                 gpio_set(LED_WHITE, 1);
 #endif
-                Stop();
-                flag=3;
+                process_flag=3;
             }
             break;
         }
@@ -108,7 +108,7 @@ void ImageProcess()
 #if STATE_LED_DEBUG
                 gpio_set(LED_BLUE, 1);
 #endif
-                flag=4;
+                process_flag=4;
             }
             break;
         }
@@ -122,7 +122,7 @@ void ImageProcess()
 #if STATE_LED_DEBUG
                 gpio_set(LED_GREEN, 1);
 #endif
-                flag=5;
+                process_flag=5;
             }
             break;
         }
@@ -130,7 +130,7 @@ void ImageProcess()
         {
             if(CircleIslandIdentify_L(LeftLine, InflectionL)==1)
             {
-                flag=6;
+                process_flag=6;
             }
             break;
         }
@@ -138,7 +138,7 @@ void ImageProcess()
         {
             if(ForkSStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
-                flag=7;
+                process_flag=7;
             }
             break;
         }

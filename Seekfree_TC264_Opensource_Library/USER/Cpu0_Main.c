@@ -36,6 +36,7 @@
 #include "Filter.h"         //滤波算法
 #include "ICM20602.h"       //ICM20602
 #include "LED.h"            //LED
+#include "oled.h"           //OLED
 
 #pragma section all "cpu0_dsram"    //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -49,6 +50,8 @@ int core0_main(void)
 	lcd_init();     //初始化TFT屏幕
 	LEDInit();      //初始化LED
 	KeyInit();      //初始化按键
+	OLED_init();    //初始化OLED
+    OLED_clear();
     /**************************传感器模块初始化**********************/
 	mt9v03x_init();     //初始化摄像头
 	icm20602_init();    //初始化陀螺仪ICM20602
