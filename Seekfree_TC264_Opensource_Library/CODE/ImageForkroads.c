@@ -12,6 +12,7 @@
 #include "LED.h"
 #include "zf_gpio.h"
 #include "Motor.h"//编码器测距
+#include "ICM20602.h"//陀螺仪测角度
 
 #define L_FINDWHIDE_THRE  10 //Y拐点中间找左边白色区域停止的阈值
 #define R_FINDWHIDE_THRE  150//Y拐点中间找右边白色区域停止的阈值
@@ -685,6 +686,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
                     gpio_set(LED_BLUE, 1);
 #endif
                     base_speed-=10;
+                    StartIntegralAngle_Z(30);//陀螺仪开启积分准备出三岔
                     StatusChange=3;
                 }
             }
@@ -696,19 +698,18 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
 #if FORK_LED_DEBUG
             gpio_set(LED_WHITE, 0);
 #endif
-            if(NowFlag==0)
+            if(icm_angle_z_flag==1)
             {
 #if FORK_LED_DEBUG
                 gpio_set(LED_WHITE, 1);
 #endif
-                EncoderDistance(1, 0.5, 0, 0);
                 StatusChange=4;
             }
             break;
         }
         case 4:
         {
-            if(encoder_dis_flag==1)
+            if(NowFlag==0)
             {
                 return 1;
             }
