@@ -70,4 +70,9 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *Now
 void GetCrossRoadsUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionL,Point *UpInflectionR);//十字路口找寻上拐点函数
 uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR);      //十字路口识别函数
 uint8 CrossRoadsStatusIdentify(Point DownInflectionL,Point DownInflectionR);//十字状态机
+/*入库相关函数*/
+uint8 ZebraCrossingSearch(uint8 start_line,uint8 end_line);
+void GarageInBegin(void);
+uint8 GarageInEnd(void);
+uint8 GarageInIdentify(void);
 #endif /* CODE_IMAGESPECIAL_H_ */
