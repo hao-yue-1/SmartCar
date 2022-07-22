@@ -27,5 +27,6 @@ void KeyInit(void);
 uint8 KeyScan(void);
 void KeyPID(void);
 void KeyProcess(void);
+void KeyImage(void);
 
 #endif /* CODE_KEY_H_ */

@@ -282,3 +282,195 @@ void KeyProcess(void)
     }
 }
 
+/*
+ ** 函数功能: 按键Image调参的OLED参数显示
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void ImageParameterDisplay(uint8 key_num_1,uint8 key_num_2)
+{
+    OLED_clear();
+    //先确定key_num_1，再确定key_num_2
+    switch(key_num_1)
+    {
+        case 0: //左十字
+        {
+            OLED_ShowStr(0, 1, "CrossLoop_L", 2);
+            switch(key_num_2)
+            {
+                case 0:OLED_ShowStr(0, 4, "CrossLoopBegin_L", 1);       break;
+                case 1:OLED_ShowStr(0, 4, "CrossLoopOverBegin_L", 1);   break;
+                case 2:OLED_ShowStr(0, 4, "CrossLoopEnd_L", 1);         break;
+            }
+            break;
+        }
+        case 1: //右车库直行
+        {
+            OLED_ShowStr(0, 1, "Garage_R", 2);
+            switch(key_num_2)
+            {
+                case 0:OLED_ShowStr(0, 4, " ", 2);break;
+            }
+            break;
+        }
+        case 2: //第一遍三岔
+        {
+            OLED_ShowStr(0, 1, "ForkRoad_First", 2);
+            switch(key_num_2)
+            {
+                case 0:OLED_ShowStr(0, 4, " ", 1);break;
+            }
+            break;
+        }
+        case 3: //右环岛
+        {
+            OLED_ShowStr(0, 1, "CircleIsland_R", 2);
+            switch(key_num_2)
+            {
+                case 0:OLED_ShowStr(0, 4, "CircleIslandExit_R", 1);     break;
+                case 1:OLED_ShowStr(0, 4, "CircleIslandMid_R", 1);      break;
+                case 2:OLED_ShowStr(0, 4, "CircleIslandBegin_R", 1);    break;
+                case 3:OLED_ShowStr(0, 4, "CircleIslandEnd_R", 1);      break;
+                case 4:OLED_ShowStr(0, 4, "CircleIslandOverBegin_R", 1);break;
+            }
+            break;
+        }
+        case 4: //右十字
+        {
+            OLED_ShowStr(0, 1, "CrossLoop_R", 2);
+            switch(key_num_2)
+            {
+                case 0:OLED_ShowStr(0, 4, "CrossLoopBegin_R", 1);       break;
+                case 1:OLED_ShowStr(0, 4, "CrossLoopOverBegin_R", 1);   break;
+                case 2:OLED_ShowStr(0, 4, "CrossLoopEnd_R", 1);         break;
+            }
+            break;
+        }
+        case 5: //左环岛
+        {
+            OLED_ShowStr(0, 1, "CircleIsland_L", 2);
+            switch(key_num_2)
+            {
+                case 0:OLED_ShowStr(0, 4, "CircleIslandExit_L", 1);     break;
+                case 1:OLED_ShowStr(0, 4, "CircleIslandMid_L", 1);      break;
+                case 2:OLED_ShowStr(0, 4, "CircleIslandBegin_L", 1);    break;
+                case 3:OLED_ShowStr(0, 4, "CircleIslandEnd_L", 1);      break;
+                case 4:OLED_ShowStr(0, 4, "CircleIslandOverBegin_L", 1);break;
+            }
+            break;
+        }
+        case 6: //第二遍三岔
+        {
+            OLED_ShowStr(0, 1, "ForkRoad_Second", 2);
+            switch(key_num_2)
+            {
+                case 0:OLED_ShowStr(0, 4, " ", 1);break;
+            }
+            break;
+        }
+        case 7: //左车库入库
+        {
+            OLED_ShowStr(0, 1, "Garage_L", 2);
+            switch(key_num_2)
+            {
+                case 0:OLED_ShowStr(0, 4, " ", 1);break;
+            }
+            break;
+        }
+    }
+}
+
+/*
+ ** 函数功能: 按键Image调参的实际参数处理，这个函数在Process中被调用
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2)
+{
+
+}
+
+/*
+ ** 函数功能: 按键Image调参
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void KeyImage(void)
+{
+    uint8 key_num_1=0,key_num_2=0;  //key_num_1：第一级选择（选择状态）；key_num_2：第二级选择（选择函数）
+    uint8 sum_num_2=0;  //根据key_num_1决定函数个数从而决定key_num_2
+    uint8 flag=0;       //是否有效按下按键
+    while(1)
+    {
+        //按键扫描
+        switch(KeyScan())
+        {
+            case KEY_UP:    //向前切换函数
+            {
+                switch(key_num_1)
+                {
+                    case 0:sum_num_2=2; break;  //左十字
+                    case 1:sum_num_2=0; break;
+                    case 2:sum_num_2=0; break;
+                    case 3:sum_num_2=4; break;  //右环岛
+                    case 4:sum_num_2=2; break;  //右十字
+                    case 5:sum_num_2=4; break;  //左环岛
+                    case 6:sum_num_2=0; break;
+                    case 7:sum_num_2=0; break;
+                }
+                if(key_num_2<sum_num_2) //sum_num_2+1个函数
+                {
+                    key_num_2++;
+                    flag=1;
+                }
+                break;
+            }
+            case KEY_DOWN:  //向后切换函数
+            {
+                if(key_num_2>0)
+                {
+                    key_num_2--;
+                    flag=1;
+                }
+                break;
+            }
+            case KEY_LEFT:  //向后切换状态
+            {
+                if(key_num_1>0)
+                {
+                    key_num_1--;
+                    key_num_2=0;
+                    flag=1;
+                }
+                break;
+            }
+            case KEY_RIGHT: //向前切换状态
+            {
+                if(key_num_1<7) //8个状态
+                {
+                    key_num_1++;
+                    key_num_2=0;
+                    flag=1;
+                }
+                break;
+            }
+            case KEY_ENTER: //
+            {
+
+                return;
+            }
+        }
+        //按键数据处理
+        if(flag==1) //有效按键按下
+        {
+            ImageParameterDisplay(key_num_1, key_num_2);    //按键参数显示
+            flag=0;
+        }
+
+        systick_delay_ms(STM0,100);
+    }
+}
+
