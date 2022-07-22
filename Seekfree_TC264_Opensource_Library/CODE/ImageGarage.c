@@ -29,8 +29,8 @@ uint8   Garage_LastRightangleRow=20;            //车库的全局变量上一次从上往下遍
 #define SEEDGROWFINDPEAK_DEBUG  0
 //左车库
 #define ZebraTresholeL 1200  //索贝尔测试的阈值
-#define IN_GARAGE_ZEBRA_THR_L   1500//左边入库的索贝尔阈值
-#define IN_L_GARAGE_ANGLE   60  //入左库开启陀螺仪积分的目标角度
+#define IN_GARAGE_ZEBRA_THR_L   350//左边入库的索贝尔阈值,隔行隔列抽取加速sobel运算速度
+#define IN_L_GARAGE_ANGLE   40  //入左库开启陀螺仪积分的目标角度
 #define L_GARAGE_LOSTLLINE_MIN_THR 25   //左边车库开启索贝尔的左边丢线最小阈值
 #define L_GARAGE_LOSTLLINE_MAX_THR 35   //左边车库开启索贝尔的左边丢线最大阈值
 #define L_GARAGE_LOSTRLINE_MAX_THR 50   //左边车库开启索贝尔的右边丢线最大阈值
@@ -38,7 +38,7 @@ uint8   Garage_LastRightangleRow=20;            //车库的全局变量上一次从上往下遍
 #define LIN_GARAGE_LOSTRLINE_MAX_THR 30 //左边车库入库左丢线数的最大阈值
 #define LINGARAGEENTRANCE_SEEDGROW_THR 100        //左边入库入口种子生长列坐标的阈值
 //右车库
-#define ZebraTresholeR 1100  //索贝尔测试车库在右边的阈值
+#define ZebraTresholeR 300  //索贝尔测试车库在右边的阈值
 #define IN_R_GARAGE_ANGLE   60  //入右库开启陀螺仪积分的目标角度
 #define R_GARAGE_LOSTRLINE_THR 35   //右边车库开启索贝尔的右边丢线阈值
 #define RINGARAGEENTRANCE_SEEDGROW_THR 5        //右边入库入口种子生长列坐标的阈值
@@ -48,6 +48,7 @@ uint8   Garage_LastRightangleRow=20;            //车库的全局变量上一次从上往下遍
 #define RNOINGARAGE_DEBUG   0   //右车库不入库的DEBUG
 #define GARAGE_DEBUG    0       //是否需要开启车库的DEBUG
 #define GARAGE_LED_DEBUG 0
+#define L_IN_GARAGE_LED_DEBUG 1
 
 /********************************************************************************************
  ** 函数功能: Sobel算子检测起跑线
@@ -62,9 +63,9 @@ int64 SobelTest(uint8 starline,uint8 endline,uint8 starcloumn,uint8 endcloumn)
     int64 Sobel = 0;
     int64 temp = 0;
 
-    for (uint8 i = starline; i > endline ; i--)
+    for (uint8 i = starline; i > endline ; i-=2)
     {
-        for (uint8 j = starcloumn; j < endcloumn; j++)
+        for (uint8 j = starcloumn; j < endcloumn; j+=2)
         {
             int64 Gx = 0, Gy = 0;
             Gx = -BinaryImage(i-1, j-1)+BinaryImage(i-1, j+1)
@@ -546,14 +547,10 @@ uint8 LINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageL
         //识别斑马线
         case 0:
         {
-            if(LostNum_LeftLine>LIN_GARAGE_LOSTLLINE_MIN_THR && LostNum_RightLine<LIN_GARAGE_LOSTRLINE_MAX_THR)
-            {
-                SobelResult=SobelTest(80,50,50,MT9V03X_W-1-50);
-            }
+            SobelResult=SobelTest(80,50,40,MT9V03X_W-1-40);
             if(SobelResult>IN_GARAGE_ZEBRA_THR_L)
             {
-                gpio_set(LED_GREEN, 0);
-                StartIntegralAngle_Z(50);//开启陀螺仪积分入库
+                StartIntegralAngle_Z(IN_L_GARAGE_ANGLE);//开启陀螺仪积分入库
                 NowFlag=LINGarageEntrance(InflectionL, InflectionR);
                 *GarageLFlag=NowFlag;
                 StatusChange=1;
@@ -563,18 +560,6 @@ uint8 LINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageL
         }
         case 1:
         {
-            NowFlag=LINGarageEntrance(InflectionL, InflectionR);
-            *GarageLFlag=NowFlag;
-            if(NowFlag==0)
-            {
-                StatusChange=2;//跳转到结束状态
-                break;
-            }
-            break;
-        }
-        case 2:
-        {
-            //检测是否入库成功，入库成功停车
             NowFlag=LINGarageEntrance(InflectionL, InflectionR);
             *GarageLFlag=NowFlag;
             if(icm_angle_z_flag==1)
