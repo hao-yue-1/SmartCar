@@ -758,7 +758,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
 #if FORK_LED_DEBUG
             gpio_set(LED_YELLOW, 0);
 #endif
-            if(numentrance<5)
+            if(numentrance<10)
             {
                 numentrance++;
                 break;
@@ -809,26 +809,43 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
         //出三岔的状态
         case 4:
         {
+#if FORK_LED_DEBUG
+            gpio_set(LED_GREEN, 0);
+#endif
             if(NowFlag==1)
             {
-                EncoderDistance(1, 0.5, 0, 0);//避免因为误判或者三岔口中有一帧没判断到而把状态打乱
-                fork_encooder_flag=1;
+#if FORK_LED_DEBUG
+            gpio_set(LED_GREEN, 1);
+#endif
+                StartIntegralAngle_Z(30);//陀螺仪开启积分准备出三岔
                 StatusChange=5;
             }
             break;
         }
         case 5:
         {
-            if(fork_encooder_flag==1)
+#if FORK_LED_DEBUG
+            gpio_set(LED_RED, 0);
+#endif
+            if(icm_angle_z_flag==1)
             {
-                if(encoder_dis_flag==1)//测距完成
-                {
-                    fork_encooder_flag=0;
-                }
-                break;
+#if FORK_LED_DEBUG
+            gpio_set(LED_RED, 1);
+#endif
+                StatusChange=6;
             }
+            break;
+        }
+        case 6:
+        {
+#if FORK_LED_DEBUG
+            gpio_set(LED_YELLOW, 0);
+#endif
             if(NowFlag==0)
             {
+#if FORK_LED_DEBUG
+            gpio_set(LED_YELLOW, 1);
+#endif
                 return 1;
             }
             break;
