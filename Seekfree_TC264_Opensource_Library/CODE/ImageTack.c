@@ -8,6 +8,8 @@
 #include "ImageTack.h"
 #include "SEEKFREE_18TFT.h"
 #include "PID.h"
+#include <math.h>
+#include <stdlib.h>
 
 //变量定义
 float Bias=0;       //偏差
@@ -226,6 +228,60 @@ float DifferentBias(int startline,int endline,int *CentreLine)
         return last_bias;   //计算错误，忽略此次计算，返回上一次的值
     }
 }
+
+/********************************************************************************************
+ ** 函数功能: 环内行驶专属求Bias，可避免远处干扰
+ ** 参    数: starline:    离散点的起始行
+ **           endline:     离散点的结束行
+ **           *CentreLine：中线数组
+ ** 返 回 值: 偏差Bias
+ ** 作    者: WBN
+ *********************************************************************************************/
+float DifferentBias_Circle(uint8 startline,uint8 endline,int *CentreLine)
+{
+    static float last_bias;
+    float bias=0;
+    uint8 rownum=0;//用于计数求了多少行的偏差
+
+    for(uint8 i=startline;i>endline;i--)
+    {
+        if(BinaryImage[i][CentreLine[i]]==IMAGE_BLACK)  //中线在赛道外的情况，跳出累积
+        {
+            break;
+        }
+        else if(abs(CentreLine[i]-CentreLine[i+1])>MT9V03X_W/3)  //中线发生突变，跳出累积
+        {
+            lcd_showuint8(0, 0, 0);
+            break;
+        }
+        else
+        {
+            bias+=(float)(MT9V03X_W/2-CentreLine[i]);  //累积偏差，Mid-Centre，左正右负（中线在车头的左/右，应该往左/右）
+            rownum++;
+        }
+    }
+    bias=bias/rownum/10;   //求偏差均值
+
+    if(bias<0.5&&bias>-0.5) //分段加权
+    {
+        bias=bias*0.1;
+    }
+    else if(bias<-3||bias>3)
+    {
+        bias=bias*1.5;
+    }
+
+    if(bias==bias)  //bias是真值
+    {
+        last_bias=bias;
+        return bias;
+    }
+    else
+    {
+        return last_bias;   //计算错误，忽略此次计算，返回上一次的值
+    }
+}
+
 /*********************************************
  * 函数功能:车库专属循迹偏差
  * 注   意：此函数，不会管屏幕循迹是否是黑色

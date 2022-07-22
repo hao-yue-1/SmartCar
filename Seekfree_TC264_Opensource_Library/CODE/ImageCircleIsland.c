@@ -775,7 +775,7 @@ uint8 CircleIslandBegin_R(void)
     StarPoint.X=LeftLine[row];
     uint8 start_row=row;//记录补线起点的Y坐标（用于求Bias）
     //寻找补线终点
-    for(row=MT9V03X_H-1,column=3*(MT9V03X_W/4);row-1>0;row--)    //向上扫，靠右四分之三处
+    for(row=3*(MT9V03X_H/4),column=4*(MT9V03X_W/5);row-1>0;row--)    //向上扫，靠右五分之四处
     {
         if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
         {
@@ -790,13 +790,18 @@ uint8 CircleIslandBegin_R(void)
             }
             else    //X坐标没有落在跳变点上，默认为右边界，手动迫近
             {
-                for(;column>0;column--)   //向左扫
+                uint8 column_min=column-15;
+                for(;column>column_min;column--)   //向左扫
                 {
                     if(BinaryImage[row][column]==IMAGE_BLACK)
                     {
                         flag_down=2;    //右边界
                         break;
                     }
+                }
+                if(flag_down==0)    //没有迫近成功
+                {
+                    column=column_min+15;
                 }
             }
             switch(flag_down)
@@ -849,17 +854,13 @@ uint8 CircleIslandBegin_R(void)
                     }
                     break;
                 }
-                default:    //意外情况：无法判别边界点位置
-                {
-                    EndPoint.Y=MT9V03X_H/2;     //终点：定为图像的中心点
-                    EndPoint.X=MT9V03X_W/2;
-                }
+                default:break;
             }
-            EndPoint.Y=row;     //终点：谷底
-            EndPoint.X=column;
             break;
         }
     }
+    EndPoint.Y=row;     //终点：谷底
+    EndPoint.X=column;
     //补左线右拐入环
     FillingLine('L', StarPoint, EndPoint);
     //第二段补线：
@@ -1363,7 +1364,7 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
         {
             if(CircleIslandBegin_R()==1&&flag_in==0) //识别到环岛入口
             {
-                StartIntegralAngle_Z(45);   //开启陀螺仪辅助入环
+                StartIntegralAngle_Z(30);   //开启陀螺仪辅助入环
                 flag_in=1;                  //避免重复开启陀螺仪
             }
             if(flag_in==1)  //之前已经识别到环岛入口
@@ -1371,6 +1372,7 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
                 if(icm_angle_z_flag==1) //陀螺仪识别到已经入环
                 {
                     flag_in=0;flag=2;   //跳转到状态2
+                    gpio_set(LED_WHITE, 0);
                     break;
                 }
             }
