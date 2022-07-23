@@ -606,7 +606,6 @@ uint8 LINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageL
             *GarageLFlag=NowFlag;
             if(NowFlag==2)//flag=2的时候是车库门口的上拐点已经到了右下角
             {
-                gpio_set(LED_GREEN, 0);
                 return 1;
             }
             if(NowFlag==0)
@@ -781,7 +780,6 @@ uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* Garage
             EncoderDistance(1, 0.7, 0, 0);
             if(ZebraIndentify(80, 50, &no_effect)==1)
             {
-                gpio_set(LED_GREEN, 0);
                 NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
                 *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
                 StatusChange=2;
@@ -801,7 +799,6 @@ uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* Garage
         {
             if(ZebraIndentify(80, 50, &no_effect)==1)
             {
-                gpio_set(LED_WHITE, 0);
                 NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
                 *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
                 StatusChange=2;
@@ -1025,8 +1022,7 @@ uint8 RINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageL
  *********************************************************************************************/
 void OutGarage(void)
 {
-//    systick_delay_ms(STM0,50);
-    //舵机向右打死并加上一定的延时实现出库
-    Bias=-10;
-    systick_delay_ms(STM0,300);
+    Bias=10;    //向左打死
+    StartIntegralAngle_Z(45);
+    while(!icm_angle_z_flag);   //左转45°进入正常寻迹
 }
