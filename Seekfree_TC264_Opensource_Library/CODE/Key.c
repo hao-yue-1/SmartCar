@@ -220,12 +220,8 @@ void ProcessParameterDisplay(uint8 key_num)
  */
 void KeyProcess(void)
 {
-    OLED_clear();
-    OLED_ShowNum(0, 1, process_flag, 1, 1);
-    OLED_ShowNum(0, 2, base_speed, 1, 1);
-    OLED_ShowFloat(0, 3, encoder_distance, 1);
-
     uint8 key_num=0;
+    ProcessParameterDisplay(key_num);
     while(1)
     {
         switch(KeyScan())
@@ -311,8 +307,8 @@ void ImageParameterDisplay(uint8 key_num_1,uint8 key_num_2)
             OLED_ShowStr(0, 1, "Garage_R", 2);
             switch(key_num_2)
             {
-                case 0:OLED_ShowStr(0, 4, "RNINGarageIdentify", 2);break;
-                case 1:OLED_ShowStr(0, 4, "ZebraIndentify", 2);break;
+                case 0:OLED_ShowStr(0, 4, "RNINGarageIdentify", 1);break;
+                case 1:OLED_ShowStr(0, 4, "ZebraIndentify", 1);break;
             }
             break;
         }
@@ -393,6 +389,7 @@ void ImageParameterDisplay(uint8 key_num_1,uint8 key_num_2)
  */
 void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Point InflectionR)
 {
+    uint8 a=0;
     //先确定key_num_1，再确定key_num_2
     switch(key_num_1)
     {
@@ -411,7 +408,7 @@ void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Poin
             switch(key_num_2)
             {
                 case 0:RNINGarageIdentify(InflectionL, InflectionR);break;
-                case 1:ZebraIndentify(80, 50, 0);break;
+                case 1:ZebraIndentify(80, 50, &a);break;
             }
             break;
         }
@@ -419,7 +416,7 @@ void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Poin
         {
             switch(key_num_2)
             {
-                case 0:if(ForkTurnRIdentify(LeftLine, RightLine, InflectionL, InflectionR)==1)gpio_toggle(LED_WHITE);;break;
+                case 0:if(ForkTurnRIdentify(LeftLine, RightLine, InflectionL, InflectionR)==1)gpio_toggle(LED_WHITE);break;
             }
             break;
         }
@@ -428,7 +425,7 @@ void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Poin
             switch(key_num_2)
             {
                 case 0:CircleIslandExit_R(InflectionR);     break;
-                case 1:if(CircleIslandMid_R()==1)gpio_toggle(LED_WHITE);                 break;
+                case 1:if(CircleIslandMid_R()==1)gpio_toggle(LED_WHITE);break;
                 case 2:CircleIslandBegin_R();               break;
                 case 3:CircleIslandEnd_R();                 break;
                 case 4:CircleIslandOverBegin_R(RightLine);  break;
@@ -450,7 +447,7 @@ void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Poin
             switch(key_num_2)
             {
                 case 0:CircleIslandExit_L(InflectionL);     break;
-                case 1:if(CircleIslandMid_L()==1)gpio_toggle(LED_WHITE);                 break;
+                case 1:if(CircleIslandMid_L()==1)gpio_toggle(LED_WHITE);break;
                 case 2:CircleIslandBegin_L();               break;
                 case 3:CircleIslandEnd_L();                 break;
                 case 4:CircleIslandOverBegin_L(LeftLine);   break;
@@ -471,14 +468,14 @@ void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Poin
             {
                 case 0:if(ZebraCrossingSearch(MT9V03X_H/2+15, MT9V03X_H/2-15)==1)gpio_toggle(LED_WHITE); break;
                 case 1:GarageInBegin();                                     break;
-                case 2:GarageInEnd();                                       break;
+                case 2:if(GarageInEnd()==1)gpio_toggle(LED_WHITE);          break;
             }
             break;
         }
     }
 }
 
-uint8 key_num_1=0,key_num_2=0;  //key_num_1：第一级选择（选择状态）；key_num_2：第二级选择（选择函数）
+uint8 key_num_1=0,key_num_2=2;  //key_num_1：第一级选择（选择状态）；key_num_2：第二级选择（选择函数）
 
 /*
  ** 函数功能: 按键Image调参
@@ -490,6 +487,7 @@ void KeyImage(void)
 {
     uint8 sum_num_2=0;  //根据key_num_1决定函数个数从而决定key_num_2
     uint8 flag=0;       //是否有效按下按键
+    ImageParameterDisplay(key_num_1, key_num_2);
     while(1)
     {
         //按键扫描
@@ -497,17 +495,6 @@ void KeyImage(void)
         {
             case KEY_UP:    //向前切换函数
             {
-                switch(key_num_1)
-                {
-                    case 0:sum_num_2=2; break;  //左十字
-                    case 1:sum_num_2=0; break;
-                    case 2:sum_num_2=0; break;
-                    case 3:sum_num_2=4; break;  //右环岛
-                    case 4:sum_num_2=2; break;  //右十字
-                    case 5:sum_num_2=4; break;  //左环岛
-                    case 6:sum_num_2=0; break;
-                    case 7:sum_num_2=0; break;
-                }
                 if(key_num_2<sum_num_2) //sum_num_2+1个函数
                 {
                     key_num_2++;
@@ -547,12 +534,23 @@ void KeyImage(void)
             case KEY_ENTER: //
             {
 
-                return;
+                break;
             }
         }
         //按键数据处理
         if(flag==1) //有效按键按下
         {
+            switch(key_num_1)
+            {
+                case 0:sum_num_2=2; break;  //左十字
+                case 1:sum_num_2=1; break;  //左车库
+                case 2:sum_num_2=0; break;  //三岔
+                case 3:sum_num_2=4; break;  //右环岛
+                case 4:sum_num_2=2; break;  //右十字
+                case 5:sum_num_2=4; break;  //左环岛
+                case 6:sum_num_2=0; break;  //三岔
+                case 7:sum_num_2=2; break;  //入库
+            }
             ImageParameterDisplay(key_num_1, key_num_2);    //按键参数显示
             flag=0;
         }

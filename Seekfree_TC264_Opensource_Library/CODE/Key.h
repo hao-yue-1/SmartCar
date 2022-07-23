@@ -10,6 +10,7 @@
 
 #include "common.h"
 #include "zf_gpio.h"
+#include "ImageBasic.h"
 
 #define KEY_S1      gpio_get(P33_10)
 #define KEY_S2      gpio_get(P33_11)
@@ -23,6 +24,8 @@
 #define KEY_RIGHT   4   //右
 #define KEY_ENTER   5   //确认
 
+
+#define IMAGE_KEY_DEBUG 0   //是否开启按键调参
 extern uint8 key_num_1,key_num_2;
 
 void KeyInit(void);

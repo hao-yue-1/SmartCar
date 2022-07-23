@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include "zf_ccu6_pit.h"
 #include "ICM20602.h"
+#include "Key.h"
 
 #define STATE_LED_DEBUG 1
 
@@ -23,7 +24,7 @@ uint8 Circle_flag=0;            //环内寻迹标志变量
 uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=160,speed_case_6=160,speed_case_7=170;
 uint32 SobelResult=0;
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
-uint8 process_flag=6;   //状态机跳转标志
+uint8 process_flag=0;   //状态机跳转标志
 
 /********************************************************************************************
  ** 函数功能: 对图像的各个元素之间的逻辑处理函数，最终目的是为了得出Bias给中断去控制
@@ -43,8 +44,11 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
+#if IMAGE_KEY_DEBUG
+    ImageParameterHandle(key_num_1, key_num_2, InflectionL, InflectionR);   //按键显示图像Debug
+#endif
     /****************************状态机***************************/
-#if 1
+#if !IMAGE_KEY_DEBUG
     switch(process_flag)
     {
         case 0: //识别左十字回环
@@ -96,6 +100,7 @@ void ImageProcess()
 #if STATE_LED_DEBUG
                 gpio_set(LED_WHITE, 1);
 #endif
+                base_speed=200;
                 process_flag=3;
             }
             break;
@@ -185,7 +190,6 @@ void ImageProcess()
     /***************************偏差计算**************************/
     if(Fork_flag!=0||Garage_flag!=0||Circle_flag!=0)    //在识别函数里面已经计算了Bias
     {
-//        gpio_toggle(LED_GREEN);
         Garage_flag=0;Fork_flag=0;Circle_flag=0;      //重置flag
     }
     else

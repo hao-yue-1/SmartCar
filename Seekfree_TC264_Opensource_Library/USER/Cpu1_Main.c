@@ -36,7 +36,7 @@
 uint8 outgarage_flag=0;     //出库的flag
 uint8 key_flag=0;           //按键调参的flag
 int16 base_speed=200;       //基础速度
-float encoder_distance=4;   //编码器测距
+float encoder_distance=0;   //编码器测距
 
 void core1_main(void)
 {
@@ -51,15 +51,20 @@ void core1_main(void)
 	IfxCpu_waitEvent(&g_cpuSyncEvent, 0xFFFF);
     enableInterrupts();
 
+#if !IMAGE_KEY_DEBUG
     //按键调参
     KeyProcess();
     systick_delay_ms(STM0,3000);    //预留拔键盘时间
     //开启驱动
-    EncoderDistance(2, encoder_distance, 0, 0);
+    if(encoder_distance>0)
+    {
+        EncoderDistance(2, encoder_distance, 0, 0);
+    }
     pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化电机定时器中断
     pit_interrupt_ms(CCU6_0,PIT_CH1,20);//初始化舵机定时器中断
     //完成出库
-
+    OutGarage();
+#endif
 
     while (TRUE)
     {
@@ -69,7 +74,7 @@ void core1_main(void)
             ImageBinary();      //图像二值化
             ImageProcess();     //图像处理、元素识别
             //把三线画出来
-#if 0
+#if IMAGE_KEY_DEBUG
             lcd_displayimage032(BinaryImage[0],MT9V03X_W,MT9V03X_H);    //发送二值化后的图像到LCD
             for(int i=MT9V03X_H-1;i>0;i--)
             {
