@@ -34,6 +34,7 @@ uint8 GarageLStatusIdentify(char Choose,Point InflectionL,Point InflectionR,uint
 uint8 LINGarageEntrance(Point InflectionL,Point InflectionR);//左车库入库识别补线函数
 uint8 LINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag);//左侧车库入库状态机
 uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR);             //右车库不入库识别函数
+uint8 RNINGarageSpecial(Point InflectionL,Point InflectionR);//右斜补线函数
 uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag);//车库右边不入库状态机
 uint8 RINGarageEntrance(Point InflectionL,Point InflectionR);//右车库入口状态识别函数
 uint8 RINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* GarageLFlag);//右车库入库状态机
