@@ -233,7 +233,7 @@ void KeyProcess(void)
             {
                 switch(key_num)
                 {
-                    case 0: process_flag++;         break;
+                    case 0: if(process_flag<7)process_flag++;break;
                     case 1: base_speed+=5;          break;
                     case 2: encoder_distance+=1;    break;
                 }
@@ -244,7 +244,7 @@ void KeyProcess(void)
             {
                 switch(key_num)
                 {
-                    case 0: process_flag--;         break;
+                    case 0: if(process_flag>0)process_flag--;break;
                     case 1: base_speed-=5;          break;
                     case 2: encoder_distance-=1;    break;
                 }
