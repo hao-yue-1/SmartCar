@@ -11,6 +11,7 @@
 #include "LED.h"
 #include "zf_gpio.h"
 #include "ICM20602.h"
+#include "PID.h"
 
 /********************************************************************************************
  ** 函数功能: 检测斑马线
@@ -165,18 +166,25 @@ void GarageInBegin(void)
     EndPoint.X=0;
     FillingLine('L', StarPoint, EndPoint);
     //特殊情况求Bias，防止其他元素干扰
-    if(row>2*(MT9V03X_H/3)) //补线终点过低
-    {
-        return;
-    }
-    if(row>bias_endline)        //补线终点低于前瞻终点
-    {
-        bias_endline=row;
-    }
-    if(start_row<bias_startline)//补线起点高于前瞻起点
-    {
-        bias_startline=start_row;
-    }
+//    if(row>2*(MT9V03X_H/3)) //补线终点过低
+//    {
+////        lcd_showuint8(0, 0, 0);
+//        return;
+//    }
+//    if(row>bias_endline)        //补线终点低于前瞻终点
+//    {
+//        bias_endline=row;
+//    }
+//    if(start_row<bias_startline)//补线起点高于前瞻起点
+//    {
+//        bias_startline=start_row;
+//    }
+//    for(uint8 i=0;i<MT9V03X_W-1;i++)
+//    {
+//        lcd_drawpoint(i, bias_startline, BROWN);
+//        lcd_drawpoint(i, bias_endline, YELLOW);
+//    }
+//    lcd_showfloat(0, 1, Bias, 1, 2);
     Bias=DifferentBias_Garage(bias_startline,bias_endline,CentreLine); //动态前瞻计算偏差
     bias_startline=95;bias_endline=50;                          //恢复默认前瞻
     Garage_flag=1;
@@ -192,12 +200,13 @@ void GarageInBegin(void)
 uint8 GarageInEnd(void)
 {
     //最简单：Bias<1
+    Bias=DifferentBias(bias_startline,bias_endline,CentreLine); //动态前瞻计算偏差
     if(fabs(Bias)<1)
     {
         return 1;
     }
     //中线在图像下三分之一处丢线
-    for(uint8 row=MT9V03X_H-1;row>MT9V03X_H/2;row--)
+    for(uint8 row=MT9V03X_H-1;row>MT9V03X_H/3;row--)
     {
         if(BinaryImage[row][CentreLine[row]]==IMAGE_BLACK)
         {
@@ -223,6 +232,7 @@ uint8 GarageInIdentify(void)
         {
             if(ZebraCrossingSearch(MT9V03X_H/2+15, MT9V03X_H/2-15)==1)    //识别到斑马线
             {
+                base_speed=150;
                 flag=1;
                 gpio_set(LED_YELLOW, 0);
             }
@@ -243,16 +253,18 @@ uint8 GarageInIdentify(void)
             }
             break;
         }
-        case 2: //补线入库
+        case 2: //打死入库
         {
             if(GarageInEnd()==1)    //识别到已经入库
             {
-                gpio_set(LED_WHITE, 0);
                 Stop();
+                gpio_set(LED_WHITE, 0);
             }
             else
             {
-                GarageInBegin();    //补线入库
+//                GarageInBegin();    //补线入库
+                Bias=10;
+                Garage_flag=1;
             }
         }
     }
