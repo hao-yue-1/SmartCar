@@ -317,8 +317,30 @@ uint8 CircleIslandEnd_L(void)
         StarPoint.Y=row;    //起点：右拐点or右下角
         StarPoint.X=column;
         uint8 start_row=row;
-        //寻找补线终点
-        column=1;           //终点X坐标取左边界（由于环岛出环没有像十字回环一样的直角压角问题，所以这里可以简单处理）
+//        //寻找补线终点
+//        column=1;           //终点X坐标取左边界（由于环岛出环没有像十字回环一样的直角压角问题，所以这里可以简单处理）
+//        for(;row-1>0;row--) //向上扫
+//        {
+//            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+//            {
+//                EndPoint.Y=row;     //终点：上边界点
+//                EndPoint.X=column;
+//                break;
+//            }
+//        }
+        //寻找补线终点V2
+        column=1;
+        if(BinaryImage[MT9V03X_H-2][1]==IMAGE_BLACK)   //左下存在黑洞
+        {
+            row=MT9V03X_H-2;   //坐标重置为左下角
+            for(;column+1<MT9V03X_W-1;column++) //向右扫
+            {
+                if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column+1]==IMAGE_WHITE)  //黑-白
+                {
+                    break;  //修正补线终点的X坐标
+                }
+            }
+        }
         for(;row-1>0;row--) //向上扫
         {
             if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
@@ -998,17 +1020,39 @@ uint8 CircleIslandEnd_R(void)
         StarPoint.Y=row;    //起点：左拐点or左下角
         StarPoint.X=column;
         uint8 start_row=row;
-        //寻找补线终点
-        column=MT9V03X_W-2;           //终点X坐标取右边界（由于环岛出环没有像十字回环一样的直角压角问题，所以这里可以简单处理）
+//        //寻找补线终点
+//        column=MT9V03X_W-2;           //终点X坐标取右边界（由于环岛出环没有像十字回环一样的直角压角问题，所以这里可以简单处理）
+//        for(;row-1>0;row--) //向上扫
+//        {
+//            if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
+//            {
+//                EndPoint.Y=row;     //终点：上边界点
+//                EndPoint.X=column;
+//                break;
+//            }
+//        }
+        //寻找补线终点V2
+        column=MT9V03X_W-2;
+        if(BinaryImage[MT9V03X_H-2][MT9V03X_W-2]==IMAGE_BLACK)   //右下存在黑洞
+        {
+            row=MT9V03X_H-2;   //坐标重置为右下角
+            for(;column-1>0;column--) //向左扫
+            {
+                if(BinaryImage[row][column]==IMAGE_BLACK&&BinaryImage[row][column-1]==IMAGE_WHITE)  //黑-白
+                {
+                    break;  //修正补线终点的X坐标
+                }
+            }
+        }
         for(;row-1>0;row--) //向上扫
         {
             if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
             {
-                EndPoint.Y=row;     //终点：上边界点
-                EndPoint.X=column;
                 break;
             }
         }
+        EndPoint.Y=row;     //终点：上边界点
+        EndPoint.X=column;
         //补左线右转出环
         FillingLine('L', StarPoint, EndPoint);
         flag=1; //连续补线标志
