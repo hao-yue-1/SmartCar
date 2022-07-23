@@ -115,8 +115,6 @@ uint8 ZebraIndentify(uint8 start_line,uint8 end_line,uint8* black_width)
             {
                 zebre_row=row;
                 zebre_column=column;
-                lcd_showuint8(TFT_X_MAX-50, 0, zebre_row);
-                lcd_showuint8(TFT_X_MAX-50, 1, zebre_column);
                 return 1;
             }
         }
@@ -742,11 +740,9 @@ uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* Garage
             SobelResult=SobelTest(80,50,50,MT9V03X_W-1-50);
             if(SobelResult>ZebraTresholeR)
             {
-//                gpio_set(LED_WHITE, 0);
                 NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
                 *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
                 StatusChange=2;
-                break;
             }
             StatusChange=1;//状态0为开启编码器状态
             break;
@@ -756,13 +752,11 @@ uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* Garage
             SobelResult=SobelTest(80,50,50,MT9V03X_W-1-50);
             if(SobelResult>ZebraTresholeR)
             {
-//                gpio_set(LED_WHITE, 0);
                 NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
                 *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
                 StatusChange=2;
-                break;
             }
-            if(encoder_dis_flag==1)
+            if(encoder_dis_flag==1)//如果一直没有检测到斑马线那也要看斑马线
             {
                 return 1;//莽撞一点这里直接不再次sobel因为下一个是弯道，sobel可能会使得控制滞后
             }
