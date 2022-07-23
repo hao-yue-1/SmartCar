@@ -26,6 +26,7 @@
 /*起跑线相关函数*/
 void OutGarage(void);       //出库
 int64 SobelTest(uint8 starline,uint8 endline,uint8 starcloumn,uint8 endcloumn);      //Sobel算子检测起跑线
+uint8 ZebraIndentify(uint8 start_line,uint8 end_line,uint8* black_width);//黑白跳变寻找斑马线
 void SeedGrowFindValley_Garage(char Choose,Point Seed,int endline,Point *UpInflectionC,char TRANSVERSE_THR);//车库的种子生长找谷底
 void SeedGrowFindPeak_Garage(char Choose,Point Seed,int endline,Point *PeakInflection,char TRANSVERSE_THR);//车库种子生长找到山顶，跟上面函数相反
 uint8 GarageLIdentify(char Choose,Point InflectionL,Point InflectionR);             //左车库识别
