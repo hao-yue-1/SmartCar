@@ -138,7 +138,7 @@ void SeedGrowFindValley_Garage(char Choose,Point Seed,int endline,Point *UpInfle
     for(;Seed.Y<endline && Seed.X<MT9V03X_W-1 && Seed.X>0;)
     {
 #if SEEDGROWFINDVALLEY_DEBUG
-        lcd_drawpoint(Seed.X, Seed.Y, YELLOW);
+        lcd_drawpoint(Seed.X, Seed.Y, GREEN);
 #endif
         switch(Choose)
         {
@@ -635,7 +635,19 @@ uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
 #endif
     Point UpInflection;//上拐点的变量
     UpInflection.X=0,UpInflection.Y=0;//初始化为0
-    uint8 NoInflectionRFlag=0,black_width=0;//左库左拐点不存在的标志变量，用于选取哪种补线方式，拐点左边的黑色宽度
+    uint8 NoInflectionRFlag=0,black_width=0,l_column_white_length=0;//左库左拐点不存在的标志变量，用于选取哪种补线方式，拐点左边的黑色宽度，屏幕左边列的白色长度
+    //判断是否是右斜
+    for(uint8 row=MT9V03X_H-1;row>20;row--)
+    {
+        if(BinaryImage[row][3]==IMAGE_WHITE)
+        {
+            l_column_white_length++;
+        }
+        if(l_column_white_length>80)
+        {
+            return RNINGarageSpecial(InflectionL,InflectionR);
+        }
+    }
     //判断右拐点存不存在
 #if RNOINGARAGE_DEBUG
     LcdDrawPoint_V2(InflectionR.Y+5, MT9V03X_W-5, YELLOW);
@@ -644,7 +656,6 @@ uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
     {
         NoInflectionRFlag=1;
     }
-#if GARAGE_IDENTIFY_MODE
     //此处使用遍历数组找上拐点的方法
     GetUpInflection('R', Garage_LastRightangleRow, bias_startline, &UpInflection);
     if(UpInflection.Y<20)   Garage_LastRightangleRow=20;
@@ -652,28 +663,9 @@ uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
 #if RNOINGARAGE_DEBUG
     LcdDrawPoint_V2(UpInflection.Y, UpInflection.X, GREEN);
 #endif
-#else
-    //此处使用直角黑白跳变找上拐点法
-    //如果是在斑马线路段了并且右拐点不存在,或者左右拐点之间的横坐标差太多，因为扫线的混乱拐点可能出现在斑马线中间
-    //并且右拐点那行的图像最右边-5要是黑点
-    if(InflectionR.X==0 || InflectionR.X<MT9V03X_W/2 || BinaryImage[InflectionR.Y+5][MT9V03X_W-5]==IMAGE_WHITE)
-    {
-        //中间右边的的点去找上拐点,此处不随机播种，而是让它一定要找到白点作为找上拐点的种子
-        for(int row=MT9V03X_H/2+15;row<MT9V03X_H-1;row++)
-        {
-            if(BinaryImage[row][MT9V03X_W-3]==IMAGE_WHITE)
-            {
-                InflectionR.X=MT9V03X_W-3;InflectionR.Y=row+10;//+10是因为下面的循环是-10了，防止因为-10直接到黑色区域所以找不到拐点
-                NoInflectionRFlag=1;
-                break;
-            }
-        }
-        if(NoInflectionRFlag!=1) return 0;//否则说明左边都是黑的了直接返回已经过了右库
-    }
-    GetRightangleUPInflection('R',InflectionR,&UpInflection,10,10);
-#endif
     //判断是否找到上拐点，满足才补线
-    if(UpInflection.X!=0 && UpInflection.Y!=0 && UpInflection.X>40 && UpInflection.Y>30)
+    if(UpInflection.X!=0 && UpInflection.Y!=0 && UpInflection.X>40 && UpInflection.Y>30
+    && BinaryImage[UpInflection.Y-3][CentreLine[UpInflection.Y-3]]!=IMAGE_BLACK && BinaryImage[UpInflection.Y-5][CentreLine[UpInflection.Y-5]]!=IMAGE_BLACK)
     {
 //        //特殊检测一下别让上拐点走到斑马线上这里进行一次判断,判断是否在斑马线上
         for(int cloumn=UpInflection.X;cloumn>UpInflection.X-30;cloumn--)
@@ -694,8 +686,8 @@ uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
 #if RNOINGARAGE_DEBUG
             for(int i=0;i<MT9V03X_W-1;i++)
             {
-                lcd_drawpoint(i, InflectionR.Y+5, PURPLE);
-                lcd_drawpoint(i, InflectionR.Y+3, PURPLE);
+                lcd_drawpoint(i, InflectionR.Y-5, PURPLE);
+                lcd_drawpoint(i, InflectionR.Y-3, PURPLE);
             }
 #endif
 //           Bias=DifferentBias(InflectionR.Y+5, InflectionR.Y+3, CentreLine);
@@ -704,17 +696,66 @@ uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
        else
        {
 #if RNOINGARAGE_DEBUG
-          for(int i=0;i<MT9V03X_W-1;i++)
-          {
-              lcd_drawpoint(i, UpInflection.Y-3, PURPLE);
-              lcd_drawpoint(i, UpInflection.Y-5, PURPLE);
-          }
+//          for(int i=0;i<MT9V03X_W-1;i++)
+//          {
+//              lcd_drawpoint(i, InflectionR.Y-3, PURPLE);
+//              lcd_drawpoint(i, InflectionR.Y-5, PURPLE);
+//          }
 #endif
            Bias=DifferentBias(UpInflection.Y-3, UpInflection.Y-5, CentreLine);//直接以上拐点的上面正常的线去循迹
        }
        return 1;
     }
     return 0;
+}
+uint8 RNINGarageSpecial(Point InflectionL,Point InflectionR)//右斜补线函数
+{
+    //左边大量的白色，此时右线数组已经到了车库里面，需要用黑白跳变法找到拐点
+    uint8 NoInflectionRFlag;
+    Point UpInflection;
+    //判断有没有右拐点存在
+    if(InflectionR.X==0 || BinaryImage[InflectionR.Y+5][MT9V03X_W-5]==IMAGE_WHITE)
+    {
+       NoInflectionRFlag=1;
+       InflectionR.X=RightLine[MT9V03X_H-5];InflectionR.Y=MT9V03X_H-5;
+    }
+    Point ValleySeed;//准备爬到山谷的种子
+    for(uint8 row=InflectionR.Y-40;row>20;row--)
+    {
+       if(BinaryImage[row][InflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][InflectionR.X]==IMAGE_BLACK)
+       {
+           ValleySeed.Y=row-1;ValleySeed.X=InflectionR.X;
+           break;
+       }
+    }
+    if(ValleySeed.Y!=0 && ValleySeed.X!=0)
+    {
+//       LcdDrawPoint_V2(ValleySeed.Y, ValleySeed.X, YELLOW);
+       SeedGrowFindValley_Garage('R', ValleySeed, InflectionR.Y-20, &UpInflection, 10);
+    }
+    //补线
+    if(UpInflection.Y!=0)
+    {
+       FillingLine('R', InflectionR, UpInflection);
+       Point LDownPoint,LUpPoint;
+       LDownPoint.X=3;LDownPoint.Y=InflectionR.Y;
+       LUpPoint.X=3;LUpPoint.Y=UpInflection.Y;
+       FillingLine('L', LDownPoint, LUpPoint);
+       //偏差处理
+       if(UpInflection.Y<bias_endline)//starline<endline<Up.y，则正常循迹
+       {
+           Bias=DifferentBias_Garage(bias_startline,bias_endline,CentreLine);
+       }
+       else if(UpInflection.Y<bias_startline && bias_endline<UpInflection.Y)//starline<UP.y<endline,则按照起始行到上拐点
+       {
+           Bias=DifferentBias_Garage(bias_startline,UpInflection.Y,CentreLine);
+       }
+       else if(bias_startline<UpInflection.Y)//UP.y<starline<endline
+       {
+           Bias=DifferentBias_Garage(InflectionR.Y,UpInflection.Y,CentreLine);
+       }
+       return 1;
+    }
 }
 /********************************************************************************************
  ** 函数功能: 右边车库不入库的状态机转移
@@ -729,6 +770,7 @@ uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* Garage
 {
     static uint8 StatusChange;//上一次识别的结果和状态变量
     uint8 NowFlag=0;//这次的识别结果
+    uint8 no_effect=0;
     int64 SobelResult=0;//索贝尔计算的结果
     //因为右车库不入库不需要做处理也行所以此处的状态机条件很宽松
     switch(StatusChange)
@@ -737,25 +779,40 @@ uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* Garage
         case 0:
         {
             EncoderDistance(1, 0.7, 0, 0);
-            SobelResult=SobelTest(80,50,50,MT9V03X_W-1-50);
-            if(SobelResult>ZebraTresholeR)
+            if(ZebraIndentify(80, 50, &no_effect)==1)
             {
+                gpio_set(LED_GREEN, 0);
                 NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
                 *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
                 StatusChange=2;
             }
-            StatusChange=1;//状态0为开启编码器状态
+            else
+                StatusChange=1;//状态0为开启编码器状态
+//            SobelResult=SobelTest(80,50,50,MT9V03X_W-1-50);
+//            if(SobelResult>ZebraTresholeR)
+//            {
+//                NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
+//                *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
+//                StatusChange=2;
+//            }
             break;
         }
         case 1:
         {
-            SobelResult=SobelTest(80,50,50,MT9V03X_W-1-50);
-            if(SobelResult>ZebraTresholeR)
+            if(ZebraIndentify(80, 50, &no_effect)==1)
             {
+                gpio_set(LED_WHITE, 0);
                 NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
                 *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
                 StatusChange=2;
             }
+//            SobelResult=SobelTest(80,50,50,MT9V03X_W-1-50);
+//            if(SobelResult>ZebraTresholeR)
+//            {
+//                NowFlag=RNINGarageIdentify(InflectionL, InflectionR);
+//                *GarageLFlag=NowFlag;//把识别结果带出去，告诉外面还需不需要正常巡线求的偏差
+//                StatusChange=2;
+//            }
             if(encoder_dis_flag==1)//如果一直没有检测到斑马线那也要看斑马线
             {
                 return 1;//莽撞一点这里直接不再次sobel因为下一个是弯道，sobel可能会使得控制滞后
