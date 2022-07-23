@@ -12,6 +12,52 @@
 #include "zf_gpio.h"
 #include "ICM20602.h"
 #include "PID.h"
+#include <math.h>
+
+/********************************************************************************************
+ ** 函数功能: 入库专属求Bias，可避免斑马线干扰
+ ** 参    数: starline:    离散点的起始行
+ **           endline:     离散点的结束行
+ **           *CentreLine：中线数组
+ ** 返 回 值: 偏差Bias
+ ** 作    者: WBN
+ *********************************************************************************************/
+float DifferentBias_GarageIn(uint8 startline,uint8 endline,int *CentreLine)
+{
+    static float last_bias;
+    float bias=0;
+    uint8 rownum=0;//用于计数求了多少行的偏差
+
+    for(uint8 i=startline;i>endline;i--)
+    {
+        if(abs(CentreLine[i]-CentreLine[i+1])>MT9V03X_W/3)  //中线发生突变，跳出累积
+        {
+            break;
+        }
+        bias+=(float)(MT9V03X_W/2-CentreLine[i]);  //累积偏差，Mid-Centre，左正右负（中线在车头的左/右，应该往左/右）
+        rownum++;
+    }
+    bias=bias/rownum/10;   //求偏差均值
+
+    if(bias<0.5&&bias>-0.5) //分段加权
+    {
+        bias=bias*0.1;
+    }
+    else if(bias<-3||bias>3)
+    {
+        bias=bias*1.5;
+    }
+
+    if(bias==bias)  //bias是真值
+    {
+        last_bias=bias;
+        return bias;
+    }
+    else
+    {
+        return last_bias;   //计算错误，忽略此次计算，返回上一次的值
+    }
+}
 
 /********************************************************************************************
  ** 函数功能: 检测斑马线
@@ -118,7 +164,6 @@ void GarageInBegin(void)
         StarPoint.Y=MT9V03X_H-2;    //起点：右下角
         StarPoint.X=MT9V03X_W-2;
     }
-    uint8 start_row=(uint8)StarPoint.Y;
     //寻找补线终点
     for(;row-1>0;row--) //向上扫
     {
@@ -165,36 +210,17 @@ void GarageInBegin(void)
     StarPoint.X=0;
     EndPoint.X=0;
     FillingLine('L', StarPoint, EndPoint);
-    //特殊情况求Bias，防止其他元素干扰
-//    if(row>2*(MT9V03X_H/3)) //补线终点过低
-//    {
-////        lcd_showuint8(0, 0, 0);
-//        return;
-//    }
-//    if(row>bias_endline)        //补线终点低于前瞻终点
-//    {
-//        bias_endline=row;
-//    }
-//    if(start_row<bias_startline)//补线起点高于前瞻起点
-//    {
-//        bias_startline=start_row;
-//    }
-//    for(uint8 i=0;i<MT9V03X_W-1;i++)
-//    {
-//        lcd_drawpoint(i, bias_startline, BROWN);
-//        lcd_drawpoint(i, bias_endline, YELLOW);
-//    }
-//    lcd_showfloat(0, 1, Bias, 1, 2);
-    Bias=DifferentBias_Garage(bias_startline,bias_endline,CentreLine); //动态前瞻计算偏差
+    //求Bias
+    Bias=DifferentBias_GarageIn(bias_startline,bias_endline,CentreLine); //动态前瞻计算偏差
     bias_startline=95;bias_endline=50;                          //恢复默认前瞻
     Garage_flag=1;
 }
 
 /********************************************************************************************
- ** 函数功能: 入库状态机
+ ** 函数功能: 检测是否入库
  ** 参    数: 无
- ** 返 回 值: 0：没有完成入库
- **          1：完成入库
+ ** 返 回 值: 0：未入库
+ **          1：入库
  ** 作    者: WBN
  *********************************************************************************************/
 uint8 GarageInEnd(void)
@@ -232,9 +258,8 @@ uint8 GarageInIdentify(void)
         {
             if(ZebraCrossingSearch(MT9V03X_H/2+15, MT9V03X_H/2-15)==1)    //识别到斑马线
             {
-                base_speed=150;
+                base_speed=150; //降速入库
                 flag=1;
-                gpio_set(LED_YELLOW, 0);
             }
             break;
         }
@@ -244,7 +269,6 @@ uint8 GarageInIdentify(void)
             if(flag_in==1&&icm_angle_z_flag==1) //积分完成
             {
                 flag=2;
-                gpio_set(LED_GREEN, 0);
             }
             else if(flag_in==0)
             {
@@ -257,12 +281,11 @@ uint8 GarageInIdentify(void)
         {
             if(GarageInEnd()==1)    //识别到已经入库
             {
-                Stop();
-                gpio_set(LED_WHITE, 0);
+                flag=3; //状态机作废
+                return 1;
             }
             else
             {
-//                GarageInBegin();    //补线入库
                 Bias=10;
                 Garage_flag=1;
             }
