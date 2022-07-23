@@ -23,10 +23,13 @@
 #define KEY_RIGHT   4   //ср
 #define KEY_ENTER   5   //х╥хо
 
+extern uint8 key_num_1,key_num_2;
+
 void KeyInit(void);
 uint8 KeyScan(void);
 void KeyPID(void);
 void KeyProcess(void);
 void KeyImage(void);
+void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Point InflectionR);
 
 #endif /* CODE_KEY_H_ */

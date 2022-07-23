@@ -12,6 +12,7 @@
 #include "PID.h"            //修改PID参数
 #include "LED.h"
 #include "oled.h"           //OLED显示
+#include "ImageSpecial.h"
 
 extern float encoder_distance;
 
@@ -310,7 +311,8 @@ void ImageParameterDisplay(uint8 key_num_1,uint8 key_num_2)
             OLED_ShowStr(0, 1, "Garage_R", 2);
             switch(key_num_2)
             {
-                case 0:OLED_ShowStr(0, 4, " ", 2);break;
+                case 0:OLED_ShowStr(0, 4, "RNINGarageIdentify", 2);break;
+                case 1:OLED_ShowStr(0, 4, "ZebraIndentify", 2);break;
             }
             break;
         }
@@ -319,7 +321,7 @@ void ImageParameterDisplay(uint8 key_num_1,uint8 key_num_2)
             OLED_ShowStr(0, 1, "ForkRoad_First", 2);
             switch(key_num_2)
             {
-                case 0:OLED_ShowStr(0, 4, " ", 1);break;
+                case 0:OLED_ShowStr(0, 4, "ForkTurnRIdentify", 1);break;
             }
             break;
         }
@@ -365,16 +367,18 @@ void ImageParameterDisplay(uint8 key_num_1,uint8 key_num_2)
             OLED_ShowStr(0, 1, "ForkRoad_Second", 2);
             switch(key_num_2)
             {
-                case 0:OLED_ShowStr(0, 4, " ", 1);break;
+                case 0:OLED_ShowStr(0, 4, "ForkTurnRIdentify", 1);break;
             }
             break;
         }
         case 7: //左车库入库
         {
-            OLED_ShowStr(0, 1, "Garage_L", 2);
+            OLED_ShowStr(0, 1, "Garage_In", 2);
             switch(key_num_2)
             {
-                case 0:OLED_ShowStr(0, 4, " ", 1);break;
+                case 0:OLED_ShowStr(0, 4, "ZebraCrossingSearch", 1);break;
+                case 1:OLED_ShowStr(0, 4, "GarageInBegin", 1);      break;
+                case 2:OLED_ShowStr(0, 4, "GarageInEnd", 1);        break;
             }
             break;
         }
@@ -387,10 +391,94 @@ void ImageParameterDisplay(uint8 key_num_1,uint8 key_num_2)
  ** 返 回 值: 无
  ** 作    者: WBN
  */
-void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2)
+void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Point InflectionR)
 {
-
+    //先确定key_num_1，再确定key_num_2
+    switch(key_num_1)
+    {
+        case 0: //左十字
+        {
+            switch(key_num_2)
+            {
+                case 0:CrossLoopBegin_L(LeftLine, RightLine, InflectionL, InflectionR);     break;
+                case 1:CrossLoopOverBegin_L(LeftLine, RightLine, InflectionL, InflectionR); break;
+                case 2:CrossLoopEnd_L();                                                    break;
+            }
+            break;
+        }
+        case 1: //右车库直行
+        {
+            switch(key_num_2)
+            {
+                case 0:RNINGarageIdentify(InflectionL, InflectionR);break;
+                case 1:ZebraIndentify(80, 50, 0);break;
+            }
+            break;
+        }
+        case 2: //第一遍三岔
+        {
+            switch(key_num_2)
+            {
+                case 0:if(ForkTurnRIdentify(LeftLine, RightLine, InflectionL, InflectionR)==1)gpio_toggle(LED_WHITE);;break;
+            }
+            break;
+        }
+        case 3: //右环岛
+        {
+            switch(key_num_2)
+            {
+                case 0:CircleIslandExit_R(InflectionR);     break;
+                case 1:if(CircleIslandMid_R()==1)gpio_toggle(LED_WHITE);                 break;
+                case 2:CircleIslandBegin_R();               break;
+                case 3:CircleIslandEnd_R();                 break;
+                case 4:CircleIslandOverBegin_R(RightLine);  break;
+            }
+            break;
+        }
+        case 4: //右十字
+        {
+            switch(key_num_2)
+            {
+                case 0:CrossLoopBegin_R(LeftLine, RightLine, InflectionL, InflectionR);       break;
+                case 1:CrossLoopOverBegin_R(LeftLine, RightLine, InflectionL, InflectionR);   break;
+                case 2:CrossLoopEnd_R();                                                      break;
+            }
+            break;
+        }
+        case 5: //左环岛
+        {
+            switch(key_num_2)
+            {
+                case 0:CircleIslandExit_L(InflectionL);     break;
+                case 1:if(CircleIslandMid_L()==1)gpio_toggle(LED_WHITE);                 break;
+                case 2:CircleIslandBegin_L();               break;
+                case 3:CircleIslandEnd_L();                 break;
+                case 4:CircleIslandOverBegin_L(LeftLine);   break;
+            }
+            break;
+        }
+        case 6: //第二遍三岔
+        {
+            switch(key_num_2)
+            {
+                case 0:if(ForkTurnRIdentify(LeftLine, RightLine, InflectionL, InflectionR)==1)gpio_toggle(LED_WHITE);break;
+            }
+            break;
+        }
+        case 7: //左车库入库
+        {
+            switch(key_num_2)
+            {
+                case 0:if(ZebraCrossingSearch(MT9V03X_H/2+15, MT9V03X_H/2-15)==1)gpio_toggle(LED_WHITE); break;
+                case 1:GarageInBegin();                                     break;
+                case 2:GarageInEnd();                                       break;
+            }
+            break;
+        }
+    }
 }
+
+uint8 key_num_1=0,key_num_2=0;  //key_num_1：第一级选择（选择状态）；key_num_2：第二级选择（选择函数）
 
 /*
  ** 函数功能: 按键Image调参
@@ -400,7 +488,6 @@ void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2)
  */
 void KeyImage(void)
 {
-    uint8 key_num_1=0,key_num_2=0;  //key_num_1：第一级选择（选择状态）；key_num_2：第二级选择（选择函数）
     uint8 sum_num_2=0;  //根据key_num_1决定函数个数从而决定key_num_2
     uint8 flag=0;       //是否有效按下按键
     while(1)
