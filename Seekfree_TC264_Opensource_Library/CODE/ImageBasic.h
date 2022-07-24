@@ -34,5 +34,6 @@ void GetUpInflection(char Choose,int startline,int endline,Point *UpInflection);
 void GetRightangleUPInflection(char Choose,Point DowmInflection,Point *UpInflection,int ROWTHR,int CLOUMNTHR);//根据二值化图像找直角上拐点
 void Bin_Image_Filter(void);//图像腐蚀
 void MeasureWidth(int startline,int endline);//测量赛道宽度
+void GetImagBasic_Garage(int *LeftLine, int *CentreLine, int *RightLine ,char path);
 
 #endif /* CODE_IMAGEBASIC_H_ */
