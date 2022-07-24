@@ -13,6 +13,7 @@
 #include "ICM20602.h"
 #include "PID.h"
 #include <math.h>
+#include "Motor.h"
 
 /********************************************************************************************
  ** 函数功能: 入库专属求Bias，可避免斑马线干扰
@@ -169,12 +170,18 @@ void GarageInBegin(void)
     {
         if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
         {
-            for(;column+1<MT9V03X_W-1;column++)   //将指针移动到底部最右端
+            flag_2=0;   //记录指针移动情况
+            for(;column+1<MT9V03X_W/3;column++)   //将指针移动到底部最右端，只在图像左三分之一处寻找
             {
                 if(BinaryImage[row][column+1]==IMAGE_BLACK)
                 {
+                    flag_2=1;   //移动成功
                     break;
                 }
+            }
+            if(flag_2==0)   //没有移动成功，直接跳过寻找谷底的过程
+            {
+                break;
             }
             while(column+1<MT9V03X_W-1&&row+1<MT9V03X_H-1)  //右下
             {
@@ -256,7 +263,7 @@ uint8 GarageInIdentify(void)
     {
         case 0: //识别斑马线
         {
-            if(ZebraCrossingSearch(MT9V03X_H/2+15, MT9V03X_H/2-15)==1)    //识别到斑马线
+            if(ZebraCrossingSearch(MT9V03X_H/2+15+10, MT9V03X_H/2-15+10)==1)    //识别到斑马线
             {
                 base_speed=150; //降速入库
                 flag=1;
@@ -265,15 +272,18 @@ uint8 GarageInIdentify(void)
         }
         case 1: //补线过渡
         {
-            GarageInBegin();    //优先补线
-            if(flag_in==1&&icm_angle_z_flag==1) //积分完成
+            GarageInBegin();        //优先补线
+            if(flag_in==1&&encoder_dis_flag==1&&icm_angle_z_flag==1) //积分、测距完成
             {
+                gpio_set(LED_GREEN, 0);
                 flag=2;
             }
             else if(flag_in==0)
             {
-                StartIntegralAngle_Z(20);       //开启积分
+                EncoderDistance(1, 0.3, 0, 0);  //开启编码器测距，避免提早打死压角
+                StartIntegralAngle_Z(20);       //开启陀螺仪积分，避免提早识别入库
                 flag_in=1;
+                gpio_set(LED_YELLOW, 0);
             }
             break;
         }
@@ -288,6 +298,7 @@ uint8 GarageInIdentify(void)
             {
                 Bias=10;
                 Garage_flag=1;
+//                GarageInBegin();
             }
         }
     }
