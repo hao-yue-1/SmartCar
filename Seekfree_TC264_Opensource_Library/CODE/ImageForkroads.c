@@ -730,7 +730,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
  *********************************************************************************************/
 uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *ForkFlag)
 {
-    static uint8 StatusChange,numentrance,fork_encooder_flag;//三岔识别函数的临时状态变量，用来看状态是否跳转
+    static uint8 StatusChange,numentrance,fork_encooder_flag,last_speed;//三岔识别函数的临时状态变量，用来看状态是否跳转
     uint8 NowFlag=0;//这次的识别结果
     NowFlag=ForkTurnRIdentify(LeftLine, RightLine, DownInflectionL, DownInflectionR);
     *ForkFlag=NowFlag;//把识别结果送出去
@@ -748,6 +748,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
 #if FORK_LED_DEBUG
                 gpio_set(LED_RED, 1);
 #endif
+                last_speed=base_speed;
                 StatusChange=1;//只要开始识别到了三岔就说明已经是入口阶段了
             }
             break;
@@ -801,7 +802,7 @@ uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
 #if FORK_LED_DEBUG
                 gpio_set(LED_BLUE, 1);
 #endif
-                base_speed=200;//恢复速度
+                base_speed=last_speed;//恢复速度
                 StatusChange=4;
             }
             break;
