@@ -15,13 +15,13 @@
 #include "ICM20602.h"
 #include "Key.h"
 
-#define STATE_LED_DEBUG 1
+#define STATE_LED_DEBUG 0
 
 uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
 uint8 Circle_flag=0;            //环内寻迹标志变量
-uint8 speed_case_1=200,speed_case_2=170,speed_case_3=155,speed_case_4=165,speed_case_5=160,speed_case_6=160,speed_case_7=170;
+uint8 speed_case_1=200,speed_case_2=220,speed_case_3=200,speed_case_4=200,speed_case_5=200,speed_case_6=200,speed_case_7=200;
 uint32 SobelResult=0;
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 uint8 process_flag=0;   //状态机跳转标志
@@ -40,7 +40,14 @@ void ImageProcess()
     Point InflectionL,InflectionR;     //左右下拐点
     InflectionL.X=0;InflectionL.Y=0;InflectionR.X=0;InflectionR.Y=0;
     /*****************************扫线*****************************/
-    GetImagBasic(LeftLine, CentreLine, RightLine, 'L');
+    if(process_flag==1)
+    {
+        GetImagBasic_Garage(LeftLine, CentreLine, RightLine, 'L');
+    }
+    else
+    {
+        GetImagBasic(LeftLine, CentreLine, RightLine, 'L');
+    }
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
@@ -61,6 +68,7 @@ void ImageProcess()
 #if STATE_LED_DEBUG
                 gpio_set(LED_RED, 1);
 #endif
+                base_speed=speed_case_1;
                 process_flag=1;
             }
             break;
@@ -77,7 +85,7 @@ void ImageProcess()
 #endif
                 EncoderDistance(1, 1.6, 0, 0);//此处为跑普通赛道，防止三岔误判
                 encoder_flag=1;
-                base_speed=220;
+                base_speed=speed_case_2;
                 process_flag=2;
             }
             break;
@@ -100,7 +108,7 @@ void ImageProcess()
 #if STATE_LED_DEBUG
                 gpio_set(LED_WHITE, 1);
 #endif
-                base_speed=200;
+                base_speed=speed_case_3;
                 process_flag=3;
             }
             break;
@@ -115,6 +123,7 @@ void ImageProcess()
 #if STATE_LED_DEBUG
                 gpio_set(LED_BLUE, 1);
 #endif
+                base_speed=speed_case_4;
                 process_flag=4;
             }
             break;
@@ -129,6 +138,7 @@ void ImageProcess()
 #if STATE_LED_DEBUG
                 gpio_set(LED_GREEN, 1);
 #endif
+                base_speed=speed_case_5;
                 process_flag=5;
             }
             break;
@@ -145,6 +155,7 @@ void ImageProcess()
 #endif
                 StartIntegralAngle_Z(30);//出状态之后转了30度左右才开启三岔识别，避免状态机出错导致误判
                 icm_flag=1;
+                base_speed=speed_case_6;
                 process_flag=6;
             }
             break;
@@ -167,6 +178,7 @@ void ImageProcess()
 #if STATE_LED_DEBUG
             gpio_set(LED_YELLOW, 1);
 #endif
+                base_speed=speed_case_7;
                 process_flag=7;
             }
             break;

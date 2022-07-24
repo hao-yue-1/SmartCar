@@ -476,7 +476,6 @@ void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Poin
 }
 
 uint8 key_num_1=0,key_num_2=2;  //key_num_1：第一级选择（选择状态）；key_num_2：第二级选择（选择函数）
-
 /*
  ** 函数功能: 按键Image调参
  ** 参    数: 无
@@ -559,3 +558,138 @@ void KeyImage(void)
     }
 }
 
+/*
+ ** 函数功能: 按键分段速度调参
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void SpeedParameterDisplay(uint8 key_num)
+{
+    OLED_clear();
+    switch(key_num)
+    {
+        case 0:
+        {
+            OLED_ShowStr(0, 1, "CrossLoop_L", 2);
+            OLED_ShowNum(0, 4, base_speed, 3, 2);
+            break;
+        }
+        case 1:
+        {
+            OLED_ShowStr(0, 1, "Garage_R", 2);
+            OLED_ShowNum(0, 4, speed_case_1, 3, 2);
+            break;
+        }
+        case 2:
+        {
+            OLED_ShowStr(0, 1, "ForkRoad_First", 2);
+            OLED_ShowNum(0, 4, speed_case_2, 3, 2);
+            break;
+        }
+        case 3:
+        {
+            OLED_ShowStr(0, 1, "CircleIsland_R", 2);
+            OLED_ShowNum(0, 4, speed_case_3, 3, 2);
+            break;
+        }
+        case 4:
+        {
+            OLED_ShowStr(0, 1, "CrossLoop_R", 2);
+            OLED_ShowNum(0, 4, speed_case_4, 3, 2);
+            break;
+        }
+        case 5:
+        {
+            OLED_ShowStr(0, 1, "CircleIsland_L", 2);
+            OLED_ShowNum(0, 4, speed_case_5, 3, 2);
+            break;
+        }
+        case 6:
+        {
+            OLED_ShowStr(0, 1, "ForkRoad_Second", 2);
+            OLED_ShowNum(0, 4, speed_case_6, 3, 2);
+            break;
+        }
+        case 7:
+        {
+            OLED_ShowStr(0, 1, "Garage_In", 2);
+            OLED_ShowNum(0, 4, speed_case_7, 3, 2);
+            break;
+        }
+    }
+}
+
+/*
+ ** 函数功能: 按键分段速度调参
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void KeySpeed(void)
+{
+    uint8 key_num=0;
+    SpeedParameterDisplay(key_num);
+    while(1)
+    {
+        switch(KeyScan())
+        {
+            case KEY_UP:    //增大参数值
+            {
+                switch(key_num)
+                {
+                    case 0: base_speed+=5;  break;
+                    case 1: speed_case_1+=5;break;
+                    case 2: speed_case_2+=5;break;
+                    case 3: speed_case_3+=5;break;
+                    case 4: speed_case_4+=5;break;
+                    case 5: speed_case_5+=5;break;
+                    case 6: speed_case_6+=5;break;
+                    case 7: speed_case_7+=5;break;
+                }
+                SpeedParameterDisplay(key_num);
+                break;
+            }
+            case KEY_DOWN:  //减小参数值
+            {
+                switch(key_num)
+                {
+                    case 0: base_speed-=5;  break;
+                    case 1: speed_case_1-=5;break;
+                    case 2: speed_case_2-=5;break;
+                    case 3: speed_case_3-=5;break;
+                    case 4: speed_case_4-=5;break;
+                    case 5: speed_case_5-=5;break;
+                    case 6: speed_case_6-=5;break;
+                    case 7: speed_case_7-=5;break;
+                }
+                SpeedParameterDisplay(key_num);
+                break;
+            }
+            case KEY_LEFT:  //向后切换参数
+            {
+                if(key_num>0)
+                {
+                    key_num--;
+                }
+                SpeedParameterDisplay(key_num);
+                break;
+            }
+            case KEY_RIGHT: //向前切换参数
+            {
+                if(key_num<7)
+                {
+                    key_num++;
+                }
+                SpeedParameterDisplay(key_num);
+                break;
+            }
+            case KEY_ENTER: //退出调参
+            {
+
+                return;
+            }
+        }
+        systick_delay_ms(STM0,100);
+    }
+}

@@ -34,5 +34,6 @@ void KeyPID(void);
 void KeyProcess(void);
 void KeyImage(void);
 void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Point InflectionR);
+void KeySpeed(void);
 
 #endif /* CODE_KEY_H_ */

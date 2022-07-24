@@ -53,7 +53,9 @@ void core1_main(void)
 
 #if !IMAGE_KEY_DEBUG
     //按键调参
-    KeyProcess();
+//    KeyProcess();
+//    KeyPID();
+    KeySpeed();
     systick_delay_ms(STM0,3000);    //预留拔键盘时间
     //开启驱动
     if(encoder_distance>0)
