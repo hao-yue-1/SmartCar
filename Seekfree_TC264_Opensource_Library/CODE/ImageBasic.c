@@ -5,7 +5,8 @@
 #include "LED.h"
 #include "zf_gpio.h"
 
-#define FINE_RIGHT_ANGLE_INFLECTION_DEBUG   1   //遍历图像黑白跳变找直角拐点预编译的宏定义1：开启 0：关闭
+#define FINE_RIGHT_ANGLE_INFLECTION_DEBUG   0   //遍历图像黑白跳变找直角拐点预编译的宏定义1：开启 0：关闭
+#define BASIC_GARAGE    10
 
 //变量定义
 uint8 Mid=MT9V03X_W/2;                        //初始化扫线的中点为图像中点
@@ -421,52 +422,7 @@ void MeasureWidth(int startline,int endline)
     for(row=startline;row>endline;row--)
     {
         width=RightLine[row]-LeftLine[row];
-        printf("%d\r\n",width);//测到赛道宽度与行的函数关系为y=135-(119-nowline)*1.1
-    }
-}
-
-/*---------------------------------------------------------------
- 【函    数】Bin_Image_Filter
- 【功    能】过滤噪点
- 【参    数】无
- 【返 回 值】无
- 【注意事项】
- ----------------------------------------------------------------*/
-void Bin_Image_Filter(void)
-{
-    for (int nr=1; nr < MT9V03X_H-1; nr++)
-    {
-        for (int nc=1; nc < MT9V03X_W-1; nc++)
-        {
-            if ((BinaryImage[nr][nc] == IMAGE_BLACK)
-                    &&(BinaryImage[nr-1][nc]+BinaryImage[nr+1][nc]+BinaryImage[nr][nc+1]+BinaryImage[nr][nc-1]>510))
-            {
-                BinaryImage[nr][nc] = IMAGE_WHITE;
-            }
-            else if ((BinaryImage[nr][nc] == IMAGE_WHITE)
-                    && (BinaryImage[nr-1][nc]+BinaryImage[nr+1][nc]+BinaryImage[nr][nc+1]+BinaryImage[nr][nc-1]<510))
-            {
-                BinaryImage[nr][nc] = IMAGE_BLACK;
-            }
-        }
-    }
-}
-
-/************************************************************************
- ** 函数功能: 测量赛道宽度函数
- ** 参    数: int startline:要测量的起始行
- **           int endline:要测量的结束行
- ** 返 回 值: 无
- ** 说    明: 用于赛前测试使用，赛道宽度可以给拐弯的时候单边巡线
- ** 作    者: LJF
- ***********************************************************************/
-void MeasureWidth(int startline,int endline)
-{
-    int row=0,width=0;
-    for(row=startline;row>endline;row--)
-    {
-        width=RightLine[row]-LeftLine[row];
-        printf("%d\r\n",width);//测到赛道宽度与行的函数关系为y=135-(119-nowline)*1.1
+//        printf("%d\r\n",width);//测到赛道宽度与行的函数关系为y=135-(119-nowline)*1.1
     }
 }
 
@@ -521,9 +477,9 @@ void GetImagBasic_Garage(int *LeftLine, int *CentreLine, int *RightLine ,char pa
                         {
                             black_num=0;
                         }
-                        if(black_num>=10)   //连续扫到十个黑点
+                        if(black_num>=BASIC_GARAGE)   //连续扫到十个黑点
                         {
-                            LeftLine[row]=cloum+10;   //记录左边界点
+                            LeftLine[row]=cloum+BASIC_GARAGE;   //记录左边界点
                             flag_l=1;              //flag做无丢线标记
                             black_num=0;
                             break;
@@ -554,9 +510,9 @@ void GetImagBasic_Garage(int *LeftLine, int *CentreLine, int *RightLine ,char pa
                             {
                                 black_num=0;
                             }
-                            if(black_num>=10)   //连续扫到十个黑点
+                            if(black_num>=BASIC_GARAGE)   //连续扫到十个黑点
                             {
-                                RightLine[row]=cloum-10;   //记录右边界点
+                                RightLine[row]=cloum-BASIC_GARAGE;   //记录右边界点
                                 flag_r=1;               //flag做无丢线标记
                                 black_num=0;
                                 break;
@@ -594,9 +550,9 @@ void GetImagBasic_Garage(int *LeftLine, int *CentreLine, int *RightLine ,char pa
                         {
                             black_num=0;
                         }
-                        if(black_num>=10)
+                        if(black_num>=BASIC_GARAGE)
                         {
-                            RightLine[row]=cloum-10;   //记录左边界点
+                            RightLine[row]=cloum-BASIC_GARAGE;   //记录左边界点
                             flag_r=1;               //flag做无丢线标记
                             black_num=0;
                             break;
@@ -630,9 +586,9 @@ void GetImagBasic_Garage(int *LeftLine, int *CentreLine, int *RightLine ,char pa
                             {
                                 black_num=0;
                             }
-                            if(black_num>=10)
+                            if(black_num>=BASIC_GARAGE)
                             {
-                                LeftLine[row]=cloum-10;    //记录左边界点
+                                LeftLine[row]=cloum-BASIC_GARAGE;    //记录左边界点
                                 flag_l=1;               //flag做无丢线标记
                                 black_num=0;
                                 break;
@@ -658,9 +614,9 @@ void GetImagBasic_Garage(int *LeftLine, int *CentreLine, int *RightLine ,char pa
                 {
                     black_num=0;
                 }
-                if(black_num>=10)
+                if(black_num>=BASIC_GARAGE)
                 {
-                    LeftLine[row]=cloum+10;    //记录左边界点
+                    LeftLine[row]=cloum+BASIC_GARAGE;    //记录左边界点
                     flag_l=1;               //flag做无丢线标记
                     black_num=0;
                     break;
@@ -678,9 +634,9 @@ void GetImagBasic_Garage(int *LeftLine, int *CentreLine, int *RightLine ,char pa
                 {
                     black_num=0;
                 }
-                if(black_num>=10)
+                if(black_num>=BASIC_GARAGE)
                 {
-                    RightLine[row]=cloum-10;   //记录右边界点
+                    RightLine[row]=cloum-BASIC_GARAGE;   //记录右边界点
                     flag_r=1;               //flag做无丢线标记
                     black_num=0;
                     break;
