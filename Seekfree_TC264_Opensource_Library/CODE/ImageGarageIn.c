@@ -275,7 +275,6 @@ uint8 GarageInIdentify(void)
             GarageInBegin();        //优先补线
             if(flag_in==1&&encoder_dis_flag==1&&icm_angle_z_flag==1) //积分、测距完成
             {
-                gpio_set(LED_GREEN, 0);
                 flag=2;
             }
             else if(flag_in==0)
@@ -283,7 +282,6 @@ uint8 GarageInIdentify(void)
                 EncoderDistance(1, 0.3, 0, 0);  //开启编码器测距，避免提早打死压角
                 StartIntegralAngle_Z(20);       //开启陀螺仪积分，避免提早识别入库
                 flag_in=1;
-                gpio_set(LED_YELLOW, 0);
             }
             break;
         }

@@ -658,7 +658,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
 #if FORK_LED_DEBUG
                 gpio_set(LED_YELLOW, 1);
 #endif
-                base_speed+=10;
+                base_speed+=20;
                 StatusChange=2;
             }
             break;
@@ -685,7 +685,7 @@ uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *For
 #if FORK_LED_DEBUG
                     gpio_set(LED_BLUE, 1);
 #endif
-                    base_speed-=10;
+                    base_speed-=20;
                     StartIntegralAngle_Z(30);//陀螺仪开启积分准备出三岔
                     StatusChange=3;
                 }

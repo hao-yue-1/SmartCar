@@ -114,6 +114,7 @@ void PIDParameterDisplay(uint8 key_num)
 void KeyPID(void)
 {
     uint8 key_num=0;
+    PIDParameterDisplay(key_num);
     while(1)
     {
         switch(KeyScan())
@@ -231,7 +232,7 @@ void KeyProcess(void)
                 switch(key_num)
                 {
                     case 0: if(process_flag<7)process_flag++;break;
-                    case 1: base_speed+=5;          break;
+                    case 1: base_speed+=10;          break;
                     case 2: encoder_distance+=1;    break;
                 }
                 ProcessParameterDisplay(key_num);
@@ -242,7 +243,7 @@ void KeyProcess(void)
                 switch(key_num)
                 {
                     case 0: if(process_flag>0)process_flag--;break;
-                    case 1: base_speed-=5;          break;
+                    case 1: base_speed-=10;          break;
                     case 2: encoder_distance-=1;    break;
                 }
                 ProcessParameterDisplay(key_num);

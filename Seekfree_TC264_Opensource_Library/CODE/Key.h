@@ -25,7 +25,7 @@
 #define KEY_ENTER   5   //确认
 
 
-#define IMAGE_KEY_DEBUG 0   //是否开启按键调参
+#define IMAGE_KEY_DEBUG 0   //是否开启按键调参（调试模式）
 extern uint8 key_num_1,key_num_2;
 
 void KeyInit(void);

@@ -15,13 +15,13 @@
 #include "ICM20602.h"
 #include "Key.h"
 
-#define STATE_LED_DEBUG 0
+#define STATE_LED_DEBUG 0   //使用主控板LED进行Debug
 
 uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
 uint8 Circle_flag=0;            //环内寻迹标志变量
-uint8 speed_case_1=200,speed_case_2=220,speed_case_3=200,speed_case_4=200,speed_case_5=200,speed_case_6=200,speed_case_7=200;
+uint8 speed_case_1=220,speed_case_2=240,speed_case_3=220,speed_case_4=220,speed_case_5=220,speed_case_6=220,speed_case_7=200;
 uint32 SobelResult=0;
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 uint8 process_flag=0;   //状态机跳转标志
@@ -40,11 +40,11 @@ void ImageProcess()
     Point InflectionL,InflectionR;     //左右下拐点
     InflectionL.X=0;InflectionL.Y=0;InflectionR.X=0;InflectionR.Y=0;
     /*****************************扫线*****************************/
-    if(process_flag==1)
+    if(process_flag==1||process_flag==0)    //采用车库专属扫线方案，忽视斑马线影响
     {
         GetImagBasic_Garage(LeftLine, CentreLine, RightLine, 'L');
     }
-    else
+    else    //正常扫线
     {
         GetImagBasic(LeftLine, CentreLine, RightLine, 'L');
     }
@@ -61,12 +61,12 @@ void ImageProcess()
         case 0: //识别左十字回环
         {
 #if STATE_LED_DEBUG
-            gpio_set(LED_RED, 0);
+            gpio_set(LED_WHITE, 1);
 #endif
             if(CrossLoopIdentify_L(LeftLine, RightLine, InflectionL, InflectionR)==1)
             {
 #if STATE_LED_DEBUG
-                gpio_set(LED_RED, 1);
+                gpio_set(LED_WHITE, 0);
 #endif
                 base_speed=speed_case_1;
                 process_flag=1;
@@ -75,15 +75,27 @@ void ImageProcess()
         }
         case 1: //识别右车库，直行
         {
-#if STATE_LED_DEBUG
-            gpio_set(LED_YELLOW, 0);
-#endif
-            if(RNINGarageStatusIdentify(InflectionL, InflectionR, &Garage_flag)==1)
+//#if STATE_LED_DEBUG
+//            gpio_set(LED_WHITE, 1);
+//#endif
+//            if(RNINGarageStatusIdentify(InflectionL, InflectionR, &Garage_flag)==1)
+//            {
+//#if STATE_LED_DEBUG
+//                gpio_set(LED_WHITE, 0);
+//#endif
+//                EncoderDistance(1, 1.6, 0, 0);//此处为跑普通赛道，防止三岔误判
+//                encoder_flag=1;
+//                base_speed=speed_case_2;
+//                process_flag=2;
+            //不处理
+            if(encoder_flag==0)
             {
-#if STATE_LED_DEBUG
-                gpio_set(LED_YELLOW, 1);
-#endif
-                EncoderDistance(1, 1.6, 0, 0);//此处为跑普通赛道，防止三岔误判
+                EncoderDistance(1, 0.7, 0, 0);
+                encoder_flag=1;
+            }
+            if(encoder_dis_flag==1)
+            {
+                EncoderDistance(1, 1.6, 0, 0);
                 encoder_flag=1;
                 base_speed=speed_case_2;
                 process_flag=2;
@@ -101,12 +113,12 @@ void ImageProcess()
                 break;
             }
 #if STATE_LED_DEBUG
-                    gpio_set(LED_WHITE, 0);
+            gpio_set(LED_WHITE, 1);
 #endif
             if(ForkFStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
 #if STATE_LED_DEBUG
-                gpio_set(LED_WHITE, 1);
+                gpio_set(LED_WHITE, 0);
 #endif
                 base_speed=speed_case_3;
                 process_flag=3;
@@ -116,12 +128,12 @@ void ImageProcess()
         case 3: //识别右环岛
         {
 #if STATE_LED_DEBUG
-            gpio_set(LED_BLUE, 0);
+            gpio_set(LED_WHITE, 1);
 #endif
             if(CircleIslandIdentify_R(RightLine, InflectionR)==1)
             {
 #if STATE_LED_DEBUG
-                gpio_set(LED_BLUE, 1);
+                gpio_set(LED_WHITE, 0);
 #endif
                 base_speed=speed_case_4;
                 process_flag=4;
@@ -131,12 +143,12 @@ void ImageProcess()
         case 4: //识别右十字回环
         {
 #if STATE_LED_DEBUG
-                gpio_set(LED_GREEN, 0);
+            gpio_set(LED_WHITE, 1);
 #endif
             if(CrossLoopIdentify_R(LeftLine, RightLine, InflectionL, InflectionR)==1)
             {
 #if STATE_LED_DEBUG
-                gpio_set(LED_GREEN, 1);
+                gpio_set(LED_WHITE, 0);
 #endif
                 base_speed=speed_case_5;
                 process_flag=5;
@@ -146,12 +158,12 @@ void ImageProcess()
         case 5: //识别左环岛
         {
 #if STATE_LED_DEBUG
-            gpio_set(LED_RED, 0);
+            gpio_set(LED_WHITE, 1);
 #endif
             if(CircleIslandIdentify_L(LeftLine, InflectionL)==1)
             {
 #if STATE_LED_DEBUG
-                gpio_set(LED_RED, 1);
+                gpio_set(LED_WHITE, 0);
 #endif
                 StartIntegralAngle_Z(30);//出状态之后转了30度左右才开启三岔识别，避免状态机出错导致误判
                 icm_flag=1;
@@ -171,12 +183,12 @@ void ImageProcess()
                 break;
             }
 #if STATE_LED_DEBUG
-            gpio_set(LED_YELLOW, 0);
+            gpio_set(LED_WHITE, 1);
 #endif
             if(ForkSStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
 #if STATE_LED_DEBUG
-            gpio_set(LED_YELLOW, 1);
+                gpio_set(LED_WHITE, 0);
 #endif
                 base_speed=speed_case_7;
                 process_flag=7;
@@ -186,12 +198,12 @@ void ImageProcess()
         case 7: //识别左车库，入库
         {
 #if STATE_LED_DEBUG
-            gpio_set(LED_WHITE, 0);
+            gpio_set(LED_WHITE, 1);
 #endif
             if(GarageInIdentify()==1)
             {
 #if STATE_LED_DEBUG
-            gpio_set(LED_WHITE, 1);
+                gpio_set(LED_WHITE, 0);
 #endif
                 Stop();
             }
@@ -207,7 +219,7 @@ void ImageProcess()
     else
     {
         Bias=DifferentBias(bias_startline,bias_endline,CentreLine); //动态前瞻计算偏差
-        bias_startline=95;bias_endline=50;                          //恢复默认前瞻
+        bias_startline=90;bias_endline=50;                          //恢复默认前瞻
     }
     //LCD绘制图像
 #if 0
