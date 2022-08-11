@@ -78,9 +78,7 @@ int core0_main(void)
 
 	while (TRUE)
 	{
-#if IMAGE_KEY_DEBUG
-	    KeyImage();
-#endif
+
 	}
 }
 

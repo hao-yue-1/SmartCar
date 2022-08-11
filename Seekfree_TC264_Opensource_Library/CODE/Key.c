@@ -123,8 +123,8 @@ void KeyPID(void)
             {
                 switch(key_num)
                 {
-                    case 0:SteerK.P+=1;     break;
-                    case 1:SteerK.D+=1;     break;
+                    case 0:SteerK.P+=0.25;     break;
+                    case 1:SteerK.D+=0.5;     break;
                     case 2:MotorK_L.P+=10;   break;
                     case 3:MotorK_L.I+=0.1;   break;
                     case 4:MotorK_R.P+=1;   break;
@@ -137,8 +137,8 @@ void KeyPID(void)
             {
                 switch(key_num)
                 {
-                    case 0:SteerK.P-=1;     break;
-                    case 1:SteerK.D-=1;     break;
+                    case 0:SteerK.P-=0.25;     break;
+                    case 1:SteerK.D-=0.5;     break;
                     case 2:MotorK_L.P-=10;   break;
                     case 3:MotorK_L.I-=0.1;   break;
                     case 4:MotorK_R.P-=10;   break;
