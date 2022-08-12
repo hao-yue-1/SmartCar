@@ -22,7 +22,7 @@ MotorPID MotorK_L,MotorK_R; //电机PID参数
  *********************************************************************************************/
 void PID_init(SteerPID *SteerK,MotorPID *MotorK_L,MotorPID *MotorK_R)
 {
-    SteerK->P=15.25;SteerK->I=0;SteerK->D=30;           //初始化舵机的PID参数   //校赛参数19.25 5   //华南赛参数14.25 30
+    SteerK->P=16.25;SteerK->I=0;SteerK->D=37.5;           //初始化舵机的PID参数   //校赛参数19.25 5   //华南赛参数14.25 30
     MotorK_L->P=180;MotorK_L->I=0.45;MotorK_L->D=0;     //初始化电机的PID参数   //校赛参数80 0.5    //华南赛参数180 0.45
     MotorK_R->P=180;MotorK_R->I=0.45;MotorK_R->D=0;     //初始化电机的PID参数   //校赛参数80 0.5    //华南赛参数180 0.45
 }
