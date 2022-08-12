@@ -21,7 +21,7 @@ uint8 bias_startline=95,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
 uint8 Circle_flag=0;            //环内寻迹标志变量
-uint8 speed_case_1=220,speed_case_2=240,speed_case_3=220,speed_case_4=220,speed_case_5=220,speed_case_6=220,speed_case_7=200;
+int16 speed_case_1=220,speed_case_2=240,speed_case_3=220,speed_case_4=220,speed_case_5=220,speed_case_6=220,speed_case_7=200;
 uint32 SobelResult=0;
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 uint8 process_flag=2;   //状态机跳转标志

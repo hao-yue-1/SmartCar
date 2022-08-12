@@ -17,7 +17,7 @@ extern uint8 CrossRoads_flag;        //十字标志变量
 extern uint8 Fork_flag;              //三岔识别的标志变量
 extern uint8 Circle_flag;
 extern uint8 Garage_flag;
-extern uint8 speed_case_1,speed_case_2,speed_case_3,speed_case_4,speed_case_5,speed_case_6,speed_case_7;
+extern int16 speed_case_1,speed_case_2,speed_case_3,speed_case_4,speed_case_5,speed_case_6,speed_case_7;
 extern uint8 bias_startline,bias_endline;        //动态前瞻
 extern uint8 process_flag;
 
