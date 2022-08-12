@@ -27,7 +27,7 @@ uint8   zebre_column=0;
 #define FastABS(x) (x > 0 ? x : x * -1.0f)
 #define BinaryImage(i, j)    BinaryImage[i][j]
 //找拐点函数的debug
-#define SEEDGROWFINDVALLEY_DEBUG 1         //种子生长找谷底是否开启DEBUG
+#define SEEDGROWFINDVALLEY_DEBUG 0         //种子生长找谷底是否开启DEBUG
 #define SEEDGROWFINDPEAK_DEBUG  0
 //左车库
 #define ZebraTresholeL 1200  //索贝尔测试的阈值
@@ -652,10 +652,10 @@ uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
 {
     //判断左线的宽度是否超过阈值，超过就不处理，否则补线
 //    lcd_showuint8(0, 0, LeftLine[100]);
-    if(LeftLine[100]>45)
-    {
-        return 0;//不需要处理
-    }
+//    if(LeftLine[100]>45)
+//    {
+//        return 0;//不需要处理
+//    }
     //确定好找山边种子的遍历点
     if(InflectionR.X==0)//拐点不存在
     {
@@ -709,7 +709,7 @@ uint8 RNINGarageIdentify(Point InflectionL,Point InflectionR)
     //上面找到了谷边点，开始爬谷
     if(ValleySeed.X!=0 && ValleySeed.Y!=0)
     {
-        SeedGrowFindValley_Garage('R', ValleySeed, InflectionR.Y-20, &UpInflection, 100);
+        SeedGrowFindValley_Garage('R', ValleySeed, 100, &UpInflection, 100);
     }
 //    LcdDrawPoint_V2(UpInflection.Y, UpInflection.X, PINK);
     //找到拐点就补线
