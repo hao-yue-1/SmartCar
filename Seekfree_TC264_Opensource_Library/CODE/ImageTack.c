@@ -265,10 +265,10 @@ float DifferentBias_Circle(uint8 startline,uint8 endline,int *CentreLine)
     {
         bias=bias*0.1;
     }
-    else if(bias<-3||bias>3)
-    {
-        bias=bias*1.5;
-    }
+//    else if(bias<-3||bias>3)
+//    {
+//        bias=bias*1.5;
+//    }
 
     if(bias==bias)  //bias是真值
     {
@@ -303,10 +303,10 @@ float DifferentBias_Garage(int startline,int endline,int *CentreLine)
     {
         bias=bias*0.1;
     }
-    else if(bias<-3||bias>3)
-    {
-        bias=bias*1.5;
-    }
+//    else if(bias<-3||bias>3)
+//    {
+//        bias=bias*1.5;
+//    }
 
     if(bias==bias)  //bias是真值
     {

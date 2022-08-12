@@ -162,7 +162,7 @@ void ImageProcess()
     }
     else
     {
-        Bias=DifferentBias(bias_startline,bias_endline,CentreLine); //¶¯Ì¬Ç°Õ°¼ÆËãÆ«²î
+        Bias=DifferentBias_Circle(bias_startline,bias_endline,CentreLine); //¶¯Ì¬Ç°Õ°¼ÆËãÆ«²î
         bias_startline=70;bias_endline=50;                          //»Ö¸´Ä¬ÈÏÇ°Õ°
     }
     //LCD»æÖÆÍ¼Ïñ
