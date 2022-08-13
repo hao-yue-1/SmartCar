@@ -17,7 +17,7 @@
 
 #define STATE_LED_DEBUG 0   //使用主控板LED进行Debug
 
-uint8 bias_startline=95,bias_endline=50;        //动态前瞻
+uint8 bias_startline=70,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
 uint8 Circle_flag=0;            //环内寻迹标志变量
@@ -51,9 +51,8 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-
     /****************************状态机***************************/
-#if 0
+#if 1
     switch(process_flag)
     {
         case 0: //识别左十字回环
@@ -94,6 +93,8 @@ void ImageProcess()
             }
             if(ForkFStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
+                gpio_toggle(LED_GREEN);
+                Stop();
                 base_speed=speed_case_3;
                 process_flag=3;
             }
@@ -156,9 +157,9 @@ void ImageProcess()
     }
 #endif
     /***************************偏差计算**************************/
-    if(Fork_flag!=0||Garage_flag!=0||Circle_flag!=0)    //在识别函数里面已经计算了Bias
+    if(Garage_flag!=0||Circle_flag!=0)    //在识别函数里面已经计算了Bias
     {
-        Garage_flag=0;Fork_flag=0;Circle_flag=0;      //重置flag
+        Garage_flag=0;Circle_flag=0;      //重置flag
     }
     else
     {
