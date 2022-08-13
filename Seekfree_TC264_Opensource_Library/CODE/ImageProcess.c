@@ -24,7 +24,7 @@ uint8 Circle_flag=0;            //环内寻迹标志变量
 int16 speed_case_1=220,speed_case_2=240,speed_case_3=220,speed_case_4=220,speed_case_5=220,speed_case_6=220,speed_case_7=200;
 uint32 SobelResult=0;
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
-uint8 process_flag=2;   //状态机跳转标志
+uint8 process_flag=3;   //状态机跳转标志
 
 /********************************************************************************************
  ** 函数功能: 对图像的各个元素之间的逻辑处理函数，最终目的是为了得出Bias给中断去控制
@@ -155,9 +155,9 @@ void ImageProcess()
     }
 #endif
     /***************************偏差计算**************************/
-    if(Garage_flag!=0||Circle_flag!=0)    //在识别函数里面已经计算了Bias
+    if(Garage_flag!=0)  //在识别函数里面已经计算了Bias
     {
-        Garage_flag=0;Circle_flag=0;      //重置flag
+        Garage_flag=0;  //重置flag
     }
     else
     {
