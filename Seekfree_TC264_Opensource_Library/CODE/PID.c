@@ -9,6 +9,7 @@
 #include "Filter.h" //滤波算法
 #include "Steer.h"  //舵机
 #include "Motor.h"  //电机
+#include "SEEKFREE_18TFT.h"
 
 SteerPID SteerK;            //舵机PID参数
 MotorPID MotorK_L,MotorK_R; //电机PID参数
@@ -22,7 +23,7 @@ MotorPID MotorK_L,MotorK_R; //电机PID参数
  *********************************************************************************************/
 void PID_init(SteerPID *SteerK,MotorPID *MotorK_L,MotorPID *MotorK_R)
 {
-    SteerK->P=16.25;SteerK->I=0;SteerK->D=37.5;           //初始化舵机的PID参数   //校赛参数19.25 5   //华南赛参数14.25 30
+    SteerK->P=16.25;SteerK->I=0;SteerK->D=37.5;         //初始化舵机的PID参数   //校赛参数19.25 5   //华南赛参数14.25 30
     MotorK_L->P=180;MotorK_L->I=0.45;MotorK_L->D=0;     //初始化电机的PID参数   //校赛参数80 0.5    //华南赛参数180 0.45
     MotorK_R->P=180;MotorK_R->I=0.45;MotorK_R->D=0;     //初始化电机的PID参数   //校赛参数80 0.5    //华南赛参数180 0.45
 }
@@ -39,13 +40,21 @@ void PID_init(SteerPID *SteerK,MotorPID *MotorK_L,MotorPID *MotorK_R)
  **           Bias的正负是这里处理还是传进来之前，这个问题跟第一个问题有关联？
  ********************************************************************************************
  */
-uint32 Steer_Position_PID(float SlopeBias,SteerPID K)//舵机位置式PID控制，采用分段式PID控制
+uint32 Steer_Position_PID(float bias,float slope,SteerPID K)
 {
-    static float LastSlopeBias;
+    static float last_bias_slope;
+    float bias_slope=0;
     int PWM;
-    PWM=(int)(K.P*SlopeBias+K.D*(SlopeBias-LastSlopeBias));
-    LastSlopeBias=FirstOrderLagFilter(SlopeBias);   //一阶低通滤波
-    return STEER_MID+PWM;//假设斜率的范围为[-5,5]，而舵机打角PWM的范围为[850,680]，减去中值之后就能映射到[-85,85]，于此对应，所以返回值应该负号再加中值，KP先猜测为17
+    //数据融合
+    slope=FirstOrderLagFilter_Slope(slope); //对斜率低通滤波
+    bias_slope=BIAS_SLOPE_P*bias+(1-BIAS_SLOPE_P)*(3*slope);
+//    printf("%f,%f\n",bias,slope);
+    //PID计算
+    PWM=(int)(K.P*bias_slope+K.D*(bias_slope-last_bias_slope));
+    //保存上一次偏差
+    last_bias_slope=FirstOrderLagFilter(bias_slope);   //对上一次的偏差低通滤波
+
+    return STEER_MID+PWM;
 }
 
 /*
@@ -63,13 +72,11 @@ uint32 Steer_Position_PID(float SlopeBias,SteerPID K)//舵机位置式PID控制，采用分
  */
 int Speed_PI_Left(int16 left_encoder,int16 left_target,MotorPID K)
 {
-    static int Bias,Last_Bias,PWM,Last_2_Bias;
+    static int bias,last_bias,PWM;
 
-    Bias=left_target-left_encoder;              //求出当前偏差
-    PWM+=(int)(K.P*(Bias-Last_Bias)+K.I*Bias+K.D*(Bias-2*Last_Bias+Last_2_Bias));  //增量式PID，并把结果直接叠加在上一次的PWM上
-
-    Last_2_Bias=Last_Bias;    //保存上一次偏差
-    Last_Bias=Bias;           //保存这一次偏差
+    bias=left_target-left_encoder;              //求出当前偏差
+    PWM+=(int)(K.P*(bias-last_bias)+K.I*bias);  //增量式PID，并把结果直接叠加在上一次的PWM上
+    last_bias=bias;           //保存这一次偏差
 
     //PID输出限幅，防止由于电机和PID工作不同步导致电机超调烧毁的问题
     //注意：对PID输出限幅后会导致响应变慢
@@ -100,13 +107,11 @@ int Speed_PI_Left(int16 left_encoder,int16 left_target,MotorPID K)
  */
 int Speed_PI_Right(int16 right_encoder,int16 right_target,MotorPID K)
 {
-    static int Bias,Last_Bias,PWM,Last_2_Bias;
+    static int bias,last_bias,PWM;
 
-    Bias=right_target-right_encoder;              //求出当前偏差
-    PWM+=(int)(K.P*(Bias-Last_Bias)+K.I*Bias+K.D*(Bias-2*Last_Bias+Last_2_Bias));  //增量式PID，并把结果直接叠加在上一次的PWM上
-
-    Last_2_Bias=Last_Bias;    //保存上一次偏差
-    Last_Bias=Bias;           //保存这一次偏差
+    bias=right_target-right_encoder;              //求出当前偏差
+    PWM+=(int)(K.P*(bias-last_bias)+K.I*bias);  //增量式PID，并把结果直接叠加在上一次的PWM上
+    last_bias=bias;           //保存这一次偏差
 
     //PID输出限幅，防止由于电机和PID工作不同步导致电机超调烧毁的问题
     //注意：对PID输出限幅后会导致响应变慢

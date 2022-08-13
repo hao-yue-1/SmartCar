@@ -77,7 +77,7 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 	enableInterrupts();//开启中断嵌套
 
 	//舵机PID控制
-    SteerPWM=Steer_Position_PID(Bias,SteerK);
+    SteerPWM=Steer_Position_PID(Bias,Slope,SteerK);
     SteerCtrl(SteerPWM);
 
 //    printf("%f,%d\n",Bias,SteerPWM);  //调参

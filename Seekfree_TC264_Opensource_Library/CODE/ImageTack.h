@@ -13,6 +13,7 @@
 #include "ImageBasic.h"         //获取图像基本处理之后的数据
 
 extern float Bias;  //偏差
+extern float Slope; //斜率
 
 float Regression_Slope(int startline,int endline,int *CentreLine);//求中线数组点拟合出来的回归方程
 void FillingLine(char Choose, Point StarPoint,Point EndPoint);//根据两点进行补线

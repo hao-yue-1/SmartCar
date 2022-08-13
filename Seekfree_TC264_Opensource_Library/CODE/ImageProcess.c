@@ -163,6 +163,7 @@ void ImageProcess()
     else
     {
         Bias=DifferentBias_Circle(bias_startline,bias_endline,CentreLine); //动态前瞻计算偏差
+        Slope=Regression_Slope(bias_startline,bias_endline,CentreLine);    //动态前瞻计算斜率
         bias_startline=70;bias_endline=50;                          //恢复默认前瞻
     }
     //LCD绘制图像
@@ -172,7 +173,6 @@ void ImageProcess()
         lcd_drawpoint(i, bias_startline, YELLOW);
         lcd_drawpoint(i, bias_endline, YELLOW);
     }
-    lcd_showfloat(0, 1, Bias, 1, 2);
 #endif
 }
 

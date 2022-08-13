@@ -35,7 +35,7 @@
 
 uint8 outgarage_flag=0;     //出库的flag
 uint8 key_flag=0;           //按键调参的flag
-int16 base_speed=230;       //基础速度
+int16 base_speed=260;       //基础速度
 float encoder_distance=9;   //编码器测距
 
 void core1_main(void)
@@ -52,7 +52,8 @@ void core1_main(void)
     enableInterrupts();
 
     //按键调参
-    KeySpeed();     //分段设置速度
+    KeyProcess();
+//    KeySpeed();     //分段设置速度
     systick_delay_ms(STM0,500);
     KeyPID();
     systick_delay_ms(STM0,3000);    //预留拔键盘时间

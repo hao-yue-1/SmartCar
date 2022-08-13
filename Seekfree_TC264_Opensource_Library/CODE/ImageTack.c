@@ -13,6 +13,7 @@
 
 //变量定义
 float Bias=0;       //偏差
+float Slope=0;      //斜率
 
 /*
  *******************************************************************************************
@@ -31,38 +32,53 @@ float Bias=0;       //偏差
 float Regression_Slope(int startline,int endline,int *CentreLine)
 {
     //Y=BX+A
+    static float Last_Bias;//上一次的偏差用于前瞻在黑色区域的时候继承上一次的偏差
     int i=0,SumX=0,SumY=0,SumLines=0;
     float SumUp=0,SumDown=0,avrX=0,avrY=0,Bias=0;
-    SumLines=startline-endline;   // startline 为开始行， //endline 结束行 //SumLines
 
     for(i=startline;i>endline;i--)
     {
-        SumX += i;
-        SumY += CentreLine[i];
-//        SumY-=i;                      //Y行数进行求和
-//        SumX+=CentreLine[i];         //X列数进行求和
+        if(BinaryImage[i][CentreLine[i]]==IMAGE_BLACK)  //中线在赛道外的情况，跳出累积
+        {
+            endline=i;
+            break;
+        }
+        else if(abs(CentreLine[i]-CentreLine[i+1])>MT9V03X_W/3)  //中线发生突变，跳出累积
+        {
+            endline=i;
+            break;
+        }
+        else
+        {
+            SumX += i;
+            SumY += CentreLine[i];
+        }
     }
+    SumLines=startline-endline;   // startline 为开始行， //endline 结束行 //SumLines
+    //特殊判断：判断一下是否大部分前瞻是在赛道外了，如果是的话那么就集成为上次的偏差
+    if(SumLines<=5)  return Last_Bias;
+
     avrX=(float)(SumX/SumLines);     //X的平均值
     avrY=(float)(SumY/SumLines);     //Y的平均值
 
     for(i=startline;i>endline;i--)
     {
-        SumUp+=(CentreLine[i]-avrY)*(i-avrY);//分子
+        SumUp+=(CentreLine[i]-avrY)*(i-avrX);//分子
         SumDown+=(i-avrX)*(i-avrX);//分母
-//        SumUp+=(CentreLine[i]-avrX)*(-i-avrY);//分子
-//        SumDown+=(CentreLine[i]-avrX)*(CentreLine[i]-avrX);//分母
     }
     if(SumDown==0)
         Bias=0;
     else
         Bias=SumUp/SumDown;
-//    if(SumUp==0)//分子为0时即直线与x轴平行，所以此时Bias的分母为0需要做处理
-//        Bias=57.3;//tan89°为57.2899
-//    else
-//        //B=(int)(SumUp/SumDown);斜率
-//        Bias=SumDown/SumUp;//我们要的是与Y轴的夹角所以是斜率的倒数正负代表方向
-//    //A=(SumY-B*SumX)/SumLines;  //截距
-    return Bias;
+    if(Bias==Bias)  //bias是真值
+    {
+        Last_Bias=Bias;
+        return Bias;
+    }
+    else
+    {
+        return Last_Bias;   //计算错误，忽略此次计算，返回上一次的值
+    }
 }
 
 
@@ -261,10 +277,10 @@ float DifferentBias_Circle(uint8 startline,uint8 endline,int *CentreLine)
     }
     bias=bias/rownum/10;   //求偏差均值
 
-    if(bias<0.5&&bias>-0.5) //分段加权
-    {
-        bias=bias*0.1;
-    }
+//    if(bias<0.5&&bias>-0.5) //分段加权
+//    {
+//        bias=bias*0.1;
+//    }
 //    else if(bias<-3||bias>3)
 //    {
 //        bias=bias*1.5;
