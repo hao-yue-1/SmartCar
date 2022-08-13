@@ -321,19 +321,18 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
                     FillingLine('R',UpInflectionC,LeftUpPoint);
                     UpInflectionC.Y=LeftUpPoint.Y;//为了使得补的这条折线的偏差被使用到
                 }
-//                Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//无特殊处理时的偏差计算
                 //判断Bias如何求
                 if(UpInflectionC.Y<bias_endline)//starline<endline<Up.y，则正常循迹
                 {
-                    Bias=DifferentBias(bias_startline,bias_endline,CentreLine);
+                    ;
                 }
                 else if(UpInflectionC.Y<bias_startline && bias_endline<UpInflectionC.Y)//starline<UP.y<endline,则按照起始行到上拐点
                 {
-                    Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                    bias_endline=UpInflectionC.Y;
                 }
                 else if(bias_startline<UpInflectionC.Y)//UP.y<starline<endline
                 {
-                    Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);
+                    bias_startline=DownInflectionR.Y;bias_endline=UpInflectionC.Y;
                 }
 //                gpio_toggle(LED_BLUE);
                 return 1;//三个拐点存在三岔成立：正入三岔
@@ -366,19 +365,18 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
                 FillingLine('R',UpInflectionC,LeftUpPoint);
                 UpInflectionC.Y=LeftUpPoint.Y;//为了使得补的这条折线的偏差被使用到
             }
-//            Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//无特殊处理时的偏差计算
             //判断Bias如何求
             if(UpInflectionC.Y<bias_endline)//starline<endline<Up.y，则正常循迹
             {
-                Bias=DifferentBias(bias_startline,bias_endline,CentreLine);
+                ;
             }
             else if(UpInflectionC.Y<bias_startline && bias_endline<UpInflectionC.Y)//starline<UP.y<endline,则按照起始行到上拐点
             {
-                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                bias_endline=UpInflectionC.Y;
             }
             else if(bias_startline<UpInflectionC.Y)//UP.y<starline<endline
             {
-                Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);
+                bias_startline=ImageDownPointR.Y;bias_endline=UpInflectionC.Y;
             }
 //            gpio_toggle(LED_GREEN);
             return 1;//三岔正入丢失左右拐点那一帧
@@ -402,15 +400,15 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
             //判断Bias如何求
             if(UpInflectionC.Y<bias_endline)//starline<endline<Up.y，则正常循迹
             {
-                Bias=DifferentBias(bias_startline,bias_endline,CentreLine);
+                ;
             }
             else if(UpInflectionC.Y<bias_startline && bias_endline<UpInflectionC.Y)//starline<UP.y<endline,则按照起始行到上拐点
             {
-                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                bias_endline=UpInflectionC.Y;
             }
             else if(bias_startline<UpInflectionC.Y)//UP.y<starline<endline
             {
-                Bias=DifferentBias(ImageDownPointR.Y,UpInflectionC.Y,CentreLine);
+                bias_startline=ImageDownPointR.Y;bias_endline=UpInflectionC.Y;
             }
 //            gpio_toggle(LED_RED);
             return 1;//三岔左斜入三岔
@@ -436,19 +434,18 @@ uint8 ForkIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point Down
                 FillingLine('R',UpInflectionC,LeftUpPoint);
                 UpInflectionC.Y=LeftUpPoint.Y;//为了使得补的这条折线的偏差被使用到
             }
-//            Bias=DifferentBias(bias_startline,bias_endline,CentreLine);//无特殊处理时的偏差计算
             //判断Bias如何求
             if(UpInflectionC.Y<bias_endline)//starline<endline<Up.y，则正常循迹
             {
-                Bias=DifferentBias(bias_startline,bias_endline,CentreLine);
+                ;
             }
             else if(UpInflectionC.Y<bias_startline && bias_endline<UpInflectionC.Y)//starline<UP.y<endline,则按照起始行到上拐点
             {
-                Bias=DifferentBias(bias_startline,UpInflectionC.Y,CentreLine);
+                bias_endline=UpInflectionC.Y;
             }
             else if(bias_startline<UpInflectionC.Y)//UP.y<starline<endline
             {
-                Bias=DifferentBias(DownInflectionR.Y,UpInflectionC.Y,CentreLine);
+                bias_startline=DownInflectionR.Y;bias_endline=UpInflectionC.Y;
             }
 //            gpio_toggle(LED_WHITE);
             return 1;//三岔右斜入三岔
