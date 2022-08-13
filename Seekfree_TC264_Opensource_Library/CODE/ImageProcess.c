@@ -93,8 +93,6 @@ void ImageProcess()
             }
             if(ForkFStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
-                gpio_toggle(LED_GREEN);
-                Stop();
                 base_speed=speed_case_3;
                 process_flag=3;
             }
