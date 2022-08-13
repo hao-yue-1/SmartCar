@@ -13,6 +13,7 @@
 #include "LED.h"
 #include "oled.h"           //OLED显示
 #include "ImageSpecial.h"
+#include "Steer.h"
 
 extern float encoder_distance;
 
@@ -683,6 +684,70 @@ void KeySpeed(void)
                     key_num++;
                 }
                 SpeedParameterDisplay(key_num);
+                break;
+            }
+            case KEY_ENTER: //退出调参
+            {
+
+                return;
+            }
+        }
+        systick_delay_ms(STM0,100);
+    }
+}
+
+/*
+ ** 函数功能: 按键调整舵机打角
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void KeySteer(void)
+{
+    OLED_ShowStr(0, 1, "SteerPWM", 2);
+    OLED_ShowNum(0, 4, SteerPWM, 3, 2);
+    while(1)
+    {
+        switch(KeyScan())
+        {
+            case KEY_UP:    //增大参数值
+            {
+                if(SteerPWM<STEER_LEFT)
+                {
+                    SteerPWM++;
+                }
+                OLED_ShowStr(0, 1, "SteerPWM", 2);
+                OLED_ShowNum(0, 4, SteerPWM, 3, 2);
+                break;
+            }
+            case KEY_DOWN:  //减小参数值
+            {
+                if(SteerPWM>STEER_RIGHT)
+                {
+                    SteerPWM--;
+                }
+                OLED_ShowStr(0, 1, "SteerPWM", 2);
+                OLED_ShowNum(0, 4, SteerPWM, 3, 2);
+                break;
+            }
+            case KEY_LEFT:  //向后切换参数
+            {
+                if(SteerPWM<STEER_LEFT)
+                {
+                    SteerPWM+=10;
+                }
+                OLED_ShowStr(0, 1, "SteerPWM", 2);
+                OLED_ShowNum(0, 4, SteerPWM, 3, 2);
+                break;
+            }
+            case KEY_RIGHT: //向前切换参数
+            {
+                if(SteerPWM>STEER_RIGHT)
+                {
+                    SteerPWM-=10;
+                }
+                OLED_ShowStr(0, 1, "SteerPWM", 2);
+                OLED_ShowNum(0, 4, SteerPWM, 3, 2);
                 break;
             }
             case KEY_ENTER: //退出调参
