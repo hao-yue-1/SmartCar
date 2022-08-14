@@ -732,20 +732,14 @@ void KeySteer(void)
             }
             case KEY_LEFT:  //向后切换参数
             {
-                if(SteerPWM<STEER_LEFT)
-                {
-                    SteerPWM+=10;
-                }
+                SteerPWM=STEER_LEFT;
                 OLED_ShowStr(0, 1, "SteerPWM", 2);
                 OLED_ShowNum(0, 4, SteerPWM, 3, 2);
                 break;
             }
             case KEY_RIGHT: //向前切换参数
             {
-                if(SteerPWM>STEER_RIGHT)
-                {
-                    SteerPWM-=10;
-                }
+                SteerPWM=STEER_RIGHT;
                 OLED_ShowStr(0, 1, "SteerPWM", 2);
                 OLED_ShowNum(0, 4, SteerPWM, 3, 2);
                 break;
