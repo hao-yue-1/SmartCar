@@ -82,7 +82,7 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 
 //    printf("%f,%d\n",Bias,SteerPWM);  //调参
 
-	//舵机演示
+//	//舵机演示
 //	static int16 pwm=STEER_LEFT,flag=0;
 //	if(pwm>STEER_RIGHT&&flag==0)    //右摆
 //	{
@@ -101,9 +101,9 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 //	    flag=0;
 //	}
 //	SteerCtrl(pwm);
-//	if(pwm==STEER_MID)  //暂停查看中值
+//	if(pwm==STEER_MID||pwm==STEER_LEFT||pwm==STEER_RIGHT)  //暂停查看中值
 //	{
-//	    systick_delay_ms(STM0,3000);
+//	    systick_delay_ms(STM0,1000);
 //	}
 
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH1);
