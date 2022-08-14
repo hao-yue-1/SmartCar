@@ -10,6 +10,7 @@
 #include "PID.h"
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 //变量定义
 float Bias=0;       //偏差
@@ -40,12 +41,12 @@ float Regression_Slope(int startline,int endline,int *CentreLine)
     {
         if(BinaryImage[i][CentreLine[i]]==IMAGE_BLACK)  //中线在赛道外的情况，跳出累积
         {
-            endline=i+1;
+            endline=i;
             break;
         }
         else if(abs(CentreLine[i]-CentreLine[i+1])>MT9V03X_W/3)  //中线发生突变，跳出累积
         {
-            endline=i+1;
+            endline=i;
             break;
         }
         else
