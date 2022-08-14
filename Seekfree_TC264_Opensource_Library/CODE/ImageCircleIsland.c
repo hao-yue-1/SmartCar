@@ -681,9 +681,9 @@ uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL)
                 StartIntegralAngle_Z(180);  //开启陀螺仪辅助出环
                 flag_in=1;                  //避免重复开启陀螺仪
             }
-            //环内寻迹求Bias
-            Circle_flag=1;  //标志环内寻迹
-            Bias=DifferentBias_Circle(bias_startline,bias_endline,CentreLine);
+//            //环内寻迹求Bias
+//            Circle_flag=1;  //标志环内寻迹
+//            Bias=DifferentBias_Circle(bias_startline,bias_endline,CentreLine);
             break;
         }
         case 3: //此时小车已经接近环岛出口，开始判断环岛出口
