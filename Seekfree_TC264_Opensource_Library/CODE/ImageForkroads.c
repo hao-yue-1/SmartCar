@@ -105,11 +105,11 @@ void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflec
                     return;
                 }
                 //当种子横向生长的次数大于了阈值
-                if(transversenum>SEED_L_TRANSVERSE_GROW_THRE)
-                {
-                    UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
-                    return;
-                }
+//                if(transversenum>SEED_L_TRANSVERSE_GROW_THRE)
+//                {
+//                    UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
+//                    return;
+//                }
                 break;
             case 'R':
                 if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_BLACK)
@@ -125,7 +125,7 @@ void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflec
                 else if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_WHITE && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_BLACK)
                 {
                     Seed.X--;
-                    if(transversenum!=0)//判断是否是第一次往右走
+                    if(transversenum==0)//判断是否是第一次往右走
                     {
                         tempSeed=Seed;
                     }
@@ -144,11 +144,11 @@ void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflec
                     return;
                 }
                 //当种子横向生长的次数大于了阈值
-                if(transversenum>SEED_R_TRANSVERSE_GROW_THRE)
-                {
-                    UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
-                    return;
-                }
+//                if(transversenum>SEED_R_TRANSVERSE_GROW_THRE)
+//                {
+//                    UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
+//                    return;
+//                }
                 break;
             default:break;
         }
@@ -180,6 +180,9 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
     row = (DownInflectionL.Y + DownInflectionR.Y) / 2;//起始行为左右拐点行的均值
     if(row<0) row=0;
     if(row>MT9V03X_H-1) row=MT9V03X_H-1;//避免溢出，增强程序健壮性
+    //判断一次开始的点是否为白点，否则如果开始的点为黑点，一直找白跳黑可能找到一些杂乱的地方
+    if(BinaryImage[row][UpInflectionC->X]==IMAGE_BLACK)
+        return;//如果开始点就是黑色，那么直接跳出
     for (; row > 20; row--)
     {
 #if FORK_DEBUG
@@ -249,7 +252,7 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
         //在此再次验证一次推箱子找到的拐点是不是真的拐点，防止误判
         for (cloumnL = UpInflectionC->X; cloumnL > L_FINDWHIDE_THRE; cloumnL--)
         {
-            if (BinaryImage[UpInflectionC->Y+5][cloumnL] == IMAGE_WHITE && BinaryImage[UpInflectionC->Y+5][cloumnL-3]==IMAGE_WHITE)
+            if (BinaryImage[UpInflectionC->Y][cloumnL] == IMAGE_WHITE && BinaryImage[UpInflectionC->Y][cloumnL-3]==IMAGE_WHITE)
             {
                 break;
             }
@@ -261,7 +264,7 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
         }
         for (cloumnR = UpInflectionC->X; cloumnR < R_FINDWHIDE_THRE; cloumnR++)
         {
-            if (BinaryImage[UpInflectionC->Y+5][cloumnR] == IMAGE_WHITE && BinaryImage[UpInflectionC->Y+5][cloumnR+3] == IMAGE_WHITE)
+            if (BinaryImage[UpInflectionC->Y][cloumnR] == IMAGE_WHITE && BinaryImage[UpInflectionC->Y][cloumnR+3] == IMAGE_WHITE)
             {
                 break;
             }
@@ -489,7 +492,7 @@ uint8 ForkTurnRIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point
                 {
                     bias_startline=DownInflectionR.Y;bias_endline=UpInflectionC.Y;
                 }
-//                gpio_toggle(LED_BLUE);
+                gpio_toggle(LED_BLUE);
                 return 1;//三个拐点存在三岔成立：正入三岔
             }
         }
@@ -533,7 +536,7 @@ uint8 ForkTurnRIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point
             {
                 bias_startline=ImageDownPointR.Y;bias_endline=UpInflectionC.Y;
             }
-//            gpio_toggle(LED_GREEN);
+            gpio_toggle(LED_GREEN);
             return 1;//三岔正入丢失左右拐点那一帧
         }
     }
@@ -571,7 +574,7 @@ uint8 ForkTurnRIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point
             {
                 bias_startline=ImageDownPointR.Y;bias_endline=UpInflectionC.Y;
             }
-//            gpio_toggle(LED_RED);
+            gpio_toggle(LED_RED);
             return 1;//三岔左斜入三岔
         }
     }
@@ -601,7 +604,7 @@ uint8 ForkTurnRIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point
             {
                 bias_startline=DownInflectionR.Y;bias_endline=UpInflectionC.Y;
             }
-//            gpio_toggle(LED_WHITE);
+            gpio_toggle(LED_WHITE);
             return 1;//三岔右斜入三岔
         }
     }
