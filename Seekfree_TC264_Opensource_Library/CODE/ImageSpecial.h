@@ -52,14 +52,12 @@ uint8 CircleIslandExit_R(Point InflectionR);
 uint8 CircleIslandMid_R(void);
 uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR);   //右环岛状态机
 /*十字回环相关函数*/
-uint8 CrossLoopBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
-uint8 CrossLoopOverBegin_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CrossLoopBegin_L(Point InflectionL);
 uint8 CrossLoopEnd_L(void);
-uint8 CrossLoopIdentify_L(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);    //左十字回环状态机
-uint8 CrossLoopBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
-uint8 CrossLoopOverBegin_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);
+uint8 CrossLoopIdentify_L(Point InflectionL);    //左十字回环状态机
+uint8 CrossLoopBegin_R(Point InflectionR);
 uint8 CrossLoopEnd_R(void);
-uint8 CrossLoopIdentify_R(int *LeftLine,int *RightLine,Point InflectionL,Point InflectionR);    //右十字回环状态机
+uint8 CrossLoopIdentify_R(Point InflectionR);    //右十字回环状态机
 /*三岔相关函数*/
 void ForkFindSpecialPoint(int row,int cloumn,Point *LeftUpPoint);//三岔特殊处理，防止Bias因为扫线变右使得Bias变小
 void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflectionC);//三岔种子生长生长至谷底

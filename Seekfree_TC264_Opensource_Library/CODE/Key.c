@@ -399,9 +399,8 @@ void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Poin
         {
             switch(key_num_2)
             {
-                case 0:CrossLoopBegin_L(LeftLine, RightLine, InflectionL, InflectionR);     break;
-                case 1:CrossLoopOverBegin_L(LeftLine, RightLine, InflectionL, InflectionR); break;
-                case 2:CrossLoopEnd_L();                                                    break;
+                case 0:CrossLoopBegin_L(InflectionL);   break;
+                case 1:CrossLoopEnd_L();                break;
             }
             break;
         }
@@ -438,9 +437,8 @@ void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Poin
         {
             switch(key_num_2)
             {
-                case 0:CrossLoopBegin_R(LeftLine, RightLine, InflectionL, InflectionR);       break;
-                case 1:CrossLoopOverBegin_R(LeftLine, RightLine, InflectionL, InflectionR);   break;
-                case 2:CrossLoopEnd_R();                                                      break;
+                case 0:CrossLoopBegin_R(InflectionR);   break;
+                case 1:CrossLoopEnd_R();                break;
             }
             break;
         }
