@@ -52,12 +52,12 @@ void ImageProcess()
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
     /****************************状态机***************************/
-#if 0
+#if 1
     switch(process_flag)
     {
         case 0: //识别左十字回环
         {
-            if(CrossLoopIdentify_L(LeftLine, RightLine, InflectionL, InflectionR)==1)
+            if(CrossLoopIdentify_L(InflectionL)==1)
             {
                 base_speed=speed_case_1;
                 process_flag=1;
@@ -109,7 +109,7 @@ void ImageProcess()
         }
         case 4: //识别右十字回环
         {
-            if(CrossLoopIdentify_R(LeftLine, RightLine, InflectionL, InflectionR)==1)
+            if(CrossLoopIdentify_R(InflectionR)==1)
             {
                 base_speed=speed_case_5;
                 process_flag=5;
