@@ -105,11 +105,11 @@ void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflec
                     return;
                 }
                 //当种子横向生长的次数大于了阈值
-//                if(transversenum>SEED_L_TRANSVERSE_GROW_THRE)
-//                {
-//                    UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
-//                    return;
-//                }
+                if(transversenum>SEED_L_TRANSVERSE_GROW_THRE)
+                {
+                    UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
+                    return;
+                }
                 break;
             case 'R':
                 if(BinaryImage[Seed.Y+1][Seed.X]==IMAGE_BLACK && BinaryImage[Seed.Y][Seed.X-1]==IMAGE_BLACK)
@@ -144,11 +144,11 @@ void SeedGrowFindUpInflection(char Choose,Point Seed,int endline,Point *UpInflec
                     return;
                 }
                 //当种子横向生长的次数大于了阈值
-//                if(transversenum>SEED_R_TRANSVERSE_GROW_THRE)
-//                {
-//                    UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
-//                    return;
-//                }
+                if(transversenum>SEED_R_TRANSVERSE_GROW_THRE)
+                {
+                    UpInflectionC->Y=tempSeed.Y,UpInflectionC->X=tempSeed.X;
+                    return;
+                }
                 break;
             default:break;
         }
@@ -239,39 +239,54 @@ void GetForkUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpIn
             break;
         }
     }
-    if ((flagL == 0 || flagR == 0) && Choose!=0)//说明有一边是没有白色区域的
+    if (flagL == 0 || flagR == 0)//说明有一边是没有白色区域的
     {
-        Seed.X = UpInflectionC->X, Seed.Y = row - 1;
+        if(Choose!=0)
+        {
+            Seed.X = UpInflectionC->X, Seed.Y = row - 1;
 #if FORK_DEBUG
-        for(int j=0;j<MT9V03X_W-1;j++)//画出100行那条线
-        {
-            lcd_drawpoint(j, ROW_FINDWHIDE_THRE, PURPLE);
-        }
+            for(int j=0;j<MT9V03X_W-1;j++)//画出100行那条线
+            {
+                lcd_drawpoint(j, ROW_FINDWHIDE_THRE, PURPLE);
+            }
 #endif
-        SeedGrowFindUpInflection(Choose, Seed, ROW_FINDWHIDE_THRE, UpInflectionC);
-        //在此再次验证一次推箱子找到的拐点是不是真的拐点，防止误判
-        for (cloumnL = UpInflectionC->X; cloumnL > L_FINDWHIDE_THRE; cloumnL--)
-        {
-            if (BinaryImage[UpInflectionC->Y][cloumnL] == IMAGE_WHITE && BinaryImage[UpInflectionC->Y][cloumnL-3]==IMAGE_WHITE)
+            SeedGrowFindUpInflection(Choose, Seed, ROW_FINDWHIDE_THRE, UpInflectionC);
+            //在此再次验证一次推箱子找到的拐点是不是真的拐点，防止误判
+            for (cloumnL = UpInflectionC->X; cloumnL > L_FINDWHIDE_THRE; cloumnL--)
             {
-                break;
+                if (BinaryImage[UpInflectionC->Y][cloumnL] == IMAGE_WHITE && BinaryImage[UpInflectionC->Y][cloumnL-3]==IMAGE_WHITE)
+                {
+                    break;
+                }
+                if (cloumnL == L_FINDWHIDE_THRE + 1 )
+                {
+                    //横着读完了都是黑色的那么再往两边的最下面看一下是否有白
+                    if(BinaryImage[UpInflectionC->Y+1][cloumnL]==IMAGE_WHITE)//下面一个点也是白色那么就也算是三岔拐点
+                        break;
+                    else
+                    {
+                        UpInflectionC->Y=0;//如果找不到白色的判定为误判
+                        break;
+                    }
+                }
             }
-            if (cloumnL == L_FINDWHIDE_THRE + 1 )
+            for (cloumnR = UpInflectionC->X; cloumnR < R_FINDWHIDE_THRE; cloumnR++)
             {
-                UpInflectionC->Y=0;//如果找不到白色的判定为误判
-                break;
-            }
-        }
-        for (cloumnR = UpInflectionC->X; cloumnR < R_FINDWHIDE_THRE; cloumnR++)
-        {
-            if (BinaryImage[UpInflectionC->Y][cloumnR] == IMAGE_WHITE && BinaryImage[UpInflectionC->Y][cloumnR+3] == IMAGE_WHITE)
-            {
-                break;
-            }
-            if (cloumnR == R_FINDWHIDE_THRE - 1)
-            {
-                UpInflectionC->Y=0;//如果找不到白色的判定为误判
-                break;
+                if (BinaryImage[UpInflectionC->Y][cloumnR] == IMAGE_WHITE && BinaryImage[UpInflectionC->Y][cloumnR+3] == IMAGE_WHITE)
+                {
+                    break;
+                }
+                if (cloumnR == R_FINDWHIDE_THRE - 1)
+                {
+                    //横着读完了都是黑色的那么再往两边的最下面看一下是否有白
+                    if(BinaryImage[UpInflectionC->Y+1][cloumnR]==IMAGE_WHITE)//下面一个点也是白色那么就也算是三岔拐点
+                        break;
+                    else
+                    {
+                        UpInflectionC->Y=0;//如果找不到白色的判定为误判
+                        break;
+                    }
+                }
             }
         }
     }
