@@ -53,10 +53,7 @@ void core1_main(void)
 
     //按键调参
     KeyProcess();
-//    KeySpeed();     //分段设置速度
-    systick_delay_ms(STM0,500);
-    KeyPID();
-    systick_delay_ms(STM0,3000);    //预留拔键盘时间
+    systick_delay_ms(STM0,2000);    //预留拔键盘时间
     //开启驱动
     if(encoder_distance>0)  //选择是否开启定距停车功能
     {

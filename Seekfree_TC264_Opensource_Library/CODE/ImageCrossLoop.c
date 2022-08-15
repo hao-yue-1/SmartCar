@@ -26,9 +26,16 @@
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CrossLoopBegin_L(Point InflectionL)
+uint8 CrossLoopBegin_L(Point InflectionL,uint8 status)
 {
     static uint8 flag=0;    //连续补线flag
+    //函数重启
+    if(status==1)
+    {
+        flag=0;
+        return 0;
+    }
+
     if((InflectionL.X!=0&&InflectionL.Y>50)||flag==1)  //符合约束条件or处于连续补线状态
     {
         uint8 row=MT9V03X_H-5,column=4,flag_1=0;
@@ -71,7 +78,6 @@ uint8 CrossLoopBegin_L(Point InflectionL)
             StarPoint.X=column;
             column=MT9V03X_W/4; //为寻找上方黑洞，重置X坐标为左四分之一处
         }
-
         //寻找补线终点
         for(;row-1>0;row--)    //向上扫
         {
@@ -131,9 +137,16 @@ uint8 CrossLoopBegin_L(Point InflectionL)
  **           若是车子贴外环行驶会有压角风险。预计处理方法是通过右拐点的位置来判断极端情况
  ********************************************************************************************
  */
-uint8 CrossLoopEnd_L(void)
+uint8 CrossLoopEnd_L(uint8 status)
 {
     static uint8 flag=0;    //连续补线flag，依赖第一次补线判断
+    //函数重启
+    if(status==1)
+    {
+        flag=0;
+        return 0;
+    }
+
     if((LostNum_LeftLine<90&&fabsf(Bias)<4)||flag==1) //符合约束条件或处于连续补线
     {
         Point StarPoint,EndPoint;
@@ -287,7 +300,7 @@ uint8 CrossLoopIdentify_L(Point InflectionL)
     {
         case 0: //小车识别十字回环的入口，进行补线直行
         {
-            if(CrossLoopBegin_L(InflectionL)==1&&flag_in==0)  //第一次识别到回环入口
+            if(CrossLoopBegin_L(InflectionL,0)==1&&flag_in==0)  //第一次识别到回环入口
             {
                 StartIntegralAngle_Z(20);   //开启陀螺仪辅助入环
                 flag_in=1;                  //避免重复开启积分
@@ -315,14 +328,17 @@ uint8 CrossLoopIdentify_L(Point InflectionL)
         }
         case 2: //小车识别十字回环的出口，右转出环
         {
-            if(CrossLoopEnd_L()==1&&flag_end==0)  //第一次检测到回环出口
+            if(CrossLoopEnd_L(0)==1&&flag_end==0)  //第一次检测到回环出口
             {
                 StartIntegralAngle_Z(30);   //开启积分
                 flag_end=1;                 //避免重复开启积分
             }
             if(flag_end==1&&icm_angle_z_flag==1)  //陀螺仪识别到已经出环
             {
-                flag_end=0;flag=3;  //跳转到未知状态，作废
+                flag_end=0;flag=0;  //跳转到状态0，等待二次启用
+                //重启函数
+                CrossLoopBegin_L(InflectionL,1);
+                CrossLoopEnd_L(1);
                 return 1;
             }
             break;
@@ -346,9 +362,15 @@ uint8 CrossLoopIdentify_L(Point InflectionL)
  **           8.15
  ********************************************************************************************
  */
-uint8 CrossLoopBegin_R(Point InflectionR)
+uint8 CrossLoopBegin_R(Point InflectionR,uint8 status)
 {
     static uint8 flag=0;    //连续补线flag
+    //函数重启
+    if(status==1)
+    {
+        flag=0;
+        return 0;
+    }
 
     if((InflectionR.X!=0&&InflectionR.Y>50)||flag==1)  //符合约束条件or处于连续补线状态
     {
@@ -451,9 +473,16 @@ uint8 CrossLoopBegin_R(Point InflectionR)
  **           若是车子贴外环行驶会有压角风险。预计处理方法是通过左拐点的位置来判断极端情况
  ********************************************************************************************
  */
-uint8 CrossLoopEnd_R(void)
+uint8 CrossLoopEnd_R(uint8 status)
 {
     static uint8 flag=0;    //连续补线flag，依赖第一次补线判断
+    //函数重启
+    if(status==1)
+    {
+        flag=0;
+        return 0;
+    }
+
     if((LostNum_RightLine<90&&fabsf(Bias)<1.5)||flag==1) //符合约束条件或处于连续补线
     {
         Point StarPoint,EndPoint;
@@ -607,7 +636,7 @@ uint8 CrossLoopIdentify_R(Point InflectionR)
     {
         case 0: //小车识别十字回环的入口，进行补线直行
         {
-            if(CrossLoopBegin_R(InflectionR)==1&&flag_in==0)  //第一次识别到回环入口
+            if(CrossLoopBegin_R(InflectionR,0)==1&&flag_in==0)  //第一次识别到回环入口
             {
                 StartIntegralAngle_Z(20);   //开启陀螺仪辅助入环
                 flag_in=1;                  //避免重复开启积分
@@ -635,14 +664,17 @@ uint8 CrossLoopIdentify_R(Point InflectionR)
         }
         case 2: //小车识别十字回环的出口，右转出环
         {
-            if(CrossLoopEnd_R()==1&&flag_end==0)  //第一次检测到回环出口
+            if(CrossLoopEnd_R(0)==1&&flag_end==0)  //第一次检测到回环出口
             {
                 StartIntegralAngle_Z(30);   //开启积分
                 flag_end=1;                 //避免重复开启积分
             }
             if(flag_end==1&&icm_angle_z_flag==1)  //陀螺仪识别到已经出环
             {
-                flag_end=0;flag=3;  //跳转到未知状态，作废
+                flag_end=0;flag=0;  //跳转到状态0，等待二次启用
+                //重启函数
+                CrossLoopBegin_R(InflectionR,1);
+                CrossLoopEnd_R(1);
                 return 1;
             }
             break;

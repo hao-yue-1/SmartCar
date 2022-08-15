@@ -40,19 +40,25 @@ void ImageProcess()
     Point InflectionL,InflectionR;     //左右下拐点
     InflectionL.X=0;InflectionL.Y=0;InflectionR.X=0;InflectionR.Y=0;
     /*****************************扫线*****************************/
-    if(process_flag==1||process_flag==0)    //采用车库专属扫线方案，忽视斑马线影响
-    {
-        GetImagBasic_Garage(LeftLine, CentreLine, RightLine, 'L');
-    }
-    else    //正常扫线
-    {
+//    if(process_flag==1||process_flag==0)    //采用车库专属扫线方案，忽视斑马线影响
+//    {
+//        GetImagBasic_Garage(LeftLine, CentreLine, RightLine, 'L');
+//    }
+//    else    //正常扫线
+//    {
         GetImagBasic(LeftLine, CentreLine, RightLine, 'L');
-    }
+//    }
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
+    switch(process_flag)
+    {
+        case 0:CrossLoopIdentify_R(InflectionR);break;
+        case 1:CrossLoopIdentify_L(InflectionL);break;
+        default:break;
+    }
     /****************************状态机***************************/
-#if 1
+#if 0
     switch(process_flag)
     {
         case 0: //识别左十字回环
