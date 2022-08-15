@@ -53,8 +53,8 @@ void ImageProcess()
     /*************************ÌØÊâÔªËØÅÐ¶Ï*************************/
     switch(process_flag)
     {
-        case 0:CrossLoopIdentify_R(InflectionR);break;
-        case 1:CrossLoopIdentify_L(InflectionL);break;
+        case 0:CircleIslandIdentify_R(RightLine, InflectionR);  break;
+        case 1:CircleIslandIdentify_L(LeftLine, InflectionL);   break;
         default:break;
     }
     /****************************×´Ì¬»ú***************************/

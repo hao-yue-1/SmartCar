@@ -256,9 +256,16 @@ uint8 CircleIslandOverBegin_L(int *LeftLine)
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIslandEnd_L(void)
+uint8 CircleIslandEnd_L(uint8 status)
 {
     static uint8 flag=0;    //保证补线的连续性，依赖于第一次判断
+    //函数重启
+    if(status==1)
+    {
+        flag=0;
+        return 0;
+    }
+
     if((LostNum_LeftLine<90&&fabsf(Bias)<3)||flag==1)  //符合约束条件或处于连续补线
     {
         Point StarPoint,EndPoint;
@@ -379,9 +386,16 @@ uint8 CircleIslandEnd_L(void)
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIslandExit_L(Point InflectionL)
+uint8 CircleIslandExit_L(Point InflectionL,uint8 status)
 {
     static uint8 flag=0;    //连续补线flag
+    //函数重启
+    if(status==1)
+    {
+        flag=0;
+        return 0;
+    }
+
 //    if((InflectionL.X!=0&&InflectionL.Y>85)||flag==1)  //符合约束条件or处于连续补线状态
     if(1)
     {
@@ -645,7 +659,7 @@ uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL)
                     break;
                 }
             }
-            if(CircleIslandExit_L(InflectionL)==1&&flag_exit==0)  //识别到环岛Exit作为开启环岛中部检测的条件
+            if(CircleIslandExit_L(InflectionL,0)==1&&flag_exit==0)  //识别到环岛Exit作为开启环岛中部检测的条件
             {
                 EncoderDistance(1, 0.3, 0, 0);  //开启测距：0.3m
                 flag_exit=1;
@@ -681,14 +695,11 @@ uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL)
                 StartIntegralAngle_Z(180);  //开启陀螺仪辅助出环
                 flag_in=1;                  //避免重复开启陀螺仪
             }
-//            //环内寻迹求Bias
-//            Circle_flag=1;  //标志环内寻迹
-//            Bias=DifferentBias_Circle(bias_startline,bias_endline,CentreLine);
             break;
         }
         case 3: //此时小车已经接近环岛出口，开始判断环岛出口
         {
-            if(CircleIslandEnd_L()==1&&flag_end==0)  //第一次检测到环岛出口
+            if(CircleIslandEnd_L(0)==1&&flag_end==0)  //第一次检测到环岛出口
             {
                 StartIntegralAngle_Z(60);   //开启积分
                 flag_end=1;
@@ -708,7 +719,10 @@ uint8 CircleIslandIdentify_L(int *LeftLine,Point InflectionL)
             flag_begin=CircleIslandOverBegin_L(LeftLine);     //识别环岛入口补线忽略
             if(flag_begin==0&&flag_last_begin==0&&flag_last2_begin==1)   //上上次识别到环岛入口而这两次都没有识别到环岛入口
             {
-                flag=5;     //跳转到未知状态，状态机作废
+                flag_begin=0;flag_last_begin=0;flag_last2_begin=0;flag=0;     //跳转到状态0，等待二次启用
+                //重启函数
+                CircleIslandExit_L(InflectionL, 1);
+                CircleIslandEnd_L(1);
                 return 1;   //退出状态机
             }
             flag_last2_begin=flag_last_begin;   //保存上上次的状态
@@ -929,9 +943,16 @@ uint8 CircleIslandOverBegin_R(int *RightLine)
  ** 注    意：该函数调用时应确保小车已在环岛中
  ********************************************************************************************
  */
-uint8 CircleIslandEnd_R(void)
+uint8 CircleIslandEnd_R(uint8 status)
 {
     static uint8 flag=0;    //保证补线的连续性，依赖于第一次判断
+    //函数重启
+    if(status==1)
+    {
+        flag=0;
+        return 0;
+    }
+
     if((LostNum_RightLine<90&&fabsf(Bias)<3)||flag==1)  //符合约束条件或处于连续补线
     {
         Point StarPoint,EndPoint;
@@ -1051,9 +1072,16 @@ uint8 CircleIslandEnd_R(void)
  ** 作    者: WBN
  ********************************************************************************************
  */
-uint8 CircleIslandExit_R(Point InflectionR)
+uint8 CircleIslandExit_R(Point InflectionR,uint8 status)
 {
     static uint8 flag=0;    //连续补线flag
+    //函数重启
+    if(status==1)
+    {
+        flag=0;
+        return 0;
+    }
+
     if((InflectionR.X!=0&&InflectionR.Y>85)||flag==1)  //符合约束条件or处于连续补线状态
     {
         uint8 row=MT9V03X_H-5,column=MT9V03X_W-5,flag_1=0;
@@ -1271,7 +1299,7 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
                     break;
                 }
             }
-            if(CircleIslandExit_R(InflectionR)==1&&flag_exit==0)  //识别到环岛Exit作为开启环岛中部检测的条件
+            if(CircleIslandExit_R(InflectionR,0)==1&&flag_exit==0)  //识别到环岛Exit作为开启环岛中部检测的条件
             {
                 EncoderDistance(1, 0.3, 0, 0);  //开启测距：0.3m
                 flag_exit=1;
@@ -1307,14 +1335,11 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
                 StartIntegralAngle_Z(180);  //开启陀螺仪辅助出环
                 flag_in=1;                  //避免重复开启陀螺仪
             }
-//            //环内寻迹求Bias
-//            Circle_flag=1;  //标志环内寻迹
-//            Bias=DifferentBias_Circle(bias_startline,bias_endline,CentreLine);
             break;
         }
         case 3: //此时小车已经接近环岛出口，开始判断环岛出口
         {
-            if(CircleIslandEnd_R()==1&&flag_end==0)  //第一次检测到环岛出口
+            if(CircleIslandEnd_R(0)==1&&flag_end==0)  //第一次检测到环岛出口
             {
                 StartIntegralAngle_Z(60);   //开启积分
                 flag_end=1;
@@ -1334,7 +1359,10 @@ uint8 CircleIslandIdentify_R(int *RightLine,Point InflectionR)
             flag_begin=CircleIslandOverBegin_R(RightLine);     //识别环岛入口补线忽略
             if(flag_begin==0&&flag_last_begin==0&&flag_last2_begin==1)   //上上次识别到环岛入口而这两次都没有识别到环岛入口
             {
-                flag=5;     //跳转到未知状态，状态机作废
+                flag_begin=0;flag_last_begin=0;flag_last2_begin=0;flag=0;     //跳转到状态0，等待二次启用
+                //重启函数
+                CircleIslandExit_R(InflectionR, 1);
+                CircleIslandEnd_R(1);
                 return 1;   //退出状态机
             }
             flag_last2_begin=flag_last_begin;   //保存上上次的状态

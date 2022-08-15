@@ -425,10 +425,10 @@ void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Poin
         {
             switch(key_num_2)
             {
-                case 0:CircleIslandExit_R(InflectionR);     break;
+                case 0:CircleIslandExit_R(InflectionR,0);     break;
                 case 1:if(CircleIslandMid_R()==1)gpio_toggle(LED_WHITE);break;
                 case 2:CircleIslandBegin_R();               break;
-                case 3:CircleIslandEnd_R();                 break;
+                case 3:CircleIslandEnd_R(0);                 break;
                 case 4:CircleIslandOverBegin_R(RightLine);  break;
             }
             break;
@@ -446,10 +446,10 @@ void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Poin
         {
             switch(key_num_2)
             {
-                case 0:CircleIslandExit_L(InflectionL);     break;
+                case 0:CircleIslandExit_L(InflectionL,0);     break;
                 case 1:if(CircleIslandMid_L()==1)gpio_toggle(LED_WHITE);break;
                 case 2:CircleIslandBegin_L();               break;
-                case 3:CircleIslandEnd_L();                 break;
+                case 3:CircleIslandEnd_L(0);                 break;
                 case 4:CircleIslandOverBegin_L(LeftLine);   break;
             }
             break;
