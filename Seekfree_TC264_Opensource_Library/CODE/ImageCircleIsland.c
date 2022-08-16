@@ -155,94 +155,61 @@ uint8 CircleIslandOverBegin_L(int *LeftLine)
             return 0;
         }
     }
+    //开始补线
     Point StarPoint,EndPoint;
-    uint8 row=MT9V03X_H-1,column=0;
+    uint8 row=MT9V03X_H-1,column=0,flag_1=0;
     //寻找补线起点
     StarPoint.Y=row;    //起点：左边界不丢线处or左下角
     StarPoint.X=LeftLine[row];
     //寻找补线终点
-    for(row=MT9V03X_H-1,column=MT9V03X_W/3;row-1>0;row--)    //向上扫，靠左三分之一
+    for(row=MT9V03X_H/2,column=MT9V03X_W/5;row-1>0;row--)    //向上扫，靠左五分之一
     {
         if(BinaryImage[row][column]==IMAGE_WHITE&&BinaryImage[row-1][column]==IMAGE_BLACK)  //白-黑
         {
-            uint8 flag_down=0;  //边界点的位置（1：左边界；2：右边界）
-            if(BinaryImage[row][column+1]==IMAGE_BLACK)      //右边为黑
+            //向右下方寻找谷底
+            for(;column+1<MT9V03X_W-1;column++)   //将指针移动到底部最右端
             {
-                flag_down=1;    //左边界
-            }
-            else if(BinaryImage[row][column-1]==IMAGE_BLACK) //左边为黑
-            {
-                flag_down=2;    //右边界
-            }
-            else    //X坐标没有落在跳变点上，默认是左边界，手动迫近
-            {
-                flag_down=3;    //出环的时候车身右斜太厉害，若和入环一样找谷底出错概率变大，不如简单处理
-            }
-            switch(flag_down)
-            {
-                case 1: //左边界，向右寻找谷底
+                if(BinaryImage[row][column+1]==IMAGE_BLACK)
                 {
-                    uint8 flag_1=0;
-                    while(column+1<MT9V03X_W-1&&row+1<MT9V03X_H-1)
-                    {
-                        if(BinaryImage[row][column+1]==IMAGE_BLACK) //右黑
-                        {
-                            column++;   //右移
-                            flag_1=1;
-                        }
-                        if(BinaryImage[row+1][column]==IMAGE_BLACK)    //下黑
-                        {
-                            row++;      //下移
-                            flag_1=1;
-                        }
-                        if(flag_1==1)
-                        {
-                            flag_1=0;
-                            continue;
-                        }
-                        break;
-                    }
                     break;
                 }
-                case 2: //右边界，向左寻找谷底
-                {
-                    uint8 flag_2=0;
-                    while(column-1>0&&row+1<MT9V03X_H-1)
-                    {
-                        if(BinaryImage[row][column-1]==IMAGE_BLACK) //左黑
-                        {
-                            column--;   //左移
-                            flag_2=1;
-                        }
-                        if(BinaryImage[row+1][column]==IMAGE_BLACK) //下黑
-                        {
-                            row++;      //下移
-                            flag_2=1;
-                        }
-                        if(flag_2==1)
-                        {
-                            flag_2=0;
-                            continue;
-                        }
-                        break;
-                    }
-                    break;
-                }
-                default:    //意外情况：无法判别边界点位置
-                {
-                    EndPoint.Y=MT9V03X_H/2;     //终点：定为图像的中心点
-                    EndPoint.X=MT9V03X_W/2;
-                }
             }
-            EndPoint.Y=row;     //终点：谷底
-            EndPoint.X=column;
+            while(column+1<MT9V03X_W-1&&row+1<MT9V03X_H-1)  //右下
+            {
+                if(BinaryImage[row][column+1]==IMAGE_BLACK) //右黑
+                {
+                    column++;   //右移
+                    flag_1=1;
+                }
+                if(BinaryImage[row+1][column]==IMAGE_BLACK) //下黑
+                {
+                    row++;      //下移
+                    flag_1=1;
+                }
+                if(flag_1==1)
+                {
+                    flag_1=0;
+                    continue;
+                }
+                break;
+            }
             break;
         }
     }
+    //限制补线终点
+    if(row<MT9V03X_H/4||row>MT9V03X_H/2)
+    {
+        return 0;
+    }
+    else if(column>MT9V03X_W/2)
+    {
+        return 0;
+    }
+    EndPoint.Y=row;     //终点：谷底
+    EndPoint.X=column;
     //补左线直行
     FillingLine('L', StarPoint, EndPoint);
-//    LcdDrawPoint(EndPoint, PURPLE);
-//    LcdDrawPoint(StarPoint, BROWN);
+
     return 1;
 }
 
@@ -266,7 +233,7 @@ uint8 CircleIslandEnd_L(uint8 status)
         return 0;
     }
 
-    if((LostNum_LeftLine<90&&fabsf(Bias)<3)||flag==1)  //符合约束条件或处于连续补线
+    if(LostNum_LeftLine<90||flag==1)  //符合约束条件或处于连续补线
     {
         Point StarPoint,EndPoint;
         uint8 row=MT9V03X_H-2,column=MT9V03X_W-2,flag_1=0,flag_2=0;
@@ -872,6 +839,7 @@ uint8 CircleIslandOverBegin_R(int *RightLine)
             return 0;
         }
     }
+    //开始补线
     Point StarPoint,EndPoint;
     uint8 row=MT9V03X_H-1,column=MT9V03X_W-1,flag_1=0;
     //寻找补线起点
@@ -913,9 +881,7 @@ uint8 CircleIslandOverBegin_R(int *RightLine)
         }
     }
     //限制补线终点
-//    LcdDrawRow(MT9V03X_H/4, YELLOW);
-//    LcdDrawRow(MT9V03X_H/2, YELLOW);
-    if(row<MT9V03X_H/4||row>MT9V03X_H/2)  //补线终点Y坐标
+    if(row<MT9V03X_H/4||row>MT9V03X_H/2)
     {
         return 0;
     }
@@ -927,8 +893,7 @@ uint8 CircleIslandOverBegin_R(int *RightLine)
     EndPoint.X=column;
     //补右线直行
     FillingLine('R', StarPoint, EndPoint);
-//    LcdDrawPoint(EndPoint, PURPLE);
-//    LcdDrawPoint(StarPoint, BROWN);
+
     return 1;
 }
 
@@ -953,7 +918,7 @@ uint8 CircleIslandEnd_R(uint8 status)
         return 0;
     }
 
-    if((LostNum_RightLine<90&&fabsf(Bias)<3)||flag==1)  //符合约束条件或处于连续补线
+    if(LostNum_RightLine<90||flag==1)  //符合约束条件或处于连续补线
     {
         Point StarPoint,EndPoint;
         uint8 row=MT9V03X_H-2,column=1,flag_1=0,flag_2=0;
