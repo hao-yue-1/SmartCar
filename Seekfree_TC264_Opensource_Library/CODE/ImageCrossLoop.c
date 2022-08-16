@@ -110,8 +110,12 @@ uint8 CrossLoopBegin_L(Point InflectionL,uint8 status)
                 break;
             }
         }
-        //限制补线终点：车子已经接近入环不需要补线的情况
-        if(row<MT9V03X_H/6)
+        //限制补线终点
+        if(row<MT9V03X_H/6) //车子已经接近入环不需要补线的情况
+        {
+            return 0;
+        }
+        else if(column>MT9V03X_W/2) //远处赛道干扰
         {
             return 0;
         }
@@ -446,8 +450,12 @@ uint8 CrossLoopBegin_R(Point InflectionR,uint8 status)
                 break;
             }
         }
-        //限制补线终点：车子已经接近入环不需要补线的情况
-        if(row<MT9V03X_H/6)
+        //限制补线终点
+        if(row<MT9V03X_H/6) //车子已经接近入环不需要补线的情况
+        {
+            return 0;
+        }
+        else if(column<MT9V03X_W/2) //远处赛道干扰
         {
             return 0;
         }
