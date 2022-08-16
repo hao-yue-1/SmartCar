@@ -22,9 +22,17 @@ uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
 uint8 Circle_flag=0;            //环内寻迹标志变量
 int16 speed_case_1=220,speed_case_2=240,speed_case_3=220,speed_case_4=220,speed_case_5=220,speed_case_6=220,speed_case_7=200;
-uint32 SobelResult=0;
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 uint8 process_flag=3;   //状态机跳转标志
+
+/*0:左十字回环 1：右边车库不入库 2：三岔里面直道 3：右环岛 4：右边十字回环 5：左环岛 6：三岔里面有坡道 7：入库 'E':编码器 'M':陀螺仪 'S':停车*/
+uint8 process_status[20]={2,7,0,5};//总状态机元素执行顺序数组
+uint8 process_speed[20]={230,240,230,230};//上面数组对应的元素路段的速度
+uint8 process_encoder[5];//编码器计距离的数组 **注意右车库不入库的编码器距离不在此处**
+uint8 process_icm[5];//陀螺仪积距离的数组
+uint8 process_status_cnt=0;//元素状态数组的计数器
+uint8 process_encoder_cnt=0;//编码器测距的距离数组计数器
+uint8 process_icm_cnt=0;//陀螺仪积分角度的角度数组计数器
 
 /********************************************************************************************
  ** 函数功能: 对图像的各个元素之间的逻辑处理函数，最终目的是为了得出Bias给中断去控制
@@ -40,7 +48,7 @@ void ImageProcess()
     Point InflectionL,InflectionR;     //左右下拐点
     InflectionL.X=0;InflectionL.Y=0;InflectionR.X=0;InflectionR.Y=0;
     /*****************************扫线*****************************/
-//    if(process_flag==1||process_flag==0)    //采用车库专属扫线方案，忽视斑马线影响
+//    if(process_status[process_status_cnt]==1||process_status[process_status_cnt]==0)    //采用车库专属扫线方案，忽视斑马线影响
 //    {
 //        GetImagBasic_Garage(LeftLine, CentreLine, RightLine, 'L');
 //    }
@@ -51,22 +59,17 @@ void ImageProcess()
     /*************************搜寻左右下拐点***********************/
     GetDownInflection(110,45,LeftLine,RightLine,&InflectionL,&InflectionR);
     /*************************特殊元素判断*************************/
-    switch(process_flag)
-    {
-        case 0:CircleIslandIdentify_R(RightLine, InflectionR);  break;
-        case 1:CircleIslandIdentify_L(LeftLine, InflectionL);   break;
-        default:break;
-    }
+
     /****************************状态机***************************/
-#if 0
-    switch(process_flag)
+#if 1
+    switch(process_status[process_status_cnt])
     {
         case 0: //识别左十字回环
         {
             if(CrossLoopIdentify_L(InflectionL)==1)
             {
-                base_speed=speed_case_1;
-                process_flag=1;
+                process_status_cnt++;
+                base_speed=process_speed[process_status_cnt];
             }
             break;
         }
@@ -80,27 +83,17 @@ void ImageProcess()
             }
             if(encoder_dis_flag==1)
             {
-                EncoderDistance(1, 1.6, 0, 0);
-                encoder_flag=1;
-                base_speed=speed_case_2;
-                process_flag=2;
+                process_status_cnt++;
+                base_speed=process_speed[process_status_cnt];
             }
             break;
         }
         case 2: //识别第一遍三岔
         {
-            if(encoder_flag==1)//查询编码器，等编码器状态到了才跳转
-            {
-                if(encoder_dis_flag==1)//此处标定到三岔入口
-                {
-                    encoder_flag=0;
-                }
-                break;
-            }
             if(ForkFStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
-                base_speed=speed_case_3;
-                process_flag=3;
+                process_status_cnt++;
+                base_speed=process_speed[process_status_cnt];
             }
             break;
         }
@@ -108,8 +101,8 @@ void ImageProcess()
         {
             if(CircleIslandIdentify_R(RightLine, InflectionR)==1)
             {
-                base_speed=speed_case_4;
-                process_flag=4;
+                process_status_cnt++;
+                base_speed=process_speed[process_status_cnt];
             }
             break;
         }
@@ -117,8 +110,8 @@ void ImageProcess()
         {
             if(CrossLoopIdentify_R(InflectionR)==1)
             {
-                base_speed=speed_case_5;
-                process_flag=5;
+                process_status_cnt++;
+                base_speed=process_speed[process_status_cnt];
             }
             break;
         }
@@ -126,27 +119,17 @@ void ImageProcess()
         {
             if(CircleIslandIdentify_L(LeftLine, InflectionL)==1)
             {
-                StartIntegralAngle_Z(30);//出状态之后转了30度左右才开启三岔识别，避免状态机出错导致误判
-                icm_flag=1;
-                base_speed=speed_case_6;
-                process_flag=6;
+                process_status_cnt++;
+                base_speed=process_speed[process_status_cnt];
             }
             break;
         }
         case 6: //识别第二遍三岔
         {
-            if(icm_flag==1)
-            {
-                if(icm_angle_z_flag==1)
-                {
-                    icm_flag=0;
-                }
-                break;
-            }
             if(ForkSStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
-                base_speed=speed_case_7;
-                process_flag=7;
+                process_status_cnt++;
+                base_speed=process_speed[process_status_cnt];
             }
             break;
         }
@@ -155,6 +138,38 @@ void ImageProcess()
             if(GarageInIdentify()==1)
             {
                 Stop();
+            }
+            break;
+        }
+        case 'E'://编码器计数无元素循迹
+        {
+            if(encoder_flag==0)//判断是否未开启编码器
+            {
+                EncoderDistance(1, process_encoder[process_encoder_cnt], 0, 0);//开启编码器
+                process_encoder_cnt++;
+                encoder_flag=1;
+            }
+            if(encoder_dis_flag)//判断编码器是否计数完
+            {
+                encoder_flag=0;
+                process_status_cnt++;
+                base_speed=process_speed[process_status_cnt];
+            }
+            break;
+        }
+        case 'M'://陀螺仪积角度无元素循迹
+        {
+            if(icm_flag==0)//判断是否未开启编码器
+            {
+                StartIntegralAngle_Z(process_icm[process_icm_cnt]);//开启编码器
+                process_icm_cnt++;
+                icm_flag=1;
+            }
+            if(icm_angle_z_flag==1)
+            {
+                icm_flag=0;
+                process_status_cnt++;
+                base_speed=process_speed[process_status_cnt];
             }
             break;
         }
