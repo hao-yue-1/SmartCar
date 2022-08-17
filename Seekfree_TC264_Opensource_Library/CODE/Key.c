@@ -178,7 +178,7 @@ void KeyPID(void)
                 return;
             }
         }
-        systick_delay_ms(STM0,100);
+        systick_delay_ms(STM0,50);
     }
 }
 
@@ -277,7 +277,7 @@ void KeyProcess(void)
                 return;
             }
         }
-        systick_delay_ms(STM0,100);
+        systick_delay_ms(STM0,50);
     }
 }
 
@@ -554,7 +554,7 @@ void KeyImage(void)
             flag=0;
         }
 
-        systick_delay_ms(STM0,100);
+        systick_delay_ms(STM0,50);
     }
 }
 
@@ -690,7 +690,7 @@ void KeySpeed(void)
                 return;
             }
         }
-        systick_delay_ms(STM0,100);
+        systick_delay_ms(STM0,50);
     }
 }
 
@@ -748,6 +748,6 @@ void KeySteer(void)
                 return;
             }
         }
-        systick_delay_ms(STM0,100);
+        systick_delay_ms(STM0,50);
     }
 }
