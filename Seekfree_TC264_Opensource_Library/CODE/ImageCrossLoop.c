@@ -38,6 +38,45 @@ uint8 CrossLoopBegin_L(Point InflectionL,uint8 status)
 
     if((InflectionL.X!=0&&InflectionL.Y>50)||flag==1)  //符合约束条件or处于连续补线状态
     {
+        //防止普通弯道误判
+        if(flag==0) //非连续补线状态
+        {
+            uint8 flag_exit=0;
+            //判断拐点上方是否有黑洞
+            for(uint8 row=InflectionL.Y,column=InflectionL.X;row-1>0;row--)  //拐点处，向上扫
+            {
+                if(BinaryImage[row-1][column]==IMAGE_WHITE&&BinaryImage[row][column]==IMAGE_BLACK)  //白-黑（黑洞下边界）
+                {
+                    for(;row-1>0;row--)
+                    {
+                        if(BinaryImage[row-1][column]==IMAGE_BLACK&&BinaryImage[row][column]==IMAGE_WHITE)  //黑-白（黑洞上边界）
+                        {
+                            for(;row-1>0;row--)
+                            {
+                                if(BinaryImage[row-1][column]==IMAGE_WHITE&&BinaryImage[row][column]==IMAGE_BLACK)  //白-黑（黑洞外）
+                                {
+                                    //判断黑洞右侧是否是直道
+                                    float slope_right=Regression_Slope(InflectionL.Y, row, RightLine);
+                                    lcd_showfloat(0, 0, slope_right, 1, 2);
+                                    if(fabs(slope_right)<1)
+                                    {
+                                        flag_exit=1;    //确认环岛
+                                    }
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            if(flag_exit==0)    //没有确认
+            {
+                return 0;
+            }
+        }
+
         uint8 row=MT9V03X_H-5,column=4,flag_1=0;
         Point StarPoint,EndPoint;
         //寻找补线起点
@@ -378,6 +417,44 @@ uint8 CrossLoopBegin_R(Point InflectionR,uint8 status)
 
     if((InflectionR.X!=0&&InflectionR.Y>50)||flag==1)  //符合约束条件or处于连续补线状态
     {
+        //防止普通弯道误判
+        if(flag==0) //非连续补线状态
+        {
+            uint8 flag_exit=0;
+            //判断拐点上方是否有黑洞
+            for(uint8 row=InflectionR.Y,column=InflectionR.X;row-1>0;row--)  //拐点处，向上扫
+            {
+                if(BinaryImage[row-1][column]==IMAGE_WHITE&&BinaryImage[row][column]==IMAGE_BLACK)  //白-黑（黑洞下边界）
+                {
+                    for(;row-1>0;row--)
+                    {
+                        if(BinaryImage[row-1][column]==IMAGE_BLACK&&BinaryImage[row][column]==IMAGE_WHITE)  //黑-白（黑洞上边界）
+                        {
+                            for(;row-1>0;row--)
+                            {
+                                if(BinaryImage[row-1][column]==IMAGE_WHITE&&BinaryImage[row][column]==IMAGE_BLACK)  //白-黑（黑洞外）
+                                {
+                                    //判断黑洞右侧是否是直道
+                                    float slope_left=Regression_Slope(InflectionR.Y, row, LeftLine);
+                                    if(fabs(slope_left)<1)
+                                    {
+                                        flag_exit=1;    //确认环岛
+                                    }
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            if(flag_exit==0)    //没有确认
+            {
+                return 0;
+            }
+        }
+
         uint8 row=MT9V03X_H-5,column=MT9V03X_W-5,flag_1=0;
         Point StarPoint,EndPoint;
         //寻找补线起点
