@@ -67,7 +67,6 @@ uint8 ForkTurnRIdentify(int *LeftLine,int *RightLine,Point DownInflectionL,Point
 uint8 ForkFStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *NowFlag);           //第一遍三岔状态跳转判断函数
 uint8 ForkSStatusIdentify(Point DownInflectionL,Point DownInflectionR,uint8 *NowFlag);           //第二遍三岔状态跳转判断函数
 /*十字相关函数*/
-void GetCrossRoadsUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionL,Point *UpInflectionR);//十字路口找寻上拐点函数
 uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR);      //十字路口识别函数
 uint8 CrossRoadsStatusIdentify(Point DownInflectionL,Point DownInflectionR);//十字状态机
 /*入库相关函数*/

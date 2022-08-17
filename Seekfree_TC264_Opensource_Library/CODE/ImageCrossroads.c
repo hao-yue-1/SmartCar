@@ -12,76 +12,6 @@
 
 #define CROSSROADSIDENTIFYMODE 0    //那种模式找上拐点
 
-/*********************************************************************************
- ** 函数功能: 根据左右下拐点搜寻出十字路口的左右上拐点
- ** 参    数: 左右线数组已经是全局变量
- **           Point InflectionL: 左边拐点
- **           Point InflectionR: 右边拐点
- **           Point *UpInflectionC: 左边上拐点
- **           Point *UpInflectionC: 右边上拐点
- ** 返 回 值: 无
- ** 说    明: 此函数仅仅是正入十字时的一个操作函数，不是识别函数
- ** 作    者: LJF
- **********************************************************************************/
-void GetCrossRoadsUpInflection(Point DownInflectionL,Point DownInflectionR,Point *UpInflectionL,Point *UpInflectionR)
-{
-    int row=0,cloum=0;//起始行,列
-    UpInflectionL->X=0;UpInflectionL->Y=0;//左上拐点置零
-    UpInflectionR->X=0;UpInflectionR->Y=0;//右上拐点置零
-
-    //从左下拐点往上找，找到白跳黑
-    for(row=DownInflectionL.Y-15;row>1;row--)
-    {
-        /******************debug:把从下往上的找点轨迹画出来******************/
-//        lcd_drawpoint(DownInflectionL.X-3, row, YELLOW);
-        /******************************************************************/
-        //从下面往上面找白的时候列数主动往左右黑色区域偏一点,防止因为找拐点函数找的拐点很怪使得补线补错
-        if(BinaryImage[row][DownInflectionL.X-3]==IMAGE_WHITE && BinaryImage[row-1][DownInflectionL.X-3]==IMAGE_BLACK)  //白点->黑点
-        {
-            //从白黑跳变点上几行再找黑跳白，得到很好的拐点去补线
-            //多往右边扫三十列，别勉稍微有一点斜但是左右拐点又存在
-            for(cloum=DownInflectionL.X;cloum<MT9V03X_W/2+30;cloum++)
-            {
-                /******************debug:把从左往右的找点轨迹画出来******************/
-//                lcd_drawpoint(cloum, row, YELLOW);
-                /******************************************************************/
-                if(BinaryImage[row-3][cloum]==IMAGE_BLACK && BinaryImage[row-3][cloum+1]==IMAGE_WHITE)  //黑点->白点
-                {
-                    //记录上拐点
-                    UpInflectionL->Y=row-1;UpInflectionL->X=cloum;
-                    break;
-                }
-            }
-            break;//记录完之后就退出循环
-        }
-    }
-
-    for(row=DownInflectionR.Y-15;row>1;row--)
-    {
-        /******************debug:把从下往上的找点轨迹画出来******************/
-//        lcd_drawpoint(DownInflectionR.X+3, row, YELLOW);
-        /******************************************************************/
-        //从下面往上面找白的时候列数主动往左右黑色区域偏一点,防止因为找拐点函数找的拐点很怪使得补线补错
-        if(BinaryImage[row][DownInflectionR.X+3]==IMAGE_WHITE && BinaryImage[row-1][DownInflectionR.X+3]==IMAGE_BLACK)  //由白到黑跳变
-        {
-            //从白黑跳变点上几行再找黑跳白，得到很好的拐点去补线
-            //多往左边扫三十列，别勉稍微有一点斜但是左右拐点又存在
-            for(cloum=DownInflectionR.X;cloum>MT9V03X_W/2-30;cloum--)
-            {
-                /******************debug:把从左往右的找点轨迹画出来******************/
-//                lcd_drawpoint(cloum, row, YELLOW);
-                /******************************************************************/
-                if(BinaryImage[row-3][cloum]==IMAGE_BLACK && BinaryImage[row-3][cloum-1]==IMAGE_WHITE)  //黑点->白点
-                {
-                    //记录上拐点
-                    UpInflectionR->Y=row-1;UpInflectionR->X=cloum;
-                    break;
-                }
-            }
-            break;//记录完之后就退出循环
-        }
-    }
-}
 /********************************************************************************************
  ** 函数功能: 识别十字路口
  ** 参    数: 左线数组：int *LeftLine 右线数组：int *RightLine//全局变量
@@ -111,15 +41,13 @@ uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR)
     //左右两边大量丢线，并且左右下拐点都存在,并且中上是白点
     if(LostNum_LeftLine>30 && LostNum_RightLine>30 && DownInflectionR.X!=0 && DownInflectionL.X!=0 && BinaryImage[50][MT9V03X_W/2]==IMAGE_WHITE)
     {
+        DownInflectionL.Y-=10;DownInflectionR.Y-=10;//避免拐点噪点
         //搜寻十字上拐点
-#if CROSSROADSIDENTIFYMODE
-        GetUpInflection('L', 20, DownInflectionL.Y-15, &UpInflectionL);
-        GetUpInflection('R', 20, DownInflectionR.Y-15, &UpInflectionR);
-#else
-        GetCrossRoadsUpInflection(DownInflectionL, DownInflectionR, &UpInflectionL, &UpInflectionR);
-#endif
+        GetRightangleUPInflection('L', DownInflectionL, &UpInflectionL, 10, MT9V03X_W-20);
+        GetRightangleUPInflection('R', DownInflectionR, &UpInflectionR, 10, 20);
         if(UpInflectionL.Y!=0 && UpInflectionR.Y!=0)
         {
+            DownInflectionL.Y+=10;DownInflectionR.Y+=10;//补线恢复点
             FillingLine('L', DownInflectionL, UpInflectionL);
             FillingLine('R', DownInflectionR, UpInflectionR);
             return 1;//正入十字
@@ -132,75 +60,63 @@ uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR)
         PointL.X=10;PointL.Y=MT9V03X_H;//给定一个左下角的点
         PointR.X=MT9V03X_W-10;PointR.Y=MT9V03X_H;//给定一个右下角的点
         //丢失左右下拐点的时候根据边沿去找上拐点
-#if CROSSOIADSIDENTIFYMODE
-        GetUpInflection('L', 20, PointL.Y-15, &UpInflectionL);
-        GetUpInflection('R', 20, PointR.Y-15, &UpInflectionR);
-#else
-        GetCrossRoadsUpInflection(PointL, PointR, &UpInflectionL, &UpInflectionR);
-#endif
+        GetRightangleUPInflection('L', PointL, &UpInflectionL, 10, MT9V03X_W-20);
+        GetRightangleUPInflection('R', PointR, &UpInflectionR, 10, 20);
         if(UpInflectionL.Y!=0 && UpInflectionR.Y!=0)
         {
             PointL.X=LeftLine[UpInflectionL.Y-7];PointL.Y=UpInflectionL.Y-7;//寻找正确边线上跟左上拐点一起的点来补线
             PointR.X=RightLine[UpInflectionR.Y-7];PointR.Y=UpInflectionR.Y-7;//寻找正确边线上跟右上拐点一起的点来补线
-            FillinLine_V2('L', MT9V03X_H, UpInflectionL.Y, UpInflectionL, PointL);
-            FillinLine_V2('R', MT9V03X_H, UpInflectionR.Y, UpInflectionR, PointR);
+            FillinLine_V2('L', MT9V03X_H-1, UpInflectionL.Y, UpInflectionL, PointL);
+            FillinLine_V2('R', MT9V03X_H-1, UpInflectionR.Y, UpInflectionR, PointR);
             return 1;//正入十字
         }
     }
     //左边丢线超过一半[60,无穷]，右边也存在丢线[10,60]，右拐点存在，并且右拐点上面一段对应的左边丢线，并且右拐点不能在最左边附近
     else if(LostNum_LeftLine>60 && LostNum_RightLine>10 && LostNum_RightLine<60 && DownInflectionR.X!=0 && LeftLine[DownInflectionR.Y-5]==0)
     {
-        //直接右下拐点往上冲找到黑色边缘
-        for(row=DownInflectionR.Y-5;row>1;row--)
+        DownInflectionR.Y-=10;//避免拐点噪点
+        //搜寻十字上拐点
+        GetRightangleUPInflection('R', DownInflectionR, &UpInflectionR, 10, 20);
+        if(UpInflectionR.Y!=0)
         {
-            /******************debug:把从下往上的找点轨迹画出来******************/
-//            lcd_drawpoint(DownInflectionR.X, row, YELLOW);
-            /******************************************************************/
-            if(BinaryImage[row][DownInflectionR.X]==IMAGE_WHITE && BinaryImage[row-1][DownInflectionR.X]==IMAGE_BLACK)  //由白到黑跳变
+            DownInflectionR.Y+=10;//恢复拐点行数用于补线
+            FillingLine('R', DownInflectionR, UpInflectionR);
+            //右上拐点的赛道另外一个点
+            for(uint8 column=UpInflectionR.X-3;column>3;column--)
             {
-                //注意此处不能说遍历到一半就停下来了，因为斜入的时候上拐点本来就比较中间
-                for(cloum=DownInflectionR.X;cloum>30;cloum--)
+                if(BinaryImage[UpInflectionR.Y][column]==IMAGE_WHITE && BinaryImage[UpInflectionR.Y][column-1]==IMAGE_BLACK)
                 {
-                    /******************debug:把从右往左的找点轨迹画出来******************/
-//                    lcd_drawpoint(cloum, row, YELLOW);
-                    /******************************************************************/
-                    if(BinaryImage[row-3][cloum]==IMAGE_BLACK && BinaryImage[row-3][cloum-1]==IMAGE_WHITE)  //黑点->白点
-                    {
-                        //记录上拐点
-                        UpInflectionR.Y=row-1;UpInflectionR.X=cloum;
-                        FillingLine('R', DownInflectionR, UpInflectionR);
-                        return 2;//向右斜入十字
-                    }
+                    UpInflectionL.Y=UpInflectionR.Y;UpInflectionL.X=column-1;
+                    break;
                 }
             }
+            DownInflectionL.Y=MT9V03X_H-5;DownInflectionL.X=5;
+//            FillingLine('L', DownInflectionL, UpInflectionL);
+            return 2;//向右斜入十字
         }
     }
     //右边丢线超过一半，左边也存在丢线，左拐点存在，并且右拐点上面一段对应的左边丢线
     else if(LostNum_RightLine>60 && LostNum_LeftLine>10 && LostNum_LeftLine<60 && DownInflectionL.X!=0 && RightLine[DownInflectionL.Y-5]==MT9V03X_W-1)
     {
-        for(row=DownInflectionL.Y-5;row>1;row--)//初始行就在之前的基础上减个5，毕竟拐点找的太严格又容易找不到，不严格很容易这个拐点的下一行就是白跳黑
+        DownInflectionL.Y-=10;//避免拐点噪点
+        //搜寻十字上拐点
+        GetRightangleUPInflection('L', DownInflectionL, &UpInflectionL, 10, MT9V03X_W-20);
+        if(UpInflectionL.Y!=0)
         {
-            /******************debug:把从右往左的找点轨迹画出来******************/
-//            lcd_drawpoint(DownInflectionL.X, row, YELLOW);
-            /******************************************************************/
-            if(BinaryImage[row][DownInflectionL.X]==IMAGE_WHITE && BinaryImage[row-1][DownInflectionL.X]==IMAGE_BLACK)  //由白到黑跳变
+            DownInflectionL.Y+=10;//恢复拐点行数用于补线
+            FillingLine('L', DownInflectionL, UpInflectionL);
+            //右上拐点的赛道另外一个点
+            for(uint8 column=UpInflectionL.X+3;column<MT9V03X_W-3;column++)
             {
-                //从白黑跳变点上几行再找黑跳白，得到很好的拐点去补线
-                //注意此处不能说遍历到一半就停下来了，因为斜入的时候上拐点本来就比较中间
-                for(cloum=DownInflectionL.X;cloum<MT9V03X_W-30;cloum++)
+                if(BinaryImage[UpInflectionL.Y][column]==IMAGE_WHITE && BinaryImage[UpInflectionL.Y][column+1]==IMAGE_BLACK)
                 {
-                    /******************debug:把从右往左的找点轨迹画出来******************/
-//                    lcd_drawpoint(cloum, row, YELLOW);
-                    /******************************************************************/
-                    if(BinaryImage[row-3][cloum]==IMAGE_BLACK && BinaryImage[row-3][cloum+1]==IMAGE_WHITE)  //黑点->白点
-                    {
-                        //记录上拐点
-                        UpInflectionL.Y=row-1;UpInflectionL.X=cloum;
-                        FillingLine('L', DownInflectionL, UpInflectionL);
-                        return 3;//向左斜入十字
-                    }
+                    UpInflectionR.Y=UpInflectionL.Y;UpInflectionR.X=column-1;
+                    break;
                 }
             }
+            DownInflectionR.Y=MT9V03X_H-5;DownInflectionR.X=MT9V03X_W-5;
+//            FillingLine('R', DownInflectionR, UpInflectionR);
+            return 3;//向左斜入十字
         }
     }
     return 0;
