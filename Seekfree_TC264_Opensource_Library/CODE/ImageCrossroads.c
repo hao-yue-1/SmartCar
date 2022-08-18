@@ -9,6 +9,7 @@
 #include "ICM20602.h"           //陀螺仪积分完成标志变量以及开启积分函数
 #include "LED.h"                //debug
 #include "headfile.h"
+#include "Motor.h"
 
 #define CROSSROADSIDENTIFYMODE 0    //那种模式找上拐点
 
@@ -132,36 +133,61 @@ uint8 CrossRoadsIdentify(Point DownInflectionL,Point DownInflectionR)
 uint8 CrossRoadsStatusIdentify(Point DownInflectionL,Point DownInflectionR)
 {
     //十字状态变量，用来看状态是否跳转
-    static uint8 StatusChange;
+    static uint8 StatusChange,corssroads_encoder_flag;//入口是否被识别到的标志变量
     uint8 NowFlag=0;//十字识别的暂存标志变量
-
     NowFlag=CrossRoadsIdentify(DownInflectionL, DownInflectionR);
     switch(StatusChange)
     {
         //根据ICM为主判断是否完成十字元素
         case 0:
         {
-//            gpio_set(LED_BLUE, 0);
             //如果是正入状态
             if(NowFlag==1)
             {
-//                gpio_set(LED_BLUE, 1);
                 StartIntegralAngle_Z(270);//开启陀螺仪作为出状态标志
                 StatusChange=1;//进入陀螺仪积分出环状态
+            }
+            else if(NowFlag!=0 && corssroads_encoder_flag==0)//如果识别到了并且不是正入那么开启编码器测距来检测出口
+            {
+                EncoderDistance(1, 2, 0, 0);//检测到了十字但是不是正入，开启编码器测距2M如果还是没有检测到正入那么直接表明已经进入了入口（做一个保护）
+                corssroads_encoder_flag=1;
+            }
+            //判断是否编码器走完
+            if(encoder_dis_flag==1)
+            {
+                corssroads_encoder_flag=0;//给下一次开启编码器的机会
+                StatusChange=2;//进入特殊保护状态
             }
             break;
         }
         //结束状态
         case 1:
         {
-//            gpio_set(LED_GREEN, 0);
             //陀螺仪积分达到出十字环状态,证明已经直着进了十字中间，可以不用再补线也能出去了
             if(icm_angle_z_flag==1)
             {
-//                gpio_set(LED_GREEN, 1);
+                gpio_set(LED_GREEN, 0);
+                StatusChange=0;corssroads_encoder_flag=0;//重置十字状态机
                 return 1;
             }
             break;
+        }
+        //非正入十字状态
+        case 2:
+        {
+            //这个状态检测到出口之后，开启编码器走0.7m即可
+            if(NowFlag!=0 && corssroads_encoder_flag==0)
+            {
+                EncoderDistance(1, 2, 0, 0);//检测到了十字但是不是正入，开启编码器测距2M如果还是没有检测到正入那么直接表明已经进入了入口（做一个保护）
+                corssroads_encoder_flag=1;
+            }
+            //判断是否编码器走完
+            if(encoder_dis_flag==1)
+            {
+                gpio_set(LED_BLUE, 0);
+                StatusChange=0;corssroads_encoder_flag=0;//重置十字状态机
+                return 1;
+            }
         }
     }
     return 0;
