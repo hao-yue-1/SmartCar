@@ -153,7 +153,7 @@ uint8 CrossRoadsStatusIdentify(Point DownInflectionL,Point DownInflectionR)
                 corssroads_encoder_flag=1;
             }
             //判断是否编码器走完
-            if(encoder_dis_flag==1)
+            if(encoder_dis_flag==1 && corssroads_encoder_flag!=0)//后面那个条件是避免前面总状态机编码器接十字的flag误判
             {
                 corssroads_encoder_flag=0;//给下一次开启编码器的机会
                 StatusChange=2;//进入特殊保护状态
