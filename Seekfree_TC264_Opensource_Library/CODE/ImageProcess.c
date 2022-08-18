@@ -48,7 +48,7 @@ void ImageProcess()
     Point InflectionL,InflectionR;     //左右下拐点
     InflectionL.X=0;InflectionL.Y=0;InflectionR.X=0;InflectionR.Y=0;
     /*****************************扫线*****************************/
-    if(process_status[process_status_cnt]==7 || process_status[process_status_cnt]==1)    //采用车库专属扫线方案，忽视斑马线影响
+    if(process_status[process_status_cnt]==7)    //采用车库专属扫线方案，忽视斑马线影响
     {
         GetImagBasic_Garage(LeftLine, CentreLine, RightLine, 'L');
     }
