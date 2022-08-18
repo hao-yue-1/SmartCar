@@ -27,8 +27,8 @@ uint8 process_flag=3;   //状态机跳转标志
 
 /*1:左十字回环 2：右边十字回环 3：左环岛 4：右环岛 5：三岔里面直道 6：三岔里面有坡道 7：右边车库不入库 8：入库 9：十字路口 'E':编码器 'M':陀螺仪 'S':停车*/
 uint8 process_status[20]={1,  7,  5,  4,  2,  3,  5,  8};//总状态机元素执行顺序数组
-uint16 process_speed[20]={230,240,250,230,230,230,230,220};//上面数组对应的元素路段的速度
-uint8 process_encoder[5]={3,3,3,3};//编码器计距离的数组 **注意右车库不入库的编码器距离不在此处**
+uint16 process_speed[PROCESS_SPEED_LEN]={230,240,250,230,230,230,230,220};//上面数组对应的元素路段的速度
+uint8 process_encoder[PROCESS_ENCODER_LEN]={3,3,3,3};//编码器计距离的数组 **注意右车库不入库的编码器距离不在此处**
 uint8 process_icm[5];//陀螺仪积距离的数组
 uint8 process_status_cnt=0;//元素状态数组的计数器
 uint8 process_encoder_cnt=0;//编码器测距的距离数组计数器

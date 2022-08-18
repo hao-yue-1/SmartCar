@@ -466,7 +466,7 @@ void ImageParameterHandle(uint8 key_num_1,uint8 key_num_2,Point InflectionL,Poin
         {
             switch(key_num_2)
             {
-                case 0:if(ZebraCrossingSearch(MT9V03X_H/2+15, MT9V03X_H/2-15)==1)gpio_toggle(LED_WHITE); break;
+                case 0:if(ZebraCrossingSearch(MT9V03X_H/2+25, MT9V03X_H/2-5)==1)gpio_toggle(LED_WHITE); break;
                 case 1:GarageInBegin();                                     break;
                 case 2:if(GarageInEnd()==1)gpio_toggle(LED_WHITE);          break;
             }
@@ -567,56 +567,65 @@ void KeyImage(void)
 void SpeedParameterDisplay(uint8 key_num)
 {
     OLED_clear();
-    switch(key_num)
+    OLED_ShowNum(0, 4, process_speed[key_num], 3, 2);
+    switch(process_status[key_num])
     {
-        case 0:
+        case 1: //左十字回环
         {
             OLED_ShowStr(0, 1, "CrossLoop_L", 2);
-            OLED_ShowNum(0, 4, base_speed, 3, 2);
             break;
         }
-        case 1:
-        {
-            OLED_ShowStr(0, 1, "Garage_R", 2);
-            OLED_ShowNum(0, 4, speed_case_1, 3, 2);
-            break;
-        }
-        case 2:
-        {
-            OLED_ShowStr(0, 1, "ForkRoad_First", 2);
-            OLED_ShowNum(0, 4, speed_case_2, 3, 2);
-            break;
-        }
-        case 3:
-        {
-            OLED_ShowStr(0, 1, "CircleIsland_R", 2);
-            OLED_ShowNum(0, 4, speed_case_3, 3, 2);
-            break;
-        }
-        case 4:
+        case 2: //右十字回环
         {
             OLED_ShowStr(0, 1, "CrossLoop_R", 2);
-            OLED_ShowNum(0, 4, speed_case_4, 3, 2);
             break;
         }
-        case 5:
+        case 3: //左环岛
         {
             OLED_ShowStr(0, 1, "CircleIsland_L", 2);
-            OLED_ShowNum(0, 4, speed_case_5, 3, 2);
             break;
         }
-        case 6:
+        case 4: //右环岛
         {
-            OLED_ShowStr(0, 1, "ForkRoad_Second", 2);
-            OLED_ShowNum(0, 4, speed_case_6, 3, 2);
+            OLED_ShowStr(0, 1, "CircleIsland_R", 2);
             break;
         }
-        case 7:
+        case 5: //三岔直道
+        {
+            OLED_ShowStr(0, 1, "Fork_straight", 2);
+            break;
+        }
+        case 6: //三岔坡道
+        {
+            OLED_ShowStr(0, 1, "Fork_ramp", 2);
+            break;
+        }
+        case 7: //车库直行
+        {
+            OLED_ShowStr(0, 1, "Garage_straight", 2);
+            break;
+        }
+        case 8: //入库
         {
             OLED_ShowStr(0, 1, "Garage_In", 2);
-            OLED_ShowNum(0, 4, speed_case_7, 3, 2);
             break;
         }
+        case 9: //十字路口
+        {
+            OLED_ShowStr(0, 1, "CrossRoad", 2);
+            break;
+        }
+        case 'E':   //编码器
+        {
+            OLED_ShowStr(0, 1, "Encoder", 2);
+            break;
+        }
+        case 'M':   //陀螺仪
+        {
+            OLED_ShowStr(0, 1, "Gyro", 2);
+            break;
+        }
+        default:break;
     }
 }
 
@@ -636,33 +645,13 @@ void KeySpeed(void)
         {
             case KEY_UP:    //增大参数值
             {
-                switch(key_num)
-                {
-                    case 0: base_speed+=5;  break;
-                    case 1: speed_case_1+=5;break;
-                    case 2: speed_case_2+=5;break;
-                    case 3: speed_case_3+=5;break;
-                    case 4: speed_case_4+=5;break;
-                    case 5: speed_case_5+=5;break;
-                    case 6: speed_case_6+=5;break;
-                    case 7: speed_case_7+=5;break;
-                }
+                process_speed[key_num]++;
                 SpeedParameterDisplay(key_num);
                 break;
             }
             case KEY_DOWN:  //减小参数值
             {
-                switch(key_num)
-                {
-                    case 0: base_speed-=5;  break;
-                    case 1: speed_case_1-=5;break;
-                    case 2: speed_case_2-=5;break;
-                    case 3: speed_case_3-=5;break;
-                    case 4: speed_case_4-=5;break;
-                    case 5: speed_case_5-=5;break;
-                    case 6: speed_case_6-=5;break;
-                    case 7: speed_case_7-=5;break;
-                }
+                process_speed[key_num]--;
                 SpeedParameterDisplay(key_num);
                 break;
             }
@@ -677,7 +666,7 @@ void KeySpeed(void)
             }
             case KEY_RIGHT: //向前切换参数
             {
-                if(key_num<7)
+                if(key_num<PROCESS_SPEED_LEN)
                 {
                     key_num++;
                 }
@@ -740,6 +729,131 @@ void KeySteer(void)
                 SteerPWM=STEER_RIGHT;
                 OLED_ShowStr(0, 1, "SteerPWM", 2);
                 OLED_ShowNum(0, 4, SteerPWM, 3, 2);
+                break;
+            }
+            case KEY_ENTER: //退出调参
+            {
+
+                return;
+            }
+        }
+        systick_delay_ms(STM0,50);
+    }
+}
+
+/*
+ ** 函数功能: 按键分段速度调参
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void EncoderParameterDisplay(uint8 key_num)
+{
+    OLED_clear();
+    OLED_ShowNum(0, 4, process_encoder[key_num], 3, 2);
+    switch(process_status[key_num+1])   //显示编码器后的下一个状态
+    {
+        case 1: //左十字回环
+        {
+            OLED_ShowStr(0, 1, "CrossLoop_L", 2);
+            break;
+        }
+        case 2: //右十字回环
+        {
+            OLED_ShowStr(0, 1, "CrossLoop_R", 2);
+            break;
+        }
+        case 3: //左环岛
+        {
+            OLED_ShowStr(0, 1, "CircleIsland_L", 2);
+            break;
+        }
+        case 4: //右环岛
+        {
+            OLED_ShowStr(0, 1, "CircleIsland_R", 2);
+            break;
+        }
+        case 5: //三岔直道
+        {
+            OLED_ShowStr(0, 1, "Fork_straight", 2);
+            break;
+        }
+        case 6: //三岔坡道
+        {
+            OLED_ShowStr(0, 1, "Fork_ramp", 2);
+            break;
+        }
+        case 7: //车库直行
+        {
+            OLED_ShowStr(0, 1, "Garage_straight", 2);
+            break;
+        }
+        case 8: //入库
+        {
+            OLED_ShowStr(0, 1, "Garage_In", 2);
+            break;
+        }
+        case 9: //十字路口
+        {
+            OLED_ShowStr(0, 1, "CrossRoad", 2);
+            break;
+        }
+        case 'E':   //编码器
+        {
+            OLED_ShowStr(0, 1, "Encoder", 2);
+            break;
+        }
+        case 'M':   //陀螺仪
+        {
+            OLED_ShowStr(0, 1, "Gyro", 2);
+            break;
+        }
+        default:break;
+    }
+}
+
+/*
+ ** 函数功能: 按键分段编码器调参
+ ** 参    数: 无
+ ** 返 回 值: 无
+ ** 作    者: WBN
+ */
+void KeyEncoder(void)
+{
+    uint8 key_num=0;
+    EncoderParameterDisplay(key_num);
+    while(1)
+    {
+        switch(KeyScan())
+        {
+            case KEY_UP:    //增大参数值
+            {
+                process_encoder[key_num]++;
+                EncoderParameterDisplay(key_num);
+                break;
+            }
+            case KEY_DOWN:  //减小参数值
+            {
+                process_encoder[key_num]--;
+                EncoderParameterDisplay(key_num);
+                break;
+            }
+            case KEY_LEFT:  //向后切换参数
+            {
+                if(key_num>0)
+                {
+                    key_num--;
+                }
+                EncoderParameterDisplay(key_num);
+                break;
+            }
+            case KEY_RIGHT: //向前切换参数
+            {
+                if(key_num<PROCESS_ENCODER_LEN)
+                {
+                    key_num++;
+                }
+                EncoderParameterDisplay(key_num);
                 break;
             }
             case KEY_ENTER: //退出调参
