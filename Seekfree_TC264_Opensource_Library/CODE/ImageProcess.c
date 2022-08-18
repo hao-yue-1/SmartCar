@@ -119,7 +119,6 @@ void ImageProcess()
         }
         case 7: //识别右车库，直行
         {
-            Unilaterally_Plan_CenterLine('A', 'L', bias_startline, bias_endline);//单边巡线
             //不处理
             if(encoder_flag==0)
             {
