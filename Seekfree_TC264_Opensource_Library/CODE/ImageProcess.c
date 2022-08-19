@@ -119,13 +119,7 @@ void ImageProcess()
         }
         case 7: //识别右车库，直行
         {
-            //不处理
-            if(encoder_flag==0)
-            {
-                EncoderDistance(1, 0.7, 0, 0);
-                encoder_flag=1;
-            }
-            if(encoder_dis_flag==1)
+            if(RNINGarageStatusIdentify(InflectionL, InflectionR, &Garage_flag)==1)
             {
                 process_status_cnt++;
                 base_speed=process_speed[process_status_cnt];

@@ -528,7 +528,6 @@ uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* Garage
             //检测到斑马线之后开启编码器计数0.7M
             if(ZebraIndentify(65, 55,&no_effect)==1)
             {
-                gpio_set(LED_WHITE, 0);
                 EncoderDistance(1, 0.7, 0, 0);
                 StatusChange=1;
             }
