@@ -21,13 +21,14 @@ uint8 bias_startline=70,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
 uint8 Circle_flag=0;            //环内寻迹标志变量
+uint8 Garage_NIN_flag=0;        //车库直行的标志变量
 int16 speed_case_1=220,speed_case_2=240,speed_case_3=220,speed_case_4=220,speed_case_5=220,speed_case_6=220,speed_case_7=200;
 int LeftLine[MT9V03X_H]={0}, CentreLine[MT9V03X_H]={0}, RightLine[MT9V03X_H]={0};   //扫线处理左中右三线
 uint8 process_flag=3;   //状态机跳转标志
 
 /*1:左十字回环 2：右边十字回环 3：左环岛 4：右环岛 5：三岔里面直道 6：三岔里面有坡道 7：右边车库不入库 8：入库 9：十字路口 'E':编码器 'M':陀螺仪 'S':停车*/
-uint8 process_status[20]={1,  7,  5,  4,  2,  3,  5,  8};//总状态机元素执行顺序数组
-uint16 process_speed[PROCESS_SPEED_LEN]={230,240,250,230,230,230,230,220};//上面数组对应的元素路段的速度
+uint8 process_status[20]={7,  5,  4,  2,  3,  5,  8};//总状态机元素执行顺序数组
+uint16 process_speed[PROCESS_SPEED_LEN]={200,200,200,200,200,200,200,200};//上面数组对应的元素路段的速度
 uint8 process_encoder[PROCESS_ENCODER_LEN]={3,3,3,3};//编码器计距离的数组 **注意右车库不入库的编码器距离不在此处**
 uint8 process_icm[5];//陀螺仪积距离的数组
 uint8 process_status_cnt=0;//元素状态数组的计数器
@@ -48,7 +49,7 @@ void ImageProcess()
     Point InflectionL,InflectionR;     //左右下拐点
     InflectionL.X=0;InflectionL.Y=0;InflectionR.X=0;InflectionR.Y=0;
     /*****************************扫线*****************************/
-    if(process_status[process_status_cnt]==7)    //采用车库专属扫线方案，忽视斑马线影响
+    if(Garage_NIN_flag!=0)    //采用车库专属扫线方案，忽视斑马线影响
     {
         GetImagBasic_Garage(LeftLine, CentreLine, RightLine, 'L');
     }
@@ -103,6 +104,7 @@ void ImageProcess()
         {
             if(ForkFStatusIdentify(InflectionL, InflectionR, &Fork_flag)==1)
             {
+                gpio_set(LED_WHITE, 0);
                 process_status_cnt++;
                 base_speed=process_speed[process_status_cnt];
             }
@@ -200,9 +202,11 @@ void ImageProcess()
     {
         Garage_flag=0;  //重置flag
     }
-    else if (process_status[process_status_cnt]==7)//车库直行偏差
+    else if (Garage_NIN_flag!=0)//车库直行偏差
     {
         Bias=DifferentBias_Garage(bias_startline,bias_endline,CentreLine);
+        Slope=0;
+        Garage_NIN_flag=0;
     }
     else
     {

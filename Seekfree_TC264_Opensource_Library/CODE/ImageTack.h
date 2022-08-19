@@ -16,6 +16,7 @@ extern float Bias;  //偏差
 extern float Slope; //斜率
 
 float Regression_Slope(int startline,int endline,int *CentreLine);//求中线数组点拟合出来的回归方程
+float Regression_Slope_Garage(int startline,int endline,int *CentreLine);//车库专属
 void FillingLine(char Choose, Point StarPoint,Point EndPoint);//根据两点进行补线
 float DifferentBias(int startline,int endline,int *CentreLine);
 float DifferentBias_Circle(uint8 startline,uint8 endline,int *CentreLine);

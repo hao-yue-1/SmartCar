@@ -81,7 +81,44 @@ float Regression_Slope(int startline,int endline,int *CentreLine)
         return Last_Bias;   //计算错误，忽略此次计算，返回上一次的值
     }
 }
+float Regression_Slope_Garage(int startline,int endline,int *CentreLine)
+{
+    //Y=BX+A
+    static float Last_Bias;//上一次的偏差用于前瞻在黑色区域的时候继承上一次的偏差
+    int i=0,SumX=0,SumY=0,SumLines=0;
+    float SumUp=0,SumDown=0,avrX=0,avrY=0,Bias=0;
 
+    for(i=startline;i>endline;i--)
+    {
+            SumX += i;
+            SumY += CentreLine[i];
+    }
+    SumLines=startline-endline;   // startline 为开始行， //endline 结束行 //SumLines
+    //特殊判断：判断一下是否大部分前瞻是在赛道外了，如果是的话那么就集成为上次的偏差
+    if(SumLines<=5)  return Last_Bias;
+
+    avrX=(float)(SumX/SumLines);     //X的平均值
+    avrY=(float)(SumY/SumLines);     //Y的平均值
+
+    for(i=startline;i>endline;i--)
+    {
+        SumUp+=(CentreLine[i]-avrY)*(i-avrX);//分子
+        SumDown+=(i-avrX)*(i-avrX);//分母
+    }
+    if(SumDown==0)
+        Bias=0;
+    else
+        Bias=SumUp/SumDown;
+    if(Bias==Bias)  //bias是真值
+    {
+        Last_Bias=Bias;
+        return Bias;
+    }
+    else
+    {
+        return Last_Bias;   //计算错误，忽略此次计算，返回上一次的值
+    }
+}
 
 /********************************************************************************************
  ** 函数功能: 根据两点进行补线(直线)
@@ -359,13 +396,16 @@ void Unilaterally_Plan_CenterLine(char ManualorAuto ,char LorR,int startline,int
                 {
                     case 'L':
                     {
-                        CentreLine[row]=LeftLine[row]+(137-(119-row)*1.1)/2;
-                        if(CentreLine[row]<0) CentreLine[row]=0;
-                        else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
-//                        test=LeftLine[row]+(137-(119-row)*1.1)/2;
-//                        if(test<0) test=0;
-//                        else if(test>MT9V03X_W-1) test=MT9V03X_W-1;
-//                        lcd_drawpoint(test, row, PURPLE);
+                        if(LeftLine[row]!=0)//左边丢线就不单边巡线
+                        {
+                            CentreLine[row]=LeftLine[row]+(137-(119-row)*1.1)/2;
+                            if(CentreLine[row]<0) CentreLine[row]=0;
+                            else if(CentreLine[row]>MT9V03X_W-1) CentreLine[row]=MT9V03X_W-1;
+//                            test=LeftLine[row]+(137-(119-row)*1.1)/2;
+//                            if(test<0) test=0;
+//                            else if(test>MT9V03X_W-1) test=MT9V03X_W-1;
+//                            lcd_drawpoint(test, row, PURPLE);
+                        }
                         break;
                     }
                     case 'R':

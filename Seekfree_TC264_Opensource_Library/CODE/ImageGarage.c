@@ -526,8 +526,11 @@ uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* Garage
         case 0:
         {
             //检测到斑马线之后开启编码器计数0.7M
-            if(ZebraIndentify(65, 55,&no_effect)==1)
+//            if(ZebraIndentify(65, 55,&no_effect)==1)
+            if(ZebraCrossingSearch(90, 30)==1)
             {
+                *GarageLFlag=1;//返回出去为了特殊的扫线以及求偏差
+                Unilaterally_Plan_CenterLine('M', 'L', bias_startline, bias_endline);
                 EncoderDistance(1, 0.7, 0, 0);
                 StatusChange=1;
             }
@@ -539,6 +542,11 @@ uint8 RNINGarageStatusIdentify(Point InflectionL,Point InflectionR,uint8* Garage
             {
                 StatusChange=0;//重置状态机
                 return 1;
+            }
+            else
+            {
+                Unilaterally_Plan_CenterLine('M', 'L', bias_startline, bias_endline);
+                *GarageLFlag=1;//返回出去为了特殊的扫线以及求偏差
             }
             break;
         }
