@@ -675,7 +675,7 @@ void KeySpeed(void)
             }
             case KEY_ENTER: //退出调参
             {
-
+                OLED_ShowStr(0, 1, "OVER!!!", 2);
                 return;
             }
         }
@@ -858,7 +858,7 @@ void KeyEncoder(void)
             }
             case KEY_ENTER: //退出调参
             {
-
+                OLED_ShowStr(0, 1, "OVER!!!", 2);
                 return;
             }
         }
