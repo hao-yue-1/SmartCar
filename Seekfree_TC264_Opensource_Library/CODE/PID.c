@@ -47,7 +47,8 @@ uint32 Steer_Position_PID(float bias,float slope,SteerPID K)
     int PWM;
     //数据融合
     slope=FirstOrderLagFilter_Slope(slope); //对斜率低通滤波
-    bias_slope=BIAS_SLOPE_P*bias+(1-BIAS_SLOPE_P)*(3*slope);
+//    bias_slope=BIAS_SLOPE_P*bias+(1-BIAS_SLOPE_P)*(3*slope);
+    bias_slope=0.9*bias+slope;
 //    printf("%f,%f\n",bias,slope);
     //PID计算
     PWM=(int)(K.P*bias_slope+K.D*(bias_slope-last_bias_slope));
