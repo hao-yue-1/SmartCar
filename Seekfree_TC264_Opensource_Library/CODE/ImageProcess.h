@@ -13,7 +13,7 @@
 #include "ImageTack.h"      //计算偏差、补线
 #include "ImageSpecial.h"   //元素识别
 
-#define PROCESS_SPEED_LEN   20
+#define PROCESS_SPEED_LEN   15
 #define PROCESS_ENCODER_LEN 5
 
 extern uint8 CrossRoads_flag;        //十字标志变量
@@ -24,7 +24,7 @@ extern int16 speed_case_1,speed_case_2,speed_case_3,speed_case_4,speed_case_5,sp
 extern uint8 bias_startline,bias_endline;        //动态前瞻
 extern uint8 process_flag;
 
-extern uint8 process_status[20];
+extern uint8 process_status[15];
 extern uint16 process_speed[PROCESS_SPEED_LEN];
 extern uint8 process_encoder[PROCESS_ENCODER_LEN];
 

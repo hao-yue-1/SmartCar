@@ -52,8 +52,9 @@ void core1_main(void)
     enableInterrupts();
 
     //按键调参
-//    KeyProcess();
     KeySpeed();
+    systick_delay_ms(STM0,500);
+    KeyEncoder();
     systick_delay_ms(STM0,2000);    //预留拔键盘时间
     //开启驱动
     if(encoder_distance>0)  //选择是否开启定距停车功能
@@ -62,8 +63,8 @@ void core1_main(void)
     }
     pit_interrupt_ms(CCU6_0,PIT_CH0,6); //初始化电机定时器中断
     pit_interrupt_ms(CCU6_0,PIT_CH1,20);//初始化舵机定时器中断
-//    //完成出库
-//    OutGarage();
+    //完成出库
+    OutGarage();
     base_speed=process_speed[0];    //出库后将速度修改为第一个元素的速度
 
     while (TRUE)

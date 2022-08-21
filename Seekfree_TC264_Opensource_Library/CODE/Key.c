@@ -645,13 +645,13 @@ void KeySpeed(void)
         {
             case KEY_UP:    //增大参数值
             {
-                process_speed[key_num]++;
+                process_speed[key_num]+=10;
                 SpeedParameterDisplay(key_num);
                 break;
             }
             case KEY_DOWN:  //减小参数值
             {
-                process_speed[key_num]--;
+                process_speed[key_num]-=10;
                 SpeedParameterDisplay(key_num);
                 break;
             }
