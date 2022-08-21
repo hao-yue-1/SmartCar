@@ -17,7 +17,7 @@
 
 #define STATE_LED_DEBUG 0   //使用主控板LED进行Debug
 
-uint8 bias_startline=95,bias_endline=50;        //动态前瞻
+uint8 bias_startline=70,bias_endline=50;        //动态前瞻
 uint8 Fork_flag=0;              //三岔识别的标志变量
 uint8 Garage_flag=0;            //车库识别标志变量
 uint8 Circle_flag=0;            //环内寻迹标志变量
